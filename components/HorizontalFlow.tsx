@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { motion, useMotionValue, useScroll } from "framer-motion";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
 
 const NUM_PANELS = 3;
 
@@ -202,45 +202,85 @@ function ProgressDots({ active }: { active: number }) {
 
 export default function HorizontalFlow() {
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const x = useMotionValue(0);
-  const [activePanel, setActivePanel] = useState(0);
-  const isSnapping = useRef(false);
+  const [panelIndex, setPanelIndex] = useState(0);
+  const isActive = useRef(false);
+  const isAnimating = useRef(false);
+  const exitCooldown = useRef(false);
 
-  const { scrollYProgress } = useScroll({
-    target: wrapperRef,
-    offset: ["start start", "end end"],
-  });
+  // exitSection — called when threshold is met at the first or last panel.
+  // Sets isActive false first so the wheel handler stops blocking immediately,
+  // then hands control back to Lenis and scrolls past the section.
+  const exitSection = useCallback((direction: number) => {
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return;
 
-  // Effect 1 — Drive x and active dot from scroll position. Pure, no Lenis interaction.
+    isActive.current = false;
+    exitCooldown.current = true;
+    setTimeout(() => { exitCooldown.current = false; }, 1500);
+
+    const lenis = window.__lenis;
+    if (lenis) lenis.start();
+
+    const sectionTop = wrapper.getBoundingClientRect().top + window.scrollY;
+    const sectionHeight = wrapper.offsetHeight;
+
+    if (direction > 0) {
+      const target = sectionTop + sectionHeight + 1;
+      if (lenis) lenis.scrollTo(target, { duration: 0.8 });
+      else window.scrollTo({ top: target, behavior: "smooth" });
+    } else {
+      const target = Math.max(0, sectionTop - 1);
+      if (lenis) lenis.scrollTo(target, { duration: 0.8 });
+      else window.scrollTo({ top: target, behavior: "smooth" });
+    }
+  }, []);
+
+  // IntersectionObserver — activate when section fills the viewport.
+  // Snaps scroll to section top, locks Lenis, sets initial panel.
+  // exitCooldown prevents re-activation during the exit scroll animation.
   useEffect(() => {
-    return scrollYProgress.on("change", (v) => {
-      if (window.innerWidth < 768) { x.set(0); return; }
-      x.set(-v * (NUM_PANELS - 1) * window.innerWidth);
-      setActivePanel(Math.min(NUM_PANELS - 1, Math.round(v * (NUM_PANELS - 1))));
-    });
-  }, [scrollYProgress, x]);
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return;
 
-  // Effect 2 — Wheel intercept: advance one panel per deliberate gesture.
-  // data-lenis-prevent-wheel on the wrapper makes Lenis return early (no scroll update)
-  // for any wheel event that passes through this element. We become sole scroll controller.
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (window.innerWidth < 768) return;
+        if (exitCooldown.current) return;
+        if (!entry.isIntersecting || entry.intersectionRatio < 0.98) return;
+        if (isActive.current) return;
+
+        const lenis = window.__lenis;
+        const sectionTop = wrapper.getBoundingClientRect().top + window.scrollY;
+
+        // Snap scroll precisely to section top before locking
+        if (lenis) lenis.scrollTo(sectionTop, { immediate: true });
+        else window.scrollTo({ top: sectionTop });
+
+        // entry.boundingClientRect.top >= 0 → section approaching from below (scroll down)
+        const enteringFromTop = entry.boundingClientRect.top >= -10;
+        setPanelIndex(enteringFromTop ? 0 : NUM_PANELS - 1);
+        isActive.current = true;
+        if (lenis) lenis.stop();
+      },
+      { threshold: [0.98, 1.0] }
+    );
+
+    observer.observe(wrapper);
+    return () => observer.disconnect();
+  }, []);
+
+  // Wheel handler — only active while isActive is true.
+  // Accumulates delta until threshold met, then advances panel or exits.
   useEffect(() => {
     let wheelDelta = 0;
     let resetTimer: ReturnType<typeof setTimeout>;
 
     const handleWheel = (e: WheelEvent) => {
-      if (!wrapperRef.current || window.innerWidth < 768) return;
+      if (window.innerWidth < 768) return;
+      if (!isActive.current) return;
 
-      const rect = wrapperRef.current.getBoundingClientRect();
-      const inStickyZone = rect.top <= 2 && rect.bottom >= window.innerHeight - 2;
-      if (!inStickyZone) return;
-
-      // We own all wheel events in this zone — block native scroll unconditionally.
-      // Lenis is already blocked by data-lenis-prevent-wheel on the wrapper.
       e.preventDefault();
-
-      if (isSnapping.current) return;
-
-      const currentPanel = Math.round(scrollYProgress.get() * (NUM_PANELS - 1));
+      if (isAnimating.current) return;
 
       wheelDelta += e.deltaY;
       clearTimeout(resetTimer);
@@ -251,36 +291,15 @@ export default function HorizontalFlow() {
       const direction = wheelDelta > 0 ? 1 : -1;
       wheelDelta = 0;
 
-      const wrapper = wrapperRef.current;
-      const wrapperTop = wrapper.getBoundingClientRect().top + window.scrollY;
-      const scrollableHeight = wrapper.offsetHeight - window.innerHeight;
-
-      isSnapping.current = true;
-      setTimeout(() => { isSnapping.current = false; }, 1100);
-
-      const lenis = window.__lenis;
-
-      // Boundary exits — must land outside the sticky zone so inStickyZone is false
-      // on the next wheel event. scrollableHeight puts rect.bottom === innerHeight
-      // (still in zone). +/-10px ensures rect.bottom < innerHeight-2 (or rect.top > 2).
-      if (direction > 0 && currentPanel >= NUM_PANELS - 1) {
-        const target = wrapperTop + scrollableHeight + 10;
-        if (lenis) lenis.scrollTo(target, { duration: 1.0 });
-        else window.scrollTo({ top: target, behavior: "smooth" });
-        return;
-      }
-      if (direction < 0 && currentPanel <= 0) {
-        const target = wrapperTop - 10;
-        if (lenis) lenis.scrollTo(target, { duration: 1.0 });
-        else window.scrollTo({ top: target, behavior: "smooth" });
-        return;
-      }
-
-      // Snap to adjacent panel
-      const targetPanel = currentPanel + direction;
-      const targetY = wrapperTop + (targetPanel / (NUM_PANELS - 1)) * scrollableHeight;
-      if (lenis) lenis.scrollTo(targetY, { duration: 0.9 });
-      else window.scrollTo({ top: targetY, behavior: "smooth" });
+      setPanelIndex((current) => {
+        const next = current + direction;
+        if (next < 0 || next >= NUM_PANELS) {
+          exitSection(direction);
+          return current;
+        }
+        isAnimating.current = true;
+        return next;
+      });
     };
 
     window.addEventListener("wheel", handleWheel, { passive: false });
@@ -288,33 +307,30 @@ export default function HorizontalFlow() {
       window.removeEventListener("wheel", handleWheel);
       clearTimeout(resetTimer);
     };
-  }, [scrollYProgress]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Effect 3 — Keep x in sync after resize
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 768) { x.set(0); return; }
-      x.set(-scrollYProgress.get() * (NUM_PANELS - 1) * window.innerWidth);
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [x, scrollYProgress]);
+  }, [exitSection]);
 
   return (
     <section aria-label="About, Garden and Food sections">
-      <div ref={wrapperRef} data-horizontal-flow data-lenis-prevent-wheel className="relative md:h-[300vh]">
-        <div className="overflow-hidden relative md:sticky md:top-0 md:h-screen">
-          <motion.div
-            className="flex flex-col md:flex-row md:w-[300vw] h-auto md:h-full"
-            style={{ x }}
-          >
-            <AboutPanel />
-            <GardenPanel />
-            <FoodPanel />
-          </motion.div>
+      <div
+        ref={wrapperRef}
+        data-horizontal-flow
+        className="overflow-hidden h-auto md:h-screen"
+      >
+        <motion.div
+          className="flex flex-col md:flex-row md:w-[300vw] h-auto md:h-full"
+          animate={{
+            x: typeof window !== "undefined" ? -panelIndex * window.innerWidth : 0,
+          }}
+          transition={{ duration: 0.55, ease: [0.32, 0, 0.67, 0] }}
+          onAnimationStart={() => { isAnimating.current = true; }}
+          onAnimationComplete={() => { isAnimating.current = false; }}
+        >
+          <AboutPanel />
+          <GardenPanel />
+          <FoodPanel />
+        </motion.div>
 
-          <ProgressDots active={activePanel} />
-        </div>
+        <ProgressDots active={panelIndex} />
       </div>
     </section>
   );
