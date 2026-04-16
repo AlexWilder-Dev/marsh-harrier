@@ -19,20 +19,18 @@ const HORIZONTAL_PANELS: Record<string, number> = {
 const HORIZONTAL_PANEL_COUNT = 3;
 
 function scrollToSection(href: string) {
-  const lenis = window.__lenis;
-
+  // Panel links — delegate entirely to HorizontalFlow's API so it handles
+  // its own lock state. Works whether the section is active or not.
   if (href in HORIZONTAL_PANELS && window.innerWidth >= 768) {
-    const wrapper = document.querySelector("[data-horizontal-flow]") as HTMLElement | null;
-    if (wrapper) {
-      const wrapperTop = wrapper.getBoundingClientRect().top + window.scrollY;
-      const scrollableHeight = wrapper.offsetHeight - window.innerHeight;
-      const panelIndex = HORIZONTAL_PANELS[href];
-      const target = wrapperTop + (panelIndex / (HORIZONTAL_PANEL_COUNT - 1)) * scrollableHeight;
-      lenis ? lenis.scrollTo(target, { duration: 1.4 }) : window.scrollTo({ top: target, behavior: "smooth" });
-      return;
-    }
+    window.__horizontalFlow?.navigate(HORIZONTAL_PANELS[href]);
+    return;
   }
 
+  // Non-panel links — release the section lock first (no-op if not active),
+  // then scroll. This ensures Lenis is running before we call scrollTo.
+  window.__horizontalFlow?.release();
+
+  const lenis = window.__lenis;
   if (lenis) {
     lenis.scrollTo(href, { duration: 1.4 });
   } else {

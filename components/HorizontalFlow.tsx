@@ -3,6 +3,17 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 
+declare global {
+  interface Window {
+    __horizontalFlow?: {
+      /** Jump directly to a panel. If section not active, scrolls to it first. */
+      navigate: (panelIndex: number) => void;
+      /** Release the section lock so the nav can scroll elsewhere. */
+      release: () => void;
+    };
+  }
+}
+
 const NUM_PANELS = 3;
 
 // ─── Panels ─────────────────────────────────────────────────────────────────
@@ -207,6 +218,7 @@ export default function HorizontalFlow() {
   const isActive = useRef(false);
   const isAnimating = useRef(false);
   const exitCooldown = useRef(false);
+  const pendingPanel = useRef<number | null>(null); // set by nav before scrolling to section
   const [windowWidth, setWindowWidth] = useState(0); // drives animate x; updates on resize
 
   // Initialise windowWidth client-side (0 on SSR is fine — panels start at x:0)
@@ -264,9 +276,13 @@ export default function HorizontalFlow() {
         if (lenis) lenis.scrollTo(sectionTop, { immediate: true });
         else window.scrollTo({ top: sectionTop });
 
-        // entry.boundingClientRect.top >= 0 → section approaching from below (scroll down)
+        // Use nav-requested panel if set, otherwise infer from scroll direction
         const enteringFromTop = entry.boundingClientRect.top >= -10;
-        setPanelIndex(enteringFromTop ? 0 : NUM_PANELS - 1);
+        const target = pendingPanel.current !== null
+          ? pendingPanel.current
+          : (enteringFromTop ? 0 : NUM_PANELS - 1);
+        pendingPanel.current = null;
+        setPanelIndex(target);
         isActive.current = true;
         if (lenis) lenis.stop();
       },
@@ -275,6 +291,38 @@ export default function HorizontalFlow() {
 
     observer.observe(wrapper);
     return () => observer.disconnect();
+  }, []);
+
+  // Global API — lets Nav navigate to a specific panel or release the lock.
+  useEffect(() => {
+    window.__horizontalFlow = {
+      navigate: (index: number) => {
+        if (isActive.current) {
+          // Section already locked — just change the panel
+          setPanelIndex(index);
+          return;
+        }
+        // Section not active — store the desired panel, then scroll to section.
+        // IntersectionObserver will activate it and pick up pendingPanel.
+        pendingPanel.current = index;
+        const lenis = window.__lenis;
+        if (lenis) lenis.start(); // ensure Lenis is running before scrollTo
+        const wrapper = wrapperRef.current;
+        if (!wrapper) return;
+        const sectionTop = wrapper.getBoundingClientRect().top + window.scrollY;
+        if (lenis) lenis.scrollTo(sectionTop, { duration: 1.2 });
+        else window.scrollTo({ top: sectionTop, behavior: "smooth" });
+      },
+      release: () => {
+        if (!isActive.current) return;
+        isActive.current = false;
+        exitCooldown.current = true;
+        setTimeout(() => { exitCooldown.current = false; }, 2000);
+        const lenis = window.__lenis;
+        if (lenis) lenis.start();
+      },
+    };
+    return () => { delete window.__horizontalFlow; };
   }, []);
 
   // Wheel handler — only active while isActive is true.
