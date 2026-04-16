@@ -37,23 +37,23 @@ export async function POST(request: NextRequest) {
   if (
     !table ||
     typeof table !== "number" ||
+    table < 1 ||
+    table > 99 ||
+    !Number.isInteger(table) ||
     !Array.isArray(items) ||
     items.length === 0
   ) {
     return NextResponse.json(
-      { error: "table (number) and items (non-empty array) are required" },
+      { error: "table (1–99) and items (non-empty array) are required" },
       { status: 400 }
     );
   }
 
-  // Check table exists
-  const tableResult = await client.execute({
-    sql: "SELECT id FROM tables WHERE table_number = ?",
+  // Auto-create table entry if it doesn't exist yet
+  await client.execute({
+    sql: "INSERT OR IGNORE INTO tables (table_number) VALUES (?)",
     args: [table],
   });
-  if (tableResult.rows.length === 0) {
-    return NextResponse.json({ error: "Table not found" }, { status: 404 });
-  }
 
   // Rate limit: max 10 orders per table per hour
   const countResult = await client.execute({
