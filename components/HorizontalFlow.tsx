@@ -268,9 +268,10 @@ export default function HorizontalFlow() {
       setTimeout(() => { isSnapping.current = false; }, 1000);
     };
 
-    window.addEventListener("wheel", handleWheel, { passive: false });
+    // capture: true — fires before Lenis's listener so preventDefault() blocks it
+    window.addEventListener("wheel", handleWheel, { capture: true, passive: false });
     return () => {
-      window.removeEventListener("wheel", handleWheel);
+      window.removeEventListener("wheel", handleWheel, { capture: true });
       clearTimeout(resetTimer);
     };
   }, [scrollYProgress]); // eslint-disable-line react-hooks/exhaustive-deps
