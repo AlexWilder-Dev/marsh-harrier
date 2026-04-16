@@ -221,7 +221,8 @@ export default function HorizontalFlow() {
   }, [scrollYProgress, x]);
 
   // Effect 2 — Wheel intercept: advance one panel per deliberate gesture.
-  // All snapping is delegated to Lenis — no stop/start, no window.scrollTo fighting.
+  // data-lenis-prevent-wheel on the wrapper makes Lenis return early (no scroll update)
+  // for any wheel event that passes through this element. We become sole scroll controller.
   useEffect(() => {
     let wheelDelta = 0;
     let resetTimer: ReturnType<typeof setTimeout>;
@@ -233,14 +234,13 @@ export default function HorizontalFlow() {
       const inStickyZone = rect.top <= 2 && rect.bottom >= window.innerHeight - 2;
       if (!inStickyZone) return;
 
-      const currentPanel = Math.round(scrollYProgress.get() * (NUM_PANELS - 1));
-
-      // At the boundary — let native scroll through to the next section
-      if (e.deltaY > 0 && currentPanel >= NUM_PANELS - 1) return;
-      if (e.deltaY < 0 && currentPanel <= 0) return;
-
+      // We own all wheel events in this zone — block native scroll unconditionally.
+      // Lenis is already blocked by data-lenis-prevent-wheel on the wrapper.
       e.preventDefault();
+
       if (isSnapping.current) return;
+
+      const currentPanel = Math.round(scrollYProgress.get() * (NUM_PANELS - 1));
 
       wheelDelta += e.deltaY;
       clearTimeout(resetTimer);
@@ -250,28 +250,40 @@ export default function HorizontalFlow() {
 
       const direction = wheelDelta > 0 ? 1 : -1;
       wheelDelta = 0;
-      const targetPanel = Math.max(0, Math.min(NUM_PANELS - 1, currentPanel + direction));
-      if (targetPanel === currentPanel) return;
 
       const wrapper = wrapperRef.current;
       const wrapperTop = wrapper.getBoundingClientRect().top + window.scrollY;
       const scrollableHeight = wrapper.offsetHeight - window.innerHeight;
-      const targetY = wrapperTop + (targetPanel / (NUM_PANELS - 1)) * scrollableHeight;
 
       isSnapping.current = true;
+      setTimeout(() => { isSnapping.current = false; }, 1100);
+
       const lenis = window.__lenis;
-      if (lenis) {
-        lenis.scrollTo(targetY, { duration: 0.9 });
-      } else {
-        window.scrollTo({ top: targetY, behavior: "smooth" });
+
+      // Boundary exits — scroll past the section via Lenis so it takes over cleanly
+      if (direction > 0 && currentPanel >= NUM_PANELS - 1) {
+        const target = wrapperTop + scrollableHeight;
+        if (lenis) lenis.scrollTo(target, { duration: 1.0 });
+        else window.scrollTo({ top: target, behavior: "smooth" });
+        return;
       }
-      setTimeout(() => { isSnapping.current = false; }, 1000);
+      if (direction < 0 && currentPanel <= 0) {
+        const target = wrapperTop - 1;
+        if (lenis) lenis.scrollTo(target, { duration: 1.0 });
+        else window.scrollTo({ top: target, behavior: "smooth" });
+        return;
+      }
+
+      // Snap to adjacent panel
+      const targetPanel = currentPanel + direction;
+      const targetY = wrapperTop + (targetPanel / (NUM_PANELS - 1)) * scrollableHeight;
+      if (lenis) lenis.scrollTo(targetY, { duration: 0.9 });
+      else window.scrollTo({ top: targetY, behavior: "smooth" });
     };
 
-    // capture: true — fires before Lenis's listener so preventDefault() blocks it
-    window.addEventListener("wheel", handleWheel, { capture: true, passive: false });
+    window.addEventListener("wheel", handleWheel, { passive: false });
     return () => {
-      window.removeEventListener("wheel", handleWheel, { capture: true });
+      window.removeEventListener("wheel", handleWheel);
       clearTimeout(resetTimer);
     };
   }, [scrollYProgress]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -288,7 +300,7 @@ export default function HorizontalFlow() {
 
   return (
     <section aria-label="About, Garden and Food sections">
-      <div ref={wrapperRef} data-horizontal-flow className="relative md:h-[300vh]">
+      <div ref={wrapperRef} data-horizontal-flow data-lenis-prevent-wheel className="relative md:h-[300vh]">
         <div className="overflow-hidden relative md:sticky md:top-0 md:h-screen">
           <motion.div
             className="flex flex-col md:flex-row md:w-[300vw] h-auto md:h-full"
