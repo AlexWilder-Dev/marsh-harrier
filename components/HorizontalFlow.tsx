@@ -260,15 +260,17 @@ export default function HorizontalFlow() {
 
       const lenis = window.__lenis;
 
-      // Boundary exits — scroll past the section via Lenis so it takes over cleanly
+      // Boundary exits — must land outside the sticky zone so inStickyZone is false
+      // on the next wheel event. scrollableHeight puts rect.bottom === innerHeight
+      // (still in zone). +/-10px ensures rect.bottom < innerHeight-2 (or rect.top > 2).
       if (direction > 0 && currentPanel >= NUM_PANELS - 1) {
-        const target = wrapperTop + scrollableHeight;
+        const target = wrapperTop + scrollableHeight + 10;
         if (lenis) lenis.scrollTo(target, { duration: 1.0 });
         else window.scrollTo({ top: target, behavior: "smooth" });
         return;
       }
       if (direction < 0 && currentPanel <= 0) {
-        const target = wrapperTop - 1;
+        const target = wrapperTop - 10;
         if (lenis) lenis.scrollTo(target, { duration: 1.0 });
         else window.scrollTo({ top: target, behavior: "smooth" });
         return;
