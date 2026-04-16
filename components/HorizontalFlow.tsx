@@ -203,9 +203,17 @@ function ProgressDots({ active }: { active: number }) {
 export default function HorizontalFlow() {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [panelIndex, setPanelIndex] = useState(0);
+  const panelIndexRef = useRef(0);       // mirrors panelIndex for use in effects
   const isActive = useRef(false);
   const isAnimating = useRef(false);
   const exitCooldown = useRef(false);
+  const [windowWidth, setWindowWidth] = useState(0); // drives animate x; updates on resize
+
+  // Initialise windowWidth client-side (0 on SSR is fine — panels start at x:0)
+  useEffect(() => { setWindowWidth(window.innerWidth); }, []);
+
+  // Keep panelIndexRef in sync so wheel handler can read it without closure staleness
+  panelIndexRef.current = panelIndex;
 
   // exitSection — called when threshold is met at the first or last panel.
   // Sets isActive false first so the wheel handler stops blocking immediately,
@@ -270,7 +278,8 @@ export default function HorizontalFlow() {
   }, []);
 
   // Wheel handler — only active while isActive is true.
-  // Accumulates delta until threshold met, then advances panel or exits.
+  // Reads panelIndexRef directly (no functional updater) to avoid side effects
+  // inside a state setter, which React Strict Mode double-invokes.
   useEffect(() => {
     let wheelDelta = 0;
     let resetTimer: ReturnType<typeof setTimeout>;
@@ -291,15 +300,15 @@ export default function HorizontalFlow() {
       const direction = wheelDelta > 0 ? 1 : -1;
       wheelDelta = 0;
 
-      setPanelIndex((current) => {
-        const next = current + direction;
-        if (next < 0 || next >= NUM_PANELS) {
-          exitSection(direction);
-          return current;
-        }
+      const current = panelIndexRef.current;
+      const next = current + direction;
+
+      if (next < 0 || next >= NUM_PANELS) {
+        exitSection(direction);
+      } else {
         isAnimating.current = true;
-        return next;
-      });
+        setPanelIndex(next);
+      }
     };
 
     window.addEventListener("wheel", handleWheel, { passive: false });
@@ -308,6 +317,16 @@ export default function HorizontalFlow() {
       clearTimeout(resetTimer);
     };
   }, [exitSection]);
+
+  // Resize — update windowWidth so animate x stays correct if user resizes mid-section
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) return;
+      setWindowWidth(window.innerWidth);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
     <section aria-label="About, Garden and Food sections">
@@ -318,11 +337,8 @@ export default function HorizontalFlow() {
       >
         <motion.div
           className="flex flex-col md:flex-row md:w-[300vw] h-auto md:h-full"
-          animate={{
-            x: typeof window !== "undefined" ? -panelIndex * window.innerWidth : 0,
-          }}
+          animate={{ x: -panelIndex * windowWidth }}
           transition={{ duration: 0.55, ease: [0.32, 0, 0.67, 0] }}
-          onAnimationStart={() => { isAnimating.current = true; }}
           onAnimationComplete={() => { isAnimating.current = false; }}
         >
           <AboutPanel />
