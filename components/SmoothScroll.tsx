@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 import Lenis from "lenis";
 
 // Expose lenis globally so Nav and HorizontalFlow can call scrollTo / snap
@@ -8,8 +9,16 @@ declare global {
   interface Window { __lenis?: Lenis; }
 }
 
+// Functional pages — skip Lenis so native sticky + touch scroll work correctly
+const LENIS_SKIP = ["/order", "/admin"];
+
 export default function SmoothScroll({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const skip = LENIS_SKIP.some((p) => pathname.startsWith(p));
+
   useEffect(() => {
+    if (skip) return;
+
     const prefersReducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)"
     ).matches;
@@ -36,7 +45,7 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
       lenis.destroy();
       window.__lenis = undefined;
     };
-  }, []);
+  }, [skip]);
 
   return <>{children}</>;
 }

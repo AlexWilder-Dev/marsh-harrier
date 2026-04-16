@@ -1,18 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 
-const links = [
+const ANCHOR_LINKS = [
   { label: "Our Story", href: "#about" },
   { label: "The Garden", href: "#garden" },
   { label: "Ales", href: "#ales" },
   { label: "Find Us", href: "#find-us" },
 ];
 
-// The horizontal flow panels (#about, #garden, #food) live inside a sticky
-// scroll section — scrolling to the element won't hit the right panel.
-// We calculate the correct document scroll position for each panel instead.
 const HORIZONTAL_PANELS: Record<string, number> = {
   "#about": 0,
   "#garden": 1,
@@ -35,7 +33,6 @@ function scrollToSection(href: string) {
     }
   }
 
-  // Standard anchor scroll
   if (lenis) {
     lenis.scrollTo(href, { duration: 1.4 });
   } else {
@@ -44,6 +41,9 @@ function scrollToSection(href: string) {
 }
 
 export default function Nav() {
+  const pathname = usePathname();
+  const isHome = pathname === "/";
+
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const { scrollY } = useScroll();
@@ -61,6 +61,26 @@ export default function Nav() {
     return () => window.removeEventListener("resize", handler);
   }, []);
 
+  // On the home page: smooth-scroll to section.
+  // On other pages: navigate to /#anchor so the browser lands on the right section.
+  function handleAnchorClick(e: React.MouseEvent, href: string) {
+    if (isHome) {
+      e.preventDefault();
+      scrollToSection(href);
+    }
+    // else: let the default <a href="/#about"> navigate normally
+  }
+
+  function handleMobileAnchorClick(e: React.MouseEvent, href: string) {
+    setMenuOpen(false);
+    if (isHome) {
+      e.preventDefault();
+      setTimeout(() => scrollToSection(href), 300);
+    }
+  }
+
+  const anchorHref = (hash: string) => (isHome ? hash : `/${hash}`);
+
   return (
     <>
       <motion.header
@@ -75,7 +95,7 @@ export default function Nav() {
         <div className="mx-auto px-6 md:px-12 lg:px-16 flex items-center justify-between h-16 md:h-20">
           {/* Wordmark */}
           <a
-            href="#"
+            href="/"
             aria-label="The Marsh Harrier — home"
             className="font-serif text-parchment-light text-xl md:text-2xl leading-none tracking-tight focus-visible:outline-ochre"
           >
@@ -84,19 +104,27 @@ export default function Nav() {
 
           {/* Desktop nav */}
           <nav aria-label="Main navigation" className="hidden md:flex items-center gap-8">
-            {links.map((link) => (
+            {ANCHOR_LINKS.map((link) => (
               <a
                 key={link.href}
-                href={link.href}
-                onClick={(e) => { e.preventDefault(); scrollToSection(link.href); }}
+                href={anchorHref(link.href)}
+                onClick={(e) => handleAnchorClick(e, link.href)}
                 className="nav-link font-sans text-xs tracking-widest uppercase text-parchment-light/60 hover:text-parchment-light transition-colors duration-200 cursor-pointer"
               >
                 {link.label}
               </a>
             ))}
             <a
-              href="#food"
-              onClick={(e) => { e.preventDefault(); scrollToSection("#food"); }}
+              href="/rooms"
+              className={`nav-link font-sans text-xs tracking-widest uppercase text-parchment-light/60 hover:text-parchment-light transition-colors duration-200 ${
+                pathname === "/rooms" ? "text-parchment-light" : ""
+              }`}
+            >
+              Rooms
+            </a>
+            <a
+              href={anchorHref("#food")}
+              onClick={(e) => handleAnchorClick(e, "#food")}
               className="ml-2 font-sans text-xs tracking-widest uppercase px-5 py-2.5 bg-ochre text-parchment-light hover:bg-ochre-light transition-colors duration-300 focus-visible:outline-ochre cursor-pointer"
             >
               View Menu
@@ -129,7 +157,6 @@ export default function Nav() {
         animate={{ opacity: menuOpen ? 1 : 0, pointerEvents: menuOpen ? "auto" : "none" }}
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
       >
-        {/* Decorative letterform */}
         <div
           className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-[20%] font-serif text-[50vw] leading-none text-forest-rich/40 select-none pointer-events-none"
           aria-hidden="true"
@@ -137,11 +164,11 @@ export default function Nav() {
           &amp;
         </div>
         <nav aria-label="Mobile navigation links" className="flex flex-col gap-8 relative z-10">
-          {links.map((link, i) => (
+          {ANCHOR_LINKS.map((link, i) => (
             <motion.a
               key={link.href}
-              href={link.href}
-              onClick={(e) => { e.preventDefault(); setMenuOpen(false); setTimeout(() => scrollToSection(link.href), 300); }}
+              href={anchorHref(link.href)}
+              onClick={(e) => handleMobileAnchorClick(e, link.href)}
               className="font-serif text-parchment-light text-4xl hover:text-ochre transition-colors cursor-pointer"
               initial={{ x: -24, opacity: 0 }}
               animate={menuOpen ? { x: 0, opacity: 1 } : { x: -24, opacity: 0 }}
@@ -151,12 +178,24 @@ export default function Nav() {
             </motion.a>
           ))}
           <motion.a
-            href="#food"
-            onClick={(e) => { e.preventDefault(); setMenuOpen(false); setTimeout(() => scrollToSection("#food"), 300); }}
+            href="/rooms"
+            onClick={() => setMenuOpen(false)}
+            className={`font-serif text-4xl transition-colors cursor-pointer ${
+              pathname === "/rooms" ? "text-ochre" : "text-parchment-light hover:text-ochre"
+            }`}
+            initial={{ x: -24, opacity: 0 }}
+            animate={menuOpen ? { x: 0, opacity: 1 } : { x: -24, opacity: 0 }}
+            transition={{ delay: ANCHOR_LINKS.length * 0.07, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          >
+            Rooms
+          </motion.a>
+          <motion.a
+            href={anchorHref("#food")}
+            onClick={(e) => handleMobileAnchorClick(e, "#food")}
             className="mt-2 self-start font-sans text-xs tracking-widest uppercase px-6 py-3 bg-ochre text-parchment-light cursor-pointer"
             initial={{ x: -24, opacity: 0 }}
             animate={menuOpen ? { x: 0, opacity: 1 } : { x: -24, opacity: 0 }}
-            transition={{ delay: links.length * 0.07, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ delay: (ANCHOR_LINKS.length + 1) * 0.07, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           >
             View Menu
           </motion.a>

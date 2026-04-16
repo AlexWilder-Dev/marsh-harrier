@@ -23,6 +23,7 @@ export default function AlesCellar() {
           src="https://marshharriercowley.co.uk/media/photo-bar.jpg"
           alt=""
           className="absolute inset-0 w-full h-full object-cover object-center"
+          loading="lazy"
         />
       </div>
 

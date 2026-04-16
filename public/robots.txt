@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://marshharriercowley.co.uk/sitemap.xml

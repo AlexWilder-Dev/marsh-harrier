@@ -10,6 +10,12 @@
 
 # env files
 .env*
+!.env.example
+
+# SQLite database
+/data/ordering.sqlite
+/data/ordering.sqlite-wal
+/data/ordering.sqlite-shm
 
 # OS
 .DS_Store

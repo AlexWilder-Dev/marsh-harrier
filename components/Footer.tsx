@@ -1,30 +1,11 @@
-"use client";
-
-const HORIZONTAL_PANELS: Record<string, number> = { "#about": 0, "#garden": 1, "#food": 2 };
-const HORIZONTAL_PANEL_COUNT = 3;
-
-function scrollToSection(href: string) {
-  const lenis = window.__lenis;
-  if (href in HORIZONTAL_PANELS && window.innerWidth >= 768) {
-    const wrapper = document.querySelector("[data-horizontal-flow]") as HTMLElement | null;
-    if (wrapper) {
-      const wrapperTop = wrapper.getBoundingClientRect().top + window.scrollY;
-      const scrollableHeight = wrapper.offsetHeight - window.innerHeight;
-      const target = wrapperTop + (HORIZONTAL_PANELS[href] / (HORIZONTAL_PANEL_COUNT - 1)) * scrollableHeight;
-      lenis ? lenis.scrollTo(target, { duration: 1.4 }) : window.scrollTo({ top: target, behavior: "smooth" });
-      return;
-    }
-  }
-  if (lenis) { lenis.scrollTo(href, { duration: 1.4 }); }
-  else { document.querySelector(href)?.scrollIntoView({ behavior: "smooth" }); }
-}
 
 const nav = [
-  { label: "Our Story", href: "#about" },
-  { label: "The Garden", href: "#garden" },
-  { label: "Food & Drink", href: "#food" },
-  { label: "Ales & Cellar", href: "#ales" },
-  { label: "Find Us", href: "#find-us" },
+  { label: "Our Story", href: "/#about" },
+  { label: "The Garden", href: "/#garden" },
+  { label: "Food & Drink", href: "/#food" },
+  { label: "Ales & Cellar", href: "/#ales" },
+  { label: "Find Us", href: "/#find-us" },
+  { label: "Rooms", href: "/rooms" },
 ];
 
 const menus = [
@@ -63,8 +44,7 @@ export default function Footer() {
                 <li key={link.label}>
                   <a
                     href={link.href}
-                    onClick={(e) => { e.preventDefault(); scrollToSection(link.href); }}
-                    className="font-sans text-sm text-parchment-light/45 hover:text-parchment-light transition-colors duration-200 font-light focus-visible:outline-ochre cursor-pointer"
+                    className="font-sans text-sm text-parchment-light/45 hover:text-parchment-light transition-colors duration-200 font-light focus-visible:outline-ochre"
                   >
                     {link.label}
                   </a>

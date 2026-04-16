@@ -100,3 +100,11 @@ body {
 
 /* Text balance */
 .text-balance { text-wrap: balance; }
+
+/* iOS safe-area utilities */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.pb-safe-4 {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, DM_Sans } from "next/font/google";
 import "./globals.css";
 import SmoothScroll from "@/components/SmoothScroll";
@@ -17,6 +17,12 @@ const dmSans = DM_Sans({
   display: "swap",
   weight: ["300", "400", "500", "600"],
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
 
 export const metadata: Metadata = {
   title: "The Marsh Harrier — A Beer Fan's Haven, Cowley Oxford",
@@ -105,6 +111,13 @@ export default function RootLayout({
   return (
     <html lang="en-GB" className={`${cormorant.variable} ${dmSans.variable}`}>
       <head>
+        <link rel="preconnect" href="https://marshharriercowley.co.uk" />
+        <link
+          rel="preload"
+          href="https://marshharriercowley.co.uk/media/photo-bar.jpg"
+          as="image"
+          fetchPriority="high"
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

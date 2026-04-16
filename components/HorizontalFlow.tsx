@@ -60,6 +60,7 @@ function AboutPanel() {
           src="https://marshharriercowley.co.uk/media/photo-crowd.jpg"
           alt="Regulars enjoying The Marsh Harrier"
           className="absolute inset-0 w-full h-full object-cover object-center"
+          loading="lazy"
         />
         {/* Ochre rule at right edge */}
         <div className="absolute top-0 bottom-0 right-0 w-px bg-gradient-to-b from-transparent via-ochre/30 to-transparent hidden md:block" aria-hidden="true" />
@@ -80,6 +81,7 @@ function GardenPanel() {
         src="https://marshharriercowley.co.uk/media/photo-outside-front.jpg"
         alt="The Marsh Harrier beer garden — sunny and welcoming"
         className="absolute inset-0 w-full h-full object-cover object-center"
+        loading="lazy"
       />
       {/* Consistent midtone depth layer */}
       <div className="absolute inset-0 bg-forest-rich/20" aria-hidden="true" />
@@ -125,6 +127,7 @@ function FoodPanel() {
         src="https://marshharriercowley.co.uk/media/photo-food.jpg"
         alt="Food at The Marsh Harrier"
         className="absolute inset-0 w-full h-full object-cover object-[center_30%]"
+        loading="lazy"
       />
       {/* Midtone depth layer */}
       <div className="absolute inset-0 bg-forest-rich/25" aria-hidden="true" />

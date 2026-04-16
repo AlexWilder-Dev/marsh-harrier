@@ -1,10 +1,17 @@
 {
   "permissions": {
     "allow": [
-      "Bash(gh auth:*)"
+      "Bash(gh auth:*)",
+      "Bash(npm install:*)",
+      "Bash(\"/c/Program Files/nodejs/npm.cmd\" install better-sqlite3 @types/better-sqlite3 qrcode @types/qrcode)",
+      "Bash(export PATH=\"/c/Program Files/nodejs:$PATH\")",
+      "Bash(vercel whoami *)",
+      "Bash(winget install *)",
+      "Bash(echo \"exit: $?\")"
     ],
     "additionalDirectories": [
-      "c:\\Users\\alexf\\.claude\\projects\\Marsh Harrier\\.github"
+      "c:\\Users\\alexf\\.claude\\projects\\Marsh Harrier\\.github",
+      "c:\\Users\\alexf\\.claude\\projects\\c--Users-alexf--claude-projects-Marsh-Harrier\\memory"
     ]
   }
 }
