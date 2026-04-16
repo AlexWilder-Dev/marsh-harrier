@@ -205,118 +205,77 @@ export default function HorizontalFlow() {
   const x = useMotionValue(0);
   const [activePanel, setActivePanel] = useState(0);
   const isSnapping = useRef(false);
-  // Shared across both effects — tracks whether we stopped Lenis
-  const lenisStopped = useRef(false);
 
   const { scrollYProgress } = useScroll({
     target: wrapperRef,
     offset: ["start start", "end end"],
   });
 
-  // Shared helpers (stable — only use refs and wrapperRef, no changing deps)
-  const stopLenis = () => {
-    if (lenisStopped.current) return;
-    lenisStopped.current = true;
-    window.__lenis?.stop();
-  };
-
-  const releaseLenis = () => {
-    if (!lenisStopped.current) return;
-    lenisStopped.current = false;
-    const lenis = window.__lenis;
-    if (!lenis) return;
-    lenis.scrollTo(window.scrollY, { immediate: true });
-    lenis.start();
-  };
-
-  const snapToPanel = (targetPanel: number) => {
-    if (!wrapperRef.current || isSnapping.current) return;
-    stopLenis();
-    const wrapper = wrapperRef.current;
-    const wrapperTop = wrapper.getBoundingClientRect().top + window.scrollY;
-    const scrollableHeight = wrapper.offsetHeight - window.innerHeight;
-    const target = wrapperTop + (targetPanel / (NUM_PANELS - 1)) * scrollableHeight;
-    isSnapping.current = true;
-    window.scrollTo({ top: target, behavior: "smooth" });
-    setTimeout(() => { isSnapping.current = false; }, 900);
-  };
-
-  // Drive x, active dot — and redirect Lenis momentum smoothly onto nearest panel
+  // Effect 1 — Drive x and active dot from scroll position. Pure, no Lenis interaction.
   useEffect(() => {
-    const unsubscribe = scrollYProgress.on("change", (v) => {
+    return scrollYProgress.on("change", (v) => {
       if (window.innerWidth < 768) { x.set(0); return; }
       x.set(-v * (NUM_PANELS - 1) * window.innerWidth);
       setActivePanel(Math.min(NUM_PANELS - 1, Math.round(v * (NUM_PANELS - 1))));
-
-      // Lenis momentum (no wheel events) carrying scroll into the section.
-      // Stop to zero velocity, then scrollTo with clean state — no competing momentum, no jitter.
-      if (v > 0.001 && v < 0.995 && !lenisStopped.current && !isSnapping.current && wrapperRef.current) {
-        const nearest = Math.round(v * (NUM_PANELS - 1));
-        const nearestProgress = nearest / (NUM_PANELS - 1);
-        if (Math.abs(v - nearestProgress) > 0.002) {
-          isSnapping.current = true;
-          const wrapperTop = wrapperRef.current.getBoundingClientRect().top + window.scrollY;
-          const scrollableHeight = wrapperRef.current.offsetHeight - window.innerHeight;
-          const target = wrapperTop + nearestProgress * scrollableHeight;
-          const lenis = window.__lenis;
-          if (lenis) {
-            lenis.stop();                              // zero velocity
-            lenis.scrollTo(target, { duration: 0.5 }); // set panel target
-            lenis.start();                             // resume with clean state
-          } else {
-            window.scrollTo({ top: target, behavior: "smooth" });
-          }
-          setTimeout(() => { isSnapping.current = false; }, 700);
-        }
-      }
     });
+  }, [scrollYProgress, x]);
 
-    return () => unsubscribe();
-  }, [scrollYProgress, x]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Wheel intercept — one panel per deliberate gesture
+  // Effect 2 — Wheel intercept: advance one panel per deliberate gesture.
+  // All snapping is delegated to Lenis — no stop/start, no window.scrollTo fighting.
   useEffect(() => {
     let wheelDelta = 0;
-    let wheelResetTimeout: ReturnType<typeof setTimeout>;
+    let resetTimer: ReturnType<typeof setTimeout>;
 
     const handleWheel = (e: WheelEvent) => {
       if (!wrapperRef.current || window.innerWidth < 768) return;
 
       const rect = wrapperRef.current.getBoundingClientRect();
       const inStickyZone = rect.top <= 2 && rect.bottom >= window.innerHeight - 2;
-
-      if (!inStickyZone) { releaseLenis(); return; }
+      if (!inStickyZone) return;
 
       const currentPanel = Math.round(scrollYProgress.get() * (NUM_PANELS - 1));
 
-      if (e.deltaY > 0 && currentPanel >= NUM_PANELS - 1) { releaseLenis(); return; }
-      if (e.deltaY < 0 && currentPanel <= 0) { releaseLenis(); return; }
+      // At the boundary — let native scroll through to the next section
+      if (e.deltaY > 0 && currentPanel >= NUM_PANELS - 1) return;
+      if (e.deltaY < 0 && currentPanel <= 0) return;
 
       e.preventDefault();
-      stopLenis();
-
       if (isSnapping.current) return;
 
       wheelDelta += e.deltaY;
-      clearTimeout(wheelResetTimeout);
-      wheelResetTimeout = setTimeout(() => { wheelDelta = 0; }, 300);
+      clearTimeout(resetTimer);
+      resetTimer = setTimeout(() => { wheelDelta = 0; }, 300);
 
       if (Math.abs(wheelDelta) < 80) return;
 
       const direction = wheelDelta > 0 ? 1 : -1;
       wheelDelta = 0;
       const targetPanel = Math.max(0, Math.min(NUM_PANELS - 1, currentPanel + direction));
-      if (targetPanel !== currentPanel) snapToPanel(targetPanel);
+      if (targetPanel === currentPanel) return;
+
+      const wrapper = wrapperRef.current;
+      const wrapperTop = wrapper.getBoundingClientRect().top + window.scrollY;
+      const scrollableHeight = wrapper.offsetHeight - window.innerHeight;
+      const targetY = wrapperTop + (targetPanel / (NUM_PANELS - 1)) * scrollableHeight;
+
+      isSnapping.current = true;
+      const lenis = window.__lenis;
+      if (lenis) {
+        lenis.scrollTo(targetY, { duration: 0.9 });
+      } else {
+        window.scrollTo({ top: targetY, behavior: "smooth" });
+      }
+      setTimeout(() => { isSnapping.current = false; }, 1000);
     };
 
     window.addEventListener("wheel", handleWheel, { passive: false });
     return () => {
       window.removeEventListener("wheel", handleWheel);
-      clearTimeout(wheelResetTimeout);
-      releaseLenis();
+      clearTimeout(resetTimer);
     };
   }, [scrollYProgress]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Effect 3 — Keep x in sync after resize
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth < 768) { x.set(0); return; }
