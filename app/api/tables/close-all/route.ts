@@ -9,7 +9,7 @@ export async function PUT() {
 
   const result = await client.execute(
     `UPDATE tables
-     SET status = 'closed', closed_at = CURRENT_TIMESTAMP
+     SET status = 'closed', closed_at = CURRENT_TIMESTAMP, opened_at = NULL
      WHERE status = 'open'`
   );
 
