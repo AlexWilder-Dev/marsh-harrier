@@ -244,9 +244,9 @@ export default function HorizontalFlow() {
 
       wheelDelta += e.deltaY;
       clearTimeout(resetTimer);
-      resetTimer = setTimeout(() => { wheelDelta = 0; }, 300);
+      resetTimer = setTimeout(() => { wheelDelta = 0; }, 600);
 
-      if (Math.abs(wheelDelta) < 80) return;
+      if (Math.abs(wheelDelta) < 220) return;
 
       const direction = wheelDelta > 0 ? 1 : -1;
       wheelDelta = 0;
