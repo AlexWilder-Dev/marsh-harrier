@@ -8,7 +8,7 @@ import Footer from "@/components/Footer";
 // ─── Data (replace with real content when client delivers) ───────────────────
 
 const ROOM_IMAGES = [
-  { src: "/images/marsh-harrier-pub-room-kitchen2.avif",      alt: "The Marsh Harrier guest room kitchen" },
+  { src: "/images/marsh-harrier-pub-outdoor-garden.webp",      alt: "The Marsh Harrier garden" },
   { src: "/images/marsh-harrier-pub-room-bedroom.avif",      alt: "Guest bedroom" },
   { src: "/images/marsh-harrier-pub-room-living-space.avif", alt: "Living space" },
   { src: "/images/marsh-harrier-pub-room-kitchen.avif",      alt: "Kitchen" },
