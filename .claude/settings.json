@@ -7,7 +7,13 @@
       "Bash(export PATH=\"/c/Program Files/nodejs:$PATH\")",
       "Bash(vercel whoami *)",
       "Bash(winget install *)",
-      "Bash(echo \"exit: $?\")"
+      "Bash(echo \"exit: $?\")",
+      "Bash(npx tsc *)",
+      "Bash(echo \"---exit: $?\")",
+      "Bash(npx next *)",
+      "Bash(node -e ' *)",
+      "Bash(git add *)",
+      "Bash(git push *)"
     ],
     "additionalDirectories": [
       "c:\\Users\\alexf\\.claude\\projects\\Marsh Harrier\\.github",
