@@ -65,7 +65,7 @@ function ContactForm() {
     <form onSubmit={handleSubmit} className="space-y-5" noValidate>
       <div className="grid sm:grid-cols-2 gap-5">
         <div>
-          <label htmlFor="contact-name" className="block font-sans text-[10px] tracking-widest uppercase text-parchment-light/40 mb-2">
+          <label htmlFor="contact-name" className="block font-sans text-[15px] tracking-widest uppercase text-parchment-light/40 mb-2">
             Name <span aria-label="required">*</span>
           </label>
           <input
@@ -79,7 +79,7 @@ function ContactForm() {
           />
         </div>
         <div>
-          <label htmlFor="contact-email" className="block font-sans text-[10px] tracking-widest uppercase text-parchment-light/40 mb-2">
+          <label htmlFor="contact-email" className="block font-sans text-[15px] tracking-widest uppercase text-parchment-light/40 mb-2">
             Email <span aria-label="required">*</span>
           </label>
           <input
@@ -94,7 +94,7 @@ function ContactForm() {
         </div>
       </div>
       <div>
-        <label htmlFor="contact-message" className="block font-sans text-[10px] tracking-widest uppercase text-parchment-light/40 mb-2">
+        <label htmlFor="contact-message" className="block font-sans text-[15px] tracking-widest uppercase text-parchment-light/40 mb-2">
           Message <span aria-label="required">*</span>
         </label>
         <textarea
@@ -153,7 +153,7 @@ export default function FindUs() {
 
               <div className="space-y-8">
                 <div className="border-t border-forest-deep/10 pt-6">
-                  <p className="font-sans text-[10px] text-ochre tracking-widest uppercase mb-4">Address</p>
+                  <p className="font-sans text-[15px] text-ochre tracking-widest uppercase mb-4">Address</p>
                   <address className="font-sans not-italic text-ink/70 text-base leading-loose font-light">
                     The Marsh Harrier<br />
                     40 Marsh Road<br />
@@ -163,7 +163,7 @@ export default function FindUs() {
                 </div>
 
                 <div className="border-t border-forest-deep/10 pt-6">
-                  <p className="font-sans text-[10px] text-ochre tracking-widest uppercase mb-4">Contact</p>
+                  <p className="font-sans text-[15px] text-ochre tracking-widest uppercase mb-4">Contact</p>
                   <ul className="flex flex-col gap-3">
                     <li>
                       <a
@@ -187,7 +187,7 @@ export default function FindUs() {
                 </div>
 
                 <div className="border-t border-forest-deep/10 pt-6">
-                  <p className="font-sans text-[10px] text-ochre tracking-widest uppercase mb-4">Getting Here</p>
+                  <p className="font-sans text-[15px] text-ochre tracking-widest uppercase mb-4">Getting Here</p>
                   <ul className="flex flex-col gap-3">
                     {[
                       { mode: "Bus", note: "Oxford Tube and local services on Cowley Road" },

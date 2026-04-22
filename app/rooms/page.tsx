@@ -161,7 +161,7 @@ function RoomsDescription() {
                 key={h.label}
                 className="bg-parchment-light px-5 py-7 flex flex-col"
               >
-                <p className="font-sans text-[10px] tracking-widest uppercase text-ochre mb-2">
+                <p className="font-sans text-[15px] tracking-widest uppercase text-ochre mb-2">
                   {h.label}
                 </p>
                 <p className="font-serif font-light text-forest-deep text-xl md:text-2xl leading-tight">
@@ -375,7 +375,7 @@ function EnquiryForm() {
         <div>
           <label
             htmlFor="name"
-            className="block font-sans text-[10px] tracking-widest uppercase text-parchment-light/40 mb-2"
+            className="block font-sans text-[15px] tracking-widest uppercase text-parchment-light/40 mb-2"
           >
             Full Name <span aria-label="required">*</span>
           </label>
@@ -392,7 +392,7 @@ function EnquiryForm() {
         <div>
           <label
             htmlFor="email"
-            className="block font-sans text-[10px] tracking-widest uppercase text-parchment-light/40 mb-2"
+            className="block font-sans text-[15px] tracking-widest uppercase text-parchment-light/40 mb-2"
           >
             Email <span aria-label="required">*</span>
           </label>
@@ -412,7 +412,7 @@ function EnquiryForm() {
       <div>
         <label
           htmlFor="phone"
-          className="block font-sans text-[10px] tracking-widest uppercase text-parchment-light/40 mb-2"
+          className="block font-sans text-[15px] tracking-widest uppercase text-parchment-light/40 mb-2"
         >
           Phone <span className="text-parchment-light/20">(optional)</span>
         </label>
@@ -431,7 +431,7 @@ function EnquiryForm() {
         <div>
           <label
             htmlFor="checkin"
-            className="block font-sans text-[10px] tracking-widest uppercase text-parchment-light/40 mb-2"
+            className="block font-sans text-[15px] tracking-widest uppercase text-parchment-light/40 mb-2"
           >
             Check-in <span aria-label="required">*</span>
           </label>
@@ -447,7 +447,7 @@ function EnquiryForm() {
         <div>
           <label
             htmlFor="checkout"
-            className="block font-sans text-[10px] tracking-widest uppercase text-parchment-light/40 mb-2"
+            className="block font-sans text-[15px] tracking-widest uppercase text-parchment-light/40 mb-2"
           >
             Check-out <span aria-label="required">*</span>
           </label>
@@ -466,7 +466,7 @@ function EnquiryForm() {
       <div>
         <label
           htmlFor="guests"
-          className="block font-sans text-[10px] tracking-widest uppercase text-parchment-light/40 mb-2"
+          className="block font-sans text-[15px] tracking-widest uppercase text-parchment-light/40 mb-2"
         >
           Number of Guests <span aria-label="required">*</span>
         </label>
@@ -500,7 +500,7 @@ function EnquiryForm() {
       <div>
         <label
           htmlFor="message"
-          className="block font-sans text-[10px] tracking-widest uppercase text-parchment-light/40 mb-2"
+          className="block font-sans text-[15px] tracking-widest uppercase text-parchment-light/40 mb-2"
         >
           Message <span className="text-parchment-light/20">(optional)</span>
         </label>

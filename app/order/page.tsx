@@ -189,7 +189,9 @@ function OrderPage() {
   }
 
   const count = cartCount(cart);
-  const total = cartTotal(cart);
+  const subtotal = cartTotal(cart);
+  const serviceCharge = Math.round(subtotal * 0.1);
+  const total = subtotal + serviceCharge;
   const visibleItems = menu.filter((i) => i.category === activeCategory);
 
   return (
@@ -197,7 +199,7 @@ function OrderPage() {
       {/* Header */}
       <header className="sticky top-0 z-30 bg-forest-deep px-5 h-[72px] flex items-center justify-between">
         <div>
-          <p className="font-sans text-ochre text-[10px] tracking-widest uppercase">
+          <p className="font-sans text-ochre text-[15px] tracking-widest uppercase">
             The Marsh Harrier
           </p>
           <h1 className="font-serif font-light text-parchment-light text-lg leading-tight">
@@ -407,7 +409,19 @@ function OrderPage() {
 
             {/* Total + submit */}
             <div className="px-5 pt-4 border-t border-forest-deep/10 bg-parchment" style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}>
-              <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center justify-between mb-2">
+                <p className="font-sans text-xs tracking-widest uppercase text-ink/40">
+                  Subtotal
+                </p>
+                <p className="font-sans text-forest-deep text-sm tabular-nums">{formatPrice(subtotal)}</p>
+              </div>
+              <div className="flex items-center justify-between mb-4">
+                <p className="font-sans text-xs tracking-widest uppercase text-ink/40">
+                  Service charge (10%)
+                </p>
+                <p className="font-sans text-forest-deep text-sm tabular-nums">{formatPrice(serviceCharge)}</p>
+              </div>
+              <div className="flex items-center justify-between border-t border-forest-deep/10 pt-4 mb-4">
                 <p className="font-sans text-xs tracking-widest uppercase text-ink/50">
                   Total
                 </p>
@@ -415,11 +429,14 @@ function OrderPage() {
                   {formatPrice(total)}
                 </p>
               </div>
+              <p className="font-sans text-ink/40 text-xs leading-relaxed mb-5">
+                A service charge of 10% has been added to your bill.
+              </p>
 
               {isTakeaway && (
                 <div className="grid grid-cols-2 gap-3 mb-5">
                   <div>
-                    <label htmlFor="customer-name" className="block font-sans text-[10px] tracking-widest uppercase text-ink/40 mb-1.5">
+                    <label htmlFor="customer-name" className="block font-sans text-[15px] tracking-widest uppercase text-ink/40 mb-1.5">
                       Name <span aria-label="required">*</span>
                     </label>
                     <input
@@ -434,7 +451,7 @@ function OrderPage() {
                     />
                   </div>
                   <div>
-                    <label htmlFor="customer-phone" className="block font-sans text-[10px] tracking-widest uppercase text-ink/40 mb-1.5">
+                    <label htmlFor="customer-phone" className="block font-sans text-[15px] tracking-widest uppercase text-ink/40 mb-1.5">
                       Phone <span aria-label="required">*</span>
                     </label>
                     <input
@@ -456,10 +473,6 @@ function OrderPage() {
                   {error}
                 </p>
               )}
-
-              <p className="font-sans text-ink/40 text-xs leading-relaxed mb-4">
-                {isTakeaway ? "We\u2019ll call to confirm your order and take payment." : "Payment by card when your order is delivered."}
-              </p>
 
               <button
                 onClick={submitOrder}

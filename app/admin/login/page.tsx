@@ -55,7 +55,7 @@ export default function AdminLogin() {
           <div>
             <label
               htmlFor="password"
-              className="block font-sans text-[10px] tracking-widest uppercase text-parchment-light/40 mb-2"
+              className="block font-sans text-[15px] tracking-widest uppercase text-parchment-light/40 mb-2"
             >
               Password
             </label>

@@ -10,28 +10,30 @@ const config: Config = {
     extend: {
       colors: {
         parchment: {
-          DEFAULT: "#F0E8D6",
-          light: "#F8F3E8",
-          dark: "#DDD0B8",
+          DEFAULT: "#c8d5c0",
+          light: "#dce6d8",
+          dark: "#b0bfa9",
         },
         forest: {
-          deep: "#0C1A10",
-          rich: "#1A3325",
-          mid: "#2E5240",
-          light: "#4A7260",
+          deep: "#1e2d3d",
+          rich: "#253548",
+          mid: "#3a5068",
+          light: "#4d6880",
         },
         ochre: {
-          DEFAULT: "#B8892A",
-          light: "#CFA040",
-          warm: "#8C6420",
+          DEFAULT: "#4a5f27",
+          light: "#5c7530",
+          warm: "#3a4d1f",
         },
-        ink: "#1C1408",
+        ink: "#1e2d3d",
       },
       fontFamily: {
         serif: ["var(--font-cormorant)", "Georgia", "serif"],
         sans: ["var(--font-dm-sans)", "system-ui", "sans-serif"],
       },
       fontSize: {
+        xs:  ["1.0625rem", { lineHeight: "1.4" }],
+        sm:  ["1.1875rem", { lineHeight: "1.5" }],
         "display-3xl": ["clamp(3rem, 13vw, 13rem)", { lineHeight: "0.85", letterSpacing: "-0.03em" }],
         "display-2xl": ["clamp(4rem, 11vw, 11rem)", { lineHeight: "0.88", letterSpacing: "-0.02em" }],
         "display-xl": ["clamp(3rem, 8vw, 8rem)", { lineHeight: "0.9", letterSpacing: "-0.02em" }],

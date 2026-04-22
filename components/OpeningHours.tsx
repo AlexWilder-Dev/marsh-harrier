@@ -41,7 +41,7 @@ function HourRow({ row, index }: { row: typeof hours[0]; index: number }) {
         >
           {row.day}
           {today && (
-            <span className="ml-2 font-sans text-ochre text-[10px] tracking-widest uppercase">
+            <span className="ml-2 font-sans text-ochre text-[15px] tracking-widest uppercase">
               Today
             </span>
           )}
@@ -66,7 +66,7 @@ function HourRow({ row, index }: { row: typeof hours[0]; index: number }) {
           )}
         </p>
         {row.note && (
-          <p className="font-sans text-ochre text-[10px] tracking-wide uppercase mt-0.5">
+          <p className="font-sans text-ochre text-[15px] tracking-wide uppercase mt-0.5">
             {row.note}
           </p>
         )}

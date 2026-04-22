@@ -184,7 +184,7 @@ function FoodPanel() {
 
           {/* Order online — takeaway CTA */}
           <div className="border-t border-parchment-light/15 pt-5 md:border-t-0 md:pt-0 md:border-l md:border-parchment-light/15 md:pl-12">
-            <p className="font-sans text-ochre text-[10px] tracking-widest uppercase mb-2">Order for collection</p>
+            <p className="font-sans text-ochre text-[15px] tracking-widest uppercase mb-2">Order for collection</p>
             <a
               href="/order?type=takeaway"
               className="inline-flex items-center gap-3 font-sans text-xs tracking-widest uppercase text-parchment-light hover:text-ochre transition-colors duration-300 focus-visible:outline-ochre"

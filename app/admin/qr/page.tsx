@@ -28,7 +28,7 @@ export default function QRGenerator() {
     await QRCode.toCanvas(offscreen, url, {
       width: maxWidth,
       margin: 2,
-      color: { dark: "#0C1A10", light: "#F8F3E8" },
+      color: { dark: "#1e2d3d", light: "#00000000" },
     });
 
     // Build composite: QR above, table number label below
@@ -38,11 +38,10 @@ export default function QRGenerator() {
     canvas.height = offscreen.height + textAreaHeight;
 
     const ctx = canvas.getContext("2d")!;
-    ctx.fillStyle = "#F8F3E8";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(offscreen, 0, 0);
 
-    ctx.fillStyle = "#0C1A10";
+    ctx.fillStyle = "#1e2d3d";
     ctx.font = "500 18px 'DM Sans', system-ui, sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -64,7 +63,7 @@ export default function QRGenerator() {
       {/* Header */}
       <header className="bg-forest-deep px-5 py-4 flex items-center justify-between">
         <div>
-          <p className="font-sans text-ochre text-[10px] tracking-widest uppercase">
+          <p className="font-sans text-ochre text-[15px] tracking-widest uppercase">
             Staff — QR Codes
           </p>
           <h1 className="font-serif font-light text-parchment-light text-xl">
@@ -85,7 +84,7 @@ export default function QRGenerator() {
           <div>
             <label
               htmlFor="table"
-              className="block font-sans text-[10px] tracking-widest uppercase text-ink/50 mb-2"
+              className="block font-sans text-[15px] tracking-widest uppercase text-ink/50 mb-2"
             >
               Table Number
             </label>
@@ -104,7 +103,7 @@ export default function QRGenerator() {
           <div>
             <label
               htmlFor="domain"
-              className="block font-sans text-[10px] tracking-widest uppercase text-ink/50 mb-2"
+              className="block font-sans text-[15px] tracking-widest uppercase text-ink/50 mb-2"
             >
               Site Domain
             </label>

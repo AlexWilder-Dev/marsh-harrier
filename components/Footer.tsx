@@ -36,7 +36,7 @@ export default function Footer() {
           </div>
 
           <nav aria-label="Footer navigation">
-            <p className="font-sans text-[10px] tracking-widest uppercase text-ochre mb-4">
+            <p className="font-sans text-[15px] tracking-widest uppercase text-ochre mb-4">
               Navigate
             </p>
             <ul className="flex flex-col gap-2.5">
@@ -54,7 +54,7 @@ export default function Footer() {
           </nav>
 
           <div>
-            <p className="font-sans text-[10px] tracking-widest uppercase text-ochre mb-4">
+            <p className="font-sans text-[15px] tracking-widest uppercase text-ochre mb-4">
               Visit
             </p>
             <address className="font-sans not-italic text-sm text-parchment-light/45 leading-loose font-light mb-5">

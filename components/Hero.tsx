@@ -104,7 +104,7 @@ export default function Hero() {
         transition={{ delay: 1.8, duration: 0.8 }}
         aria-hidden="true"
       >
-        <span className="font-sans text-parchment-light/35 text-[10px] tracking-widest uppercase">Scroll</span>
+        <span className="font-sans text-parchment-light/35 text-[15px] tracking-widest uppercase">Scroll</span>
         <motion.div
           className="w-10 h-px bg-gradient-to-r from-ochre/70 to-transparent"
           animate={{ scaleX: [0.4, 1, 0.4], opacity: [0.4, 0.8, 0.4] }}

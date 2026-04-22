@@ -157,7 +157,7 @@ export default function AdminDashboard() {
         {/* Top row: title + icon actions */}
         <div className="flex items-start justify-between gap-4 mb-1">
           <div>
-            <p className="font-sans text-ochre text-[10px] tracking-widest uppercase">
+            <p className="font-sans text-ochre text-[15px] tracking-widest uppercase">
               Staff Dashboard
             </p>
             <h1 className="font-serif font-light text-parchment-light text-xl leading-tight">
@@ -201,7 +201,7 @@ export default function AdminDashboard() {
             <button
               onClick={closeAll}
               disabled={closingAll}
-              className="font-sans text-[10px] tracking-widest uppercase px-3 py-1.5 border border-red-400/40 text-red-300/80 hover:bg-red-900/20 disabled:opacity-50 transition-colors flex-shrink-0"
+              className="font-sans text-[15px] tracking-widest uppercase px-3 py-1.5 border border-red-400/40 text-red-300/80 hover:bg-red-900/20 disabled:opacity-50 transition-colors flex-shrink-0"
             >
               {closingAll ? "Closing…" : "Close All"}
             </button>
@@ -269,7 +269,7 @@ export default function AdminDashboard() {
                     <button
                       onClick={() => closeTable(table.table_number)}
                       disabled={closingTable === table.table_number}
-                      className="font-sans text-[10px] tracking-widest uppercase px-3 py-1.5 border border-forest-deep/20 text-forest-deep/60 hover:border-forest-deep/40 hover:text-forest-deep disabled:opacity-50 transition-colors"
+                      className="font-sans text-[15px] tracking-widest uppercase px-3 py-1.5 border border-forest-deep/20 text-forest-deep/60 hover:border-forest-deep/40 hover:text-forest-deep disabled:opacity-50 transition-colors"
                     >
                       {closingTable === table.table_number ? "…" : "Close table"}
                     </button>
@@ -283,10 +283,12 @@ export default function AdminDashboard() {
                       </p>
                     ) : (
                       tableOrders.map((order) => {
-                        const orderTotal = order.items.reduce(
+                        const orderSubtotal = order.items.reduce(
                           (s, i) => s + i.price * i.quantity,
                           0
                         );
+                        const orderServiceCharge = Math.round(orderSubtotal * 0.1);
+                        const orderTotal = orderSubtotal + orderServiceCharge;
                         return (
                           <div key={order.id} className="px-4 py-3">
                             {order.customer_name && (
@@ -298,12 +300,14 @@ export default function AdminDashboard() {
                               </div>
                             )}
                             <div className="flex items-center justify-between mb-2">
-                              <p className="font-sans text-[10px] tracking-widest uppercase text-ochre">
+                              <p className="font-sans text-[15px] tracking-widest uppercase text-ochre">
                                 Order #{order.id} · {formatTime(order.created_at)}
                               </p>
-                              <p className="font-sans text-xs text-ink/50 tabular-nums">
-                                {formatPrice(orderTotal)}
-                              </p>
+                              <div className="text-right">
+                                <p className="font-sans text-xs text-ink/50 tabular-nums">{formatPrice(orderSubtotal)}</p>
+                                <p className="font-sans text-[11px] text-ink/35 tabular-nums">+{formatPrice(orderServiceCharge)} service</p>
+                                <p className="font-sans text-xs font-medium text-forest-deep tabular-nums">{formatPrice(orderTotal)}</p>
+                              </div>
                             </div>
                             <ul className="space-y-0.5 mb-3">
                               {order.items.map((item, i) => (
