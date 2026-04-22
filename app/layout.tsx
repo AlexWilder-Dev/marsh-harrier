@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "https://marshharriercowley.co.uk/media/photo-bar.jpg",
+        url: "https://marshharriercowley.co.uk/images/marsh-harrier-pub-bar.jpg",
         width: 1200,
         height: 630,
         alt: "The Marsh Harrier bar — warm timber and golden light",
@@ -63,7 +63,7 @@ export const metadata: Metadata = {
     title: "The Marsh Harrier — A Beer Fan's Haven, Cowley Oxford",
     description:
       "A proper community local in Cowley, Oxford. Master Cellarman status, one of the best Sunday roasts in Oxford.",
-    images: ["https://marshharriercowley.co.uk/media/photo-bar.jpg"],
+    images: ["https://marshharriercowley.co.uk/images/marsh-harrier-pub-bar.jpg"],
   },
   robots: {
     index: true,
@@ -102,7 +102,7 @@ const jsonLd = {
   ],
   servesCuisine: ["British", "Traditional pub food"],
   priceRange: "££",
-  image: "https://marshharriercowley.co.uk/media/photo-bar.jpg",
+  image: "https://marshharriercowley.co.uk/images/marsh-harrier-pub-bar.jpg",
 };
 
 export default function RootLayout({
@@ -111,10 +111,9 @@ export default function RootLayout({
   return (
     <html lang="en-GB" className={`${cormorant.variable} ${dmSans.variable}`}>
       <head>
-        <link rel="preconnect" href="https://marshharriercowley.co.uk" />
         <link
           rel="preload"
-          href="https://marshharriercowley.co.uk/media/photo-bar.jpg"
+          href="/images/marsh-harrier-pub-front.avif"
           as="image"
           fetchPriority="high"
         />

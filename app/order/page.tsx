@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { useFocusTrap } from "@/lib/useFocusTrap";
 
 type MenuItem = {
   id: number;
@@ -34,7 +35,8 @@ function cartCount(cart: Cart) {
 function OrderPage() {
   const searchParams = useSearchParams();
   const tableParam = searchParams.get("table");
-  const tableNumber = tableParam ? parseInt(tableParam, 10) : null;
+  const isTakeaway = searchParams.get("type") === "takeaway";
+  const tableNumber = tableParam ? parseInt(tableParam, 10) : (isTakeaway ? 0 : null);
 
   const [menu, setMenu] = useState<MenuItem[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
@@ -47,6 +49,11 @@ function OrderPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const cartSheetRef = useRef<HTMLDivElement>(null);
+
+  useFocusTrap(cartSheetRef, cartOpen, () => setCartOpen(false));
 
   useEffect(() => {
     fetch("/api/menu")
@@ -91,7 +98,11 @@ function OrderPage() {
   }, []);
 
   const submitOrder = async () => {
-    if (!tableNumber || cartCount(cart) === 0) return;
+    if (tableNumber === null || isNaN(tableNumber) || cartCount(cart) === 0) return;
+    if (isTakeaway && (!customerName.trim() || !customerPhone.trim())) {
+      setError("Please enter your name and phone number.");
+      return;
+    }
     setSubmitting(true);
     setError(null);
 
@@ -106,7 +117,11 @@ function OrderPage() {
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ table: tableNumber, items }),
+        body: JSON.stringify({
+          table: tableNumber,
+          items,
+          ...(isTakeaway && { customerName: customerName.trim(), customerPhone: customerPhone.trim() }),
+        }),
       });
 
       if (!res.ok) {
@@ -125,8 +140,8 @@ function OrderPage() {
     }
   };
 
-  // Invalid table number
-  if (!tableNumber || isNaN(tableNumber) || tableNumber < 1) {
+  // Invalid table number (takeaway uses table 0 and bypasses this check)
+  if (!isTakeaway && (!tableNumber || isNaN(tableNumber) || tableNumber < 1)) {
     return (
       <main className="min-h-screen bg-parchment flex items-center justify-center px-6">
         <div className="text-center max-w-xs">
@@ -153,10 +168,14 @@ function OrderPage() {
             Order placed
           </p>
           <h1 className="font-serif font-light text-parchment-light text-3xl mb-4">
-            We&apos;ll bring it over to Table {tableNumber}.
+            {isTakeaway
+              ? "Order received."
+              : `We\u2019ll bring it over to Table\u00a0${tableNumber}.`}
           </h1>
           <p className="font-sans text-parchment-light/50 text-sm font-light leading-relaxed mb-10">
-            Payment is by card when your order arrives. Please enjoy your visit.
+            {isTakeaway
+              ? "Please call us on 01865 718225 to confirm your order and arrange payment."
+              : "Payment is by card when your order arrives. Please enjoy your visit."}
           </p>
           <button
             onClick={() => setSubmitted(false)}
@@ -182,7 +201,7 @@ function OrderPage() {
             The Marsh Harrier
           </p>
           <h1 className="font-serif font-light text-parchment-light text-lg leading-tight">
-            Table {tableNumber}
+            {isTakeaway ? "Takeaway Order" : `Table ${tableNumber}`}
           </h1>
         </div>
         {count > 0 && (
@@ -320,6 +339,7 @@ function OrderPage() {
       {/* Cart sheet */}
       {cartOpen && (
         <div
+          ref={cartSheetRef}
           className="fixed inset-0 z-40 flex flex-col justify-end"
           role="dialog"
           aria-label="Your order"
@@ -333,7 +353,7 @@ function OrderPage() {
             {/* Sheet header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-forest-deep/10">
               <h2 className="font-serif font-light text-forest-deep text-xl">
-                Your Order — Table {tableNumber}
+                {isTakeaway ? "Your Takeaway Order" : `Your Order — Table ${tableNumber}`}
               </h2>
               <button
                 onClick={() => setCartOpen(false)}
@@ -386,7 +406,7 @@ function OrderPage() {
             </ul>
 
             {/* Total + submit */}
-            <div className="px-5 pt-4 pb-safe-4 border-t border-forest-deep/10 bg-parchment" style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}>
+            <div className="px-5 pt-4 border-t border-forest-deep/10 bg-parchment" style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}>
               <div className="flex items-center justify-between mb-5">
                 <p className="font-sans text-xs tracking-widest uppercase text-ink/50">
                   Total
@@ -396,6 +416,41 @@ function OrderPage() {
                 </p>
               </div>
 
+              {isTakeaway && (
+                <div className="grid grid-cols-2 gap-3 mb-5">
+                  <div>
+                    <label htmlFor="customer-name" className="block font-sans text-[10px] tracking-widest uppercase text-ink/40 mb-1.5">
+                      Name <span aria-label="required">*</span>
+                    </label>
+                    <input
+                      id="customer-name"
+                      type="text"
+                      required
+                      autoComplete="name"
+                      value={customerName}
+                      onChange={(e) => setCustomerName(e.target.value)}
+                      className="w-full bg-parchment-dark border border-forest-deep/20 text-forest-deep font-sans text-sm px-3 py-2.5 placeholder-ink/25 focus:outline-none focus:border-ochre/60 transition-colors"
+                      placeholder="Your name"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="customer-phone" className="block font-sans text-[10px] tracking-widest uppercase text-ink/40 mb-1.5">
+                      Phone <span aria-label="required">*</span>
+                    </label>
+                    <input
+                      id="customer-phone"
+                      type="tel"
+                      required
+                      autoComplete="tel"
+                      value={customerPhone}
+                      onChange={(e) => setCustomerPhone(e.target.value)}
+                      className="w-full bg-parchment-dark border border-forest-deep/20 text-forest-deep font-sans text-sm px-3 py-2.5 placeholder-ink/25 focus:outline-none focus:border-ochre/60 transition-colors"
+                      placeholder="07700 900000"
+                    />
+                  </div>
+                </div>
+              )}
+
               {error && (
                 <p className="font-sans text-sm text-red-600 mb-4 leading-relaxed">
                   {error}
@@ -403,7 +458,7 @@ function OrderPage() {
               )}
 
               <p className="font-sans text-ink/40 text-xs leading-relaxed mb-4">
-                Payment by card when your order is delivered.
+                {isTakeaway ? "We\u2019ll call to confirm your order and take payment." : "Payment by card when your order is delivered."}
               </p>
 
               <button

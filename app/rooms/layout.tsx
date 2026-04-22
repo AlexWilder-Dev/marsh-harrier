@@ -12,10 +12,10 @@ export const metadata: Metadata = {
     url: "https://marshharriercowley.co.uk/rooms",
     images: [
       {
-        url: "https://marshharriercowley.co.uk/media/photo-bar.jpg",
+        url: "https://marshharriercowley.co.uk/images/marsh-harrier-pub-room-main.avif",
         width: 1200,
         height: 630,
-        alt: "The Marsh Harrier, Cowley Oxford",
+        alt: "Guest room at The Marsh Harrier, Cowley Oxford",
       },
     ],
   },

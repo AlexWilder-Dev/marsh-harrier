@@ -16,6 +16,8 @@ type Order = {
   items: OrderItem[];
   status: string;
   created_at: string;
+  customer_name?: string;
+  customer_phone?: string;
 };
 
 type Table = {
@@ -72,6 +74,7 @@ export default function AdminDashboard() {
   const [closingTable, setClosingTable] = useState<number | null>(null);
   const [deliveringOrder, setDeliveringOrder] = useState<number | null>(null);
   const [closingAll, setClosingAll] = useState(false);
+  const [offline, setOffline] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
@@ -84,8 +87,9 @@ export default function AdminDashboard() {
       const json = await res.json();
       setData(json);
       setLastUpdated(new Date());
+      setOffline(false);
     } catch {
-      // silent — will retry on next poll
+      setOffline(true);
     } finally {
       setLoading(false);
     }
@@ -189,6 +193,9 @@ export default function AdminDashboard() {
                 · {lastUpdated.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
               </span>
             )}
+            {offline && (
+              <span className="ml-2 text-red-300/60">· Connection lost</span>
+            )}
           </p>
           {openCount > 0 && (
             <button
@@ -240,7 +247,7 @@ export default function AdminDashboard() {
                   <div className="flex items-start justify-between px-4 pt-4 pb-3 border-b border-forest-deep/8">
                     <div>
                       <p className="font-serif font-light text-forest-deep text-3xl leading-none">
-                        {table.table_number}
+                        {table.table_number === 0 ? "Takeaway" : table.table_number}
                       </p>
                       <p
                         className={`font-sans text-xs mt-1 ${
@@ -282,6 +289,14 @@ export default function AdminDashboard() {
                         );
                         return (
                           <div key={order.id} className="px-4 py-3">
+                            {order.customer_name && (
+                              <div className="mb-2">
+                                <p className="font-sans text-sm font-medium text-forest-deep">{order.customer_name}</p>
+                                <a href={`tel:${order.customer_phone}`} className="font-sans text-xs text-ochre hover:underline">
+                                  {order.customer_phone}
+                                </a>
+                              </div>
+                            )}
                             <div className="flex items-center justify-between mb-2">
                               <p className="font-sans text-[10px] tracking-widest uppercase text-ochre">
                                 Order #{order.id} · {formatTime(order.created_at)}

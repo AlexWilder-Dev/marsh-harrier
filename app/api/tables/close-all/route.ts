@@ -13,5 +13,10 @@ export async function PUT() {
      WHERE status = 'open'`
   );
 
+  await client.execute(
+    `UPDATE orders SET status = 'delivered', delivered_at = CURRENT_TIMESTAMP
+     WHERE status = 'pending'`
+  );
+
   return NextResponse.json({ closedCount: result.rowsAffected });
 }

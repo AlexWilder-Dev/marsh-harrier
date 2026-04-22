@@ -25,31 +25,41 @@ export async function GET(request: NextRequest) {
 // POST /api/orders — customer creates order
 // Body: { table: number, items: [{ id, name, quantity, price }] }
 export async function POST(request: NextRequest) {
-  let body: { table: unknown; items: unknown };
+  let body: { table: unknown; items: unknown; customerName?: unknown; customerPhone?: unknown };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { table, items } = body;
+  const { table, items, customerName, customerPhone } = body;
 
+  // table 0 = takeaway (no physical table); 1–99 = dine-in
   if (
-    !table ||
     typeof table !== "number" ||
-    table < 1 ||
-    table > 99 ||
     !Number.isInteger(table) ||
+    table < 0 ||
+    table > 99 ||
     !Array.isArray(items) ||
     items.length === 0
   ) {
     return NextResponse.json(
-      { error: "table (1–99) and items (non-empty array) are required" },
+      { error: "table (0–99) and items (non-empty array) are required" },
       { status: 400 }
     );
   }
 
-  // Auto-create table entry if it doesn't exist yet
+  if (table === 0 && (!customerName || !customerPhone)) {
+    return NextResponse.json(
+      { error: "Name and phone number are required for takeaway orders." },
+      { status: 400 }
+    );
+  }
+
+  const name = typeof customerName === "string" ? customerName.trim().slice(0, 100) : null;
+  const phone = typeof customerPhone === "string" ? customerPhone.trim().slice(0, 30) : null;
+
+  // Auto-create table entry for dine-in and takeaway (table 0)
   await client.execute({
     sql: "INSERT OR IGNORE INTO tables (table_number) VALUES (?)",
     args: [table],
@@ -81,8 +91,8 @@ export async function POST(request: NextRequest) {
   });
 
   const insertResult = await client.execute({
-    sql: "INSERT INTO orders (table_number, items) VALUES (?, ?)",
-    args: [table, JSON.stringify(items)],
+    sql: "INSERT INTO orders (table_number, items, customer_name, customer_phone) VALUES (?, ?, ?, ?)",
+    args: [table, JSON.stringify(items), name, phone],
   });
 
   return NextResponse.json(

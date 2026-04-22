@@ -13,10 +13,10 @@ export default function AdminLogin() {
   useEffect(() => {
     fetch("/api/tables").then((r) => {
       if (r.ok) router.replace("/admin");
-    });
+    }).catch(() => {});
   }, [router]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setError(null);

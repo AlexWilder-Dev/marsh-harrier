@@ -27,5 +27,11 @@ export async function PUT(
     return NextResponse.json({ error: "Table not found" }, { status: 404 });
   }
 
+  await client.execute({
+    sql: `UPDATE orders SET status = 'delivered', delivered_at = CURRENT_TIMESTAMP
+          WHERE table_number = ? AND status = 'pending'`,
+    args: [tableNumber],
+  });
+
   return NextResponse.json({ success: true });
 }

@@ -68,8 +68,8 @@ function AboutPanel() {
       <div className="relative w-full md:w-[38%] h-64 md:h-full overflow-hidden flex-shrink-0">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="https://marshharriercowley.co.uk/media/photo-crowd.jpg"
-          alt="Regulars enjoying The Marsh Harrier"
+          src="/images/marsh-harrier-pub-front.avif"
+          alt="The Marsh Harrier exterior — 40 Marsh Road, Cowley"
           className="absolute inset-0 w-full h-full object-cover object-center"
           loading="lazy"
         />
@@ -89,8 +89,8 @@ function GardenPanel() {
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="https://marshharriercowley.co.uk/media/photo-outside-front.jpg"
-        alt="The Marsh Harrier beer garden — sunny and welcoming"
+        src="/images/marsh-harrier-pub-outdoor-garden.webp"
+        alt="The Marsh Harrier beer garden"
         className="absolute inset-0 w-full h-full object-cover object-center"
         loading="lazy"
       />
@@ -135,7 +135,7 @@ function FoodPanel() {
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="https://marshharriercowley.co.uk/media/photo-food.jpg"
+        src="/images/marsh-harrier-pub-food.jpg"
         alt="Food at The Marsh Harrier"
         className="absolute inset-0 w-full h-full object-cover object-[center_30%]"
         loading="lazy"
@@ -155,30 +155,44 @@ function FoodPanel() {
           <br />
           properly.
         </h2>
-        {/* Arrow-rule menu links */}
-        <div className="flex flex-col gap-0 max-w-xs">
-          {[
-            { title: "Food Menu", href: "https://marshharriercowley.co.uk/media/food-menu.pdf" },
-            { title: "Drinks Menu", href: "https://marshharriercowley.co.uk/media/drinks-menu.pdf" },
-          ].map((m) => (
+        <div className="flex flex-col md:flex-row md:items-end gap-8 md:gap-16">
+          {/* Arrow-rule menu links */}
+          <div className="flex flex-col gap-0 max-w-xs">
+            {[
+              { title: "Food Menu", href: "https://marshharriercowley.co.uk/media/food-menu.pdf" },
+              { title: "Drinks Menu", href: "https://marshharriercowley.co.uk/media/drinks-menu.pdf" },
+            ].map((m) => (
+              <a
+                key={m.title}
+                href={m.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-center py-3 border-t border-parchment-light/15 hover:border-ochre/50 transition-colors duration-300 focus-visible:outline-ochre"
+                aria-label={`Download ${m.title} PDF (opens in new tab)`}
+              >
+                <span className="font-sans text-xs tracking-widest uppercase text-parchment-light/70 group-hover:text-parchment-light transition-colors duration-300 flex-shrink-0">
+                  {m.title}
+                </span>
+                <span
+                  className="flex-1 mx-3 h-px bg-parchment-light/20 group-hover:bg-ochre/50 transition-colors duration-300"
+                  aria-hidden="true"
+                />
+                <span className="font-sans text-parchment-light/50 group-hover:text-ochre transition-colors duration-300" aria-hidden="true">→</span>
+              </a>
+            ))}
+          </div>
+
+          {/* Order online — takeaway CTA */}
+          <div className="border-t border-parchment-light/15 pt-5 md:border-t-0 md:pt-0 md:border-l md:border-parchment-light/15 md:pl-12">
+            <p className="font-sans text-ochre text-[10px] tracking-widest uppercase mb-2">Order for collection</p>
             <a
-              key={m.title}
-              href={m.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group flex items-center py-3 border-t border-parchment-light/15 hover:border-ochre/50 transition-colors duration-300 focus-visible:outline-ochre"
-              aria-label={`Download ${m.title} PDF (opens in new tab)`}
+              href="/order?type=takeaway"
+              className="inline-flex items-center gap-3 font-sans text-xs tracking-widest uppercase text-parchment-light hover:text-ochre transition-colors duration-300 focus-visible:outline-ochre"
             >
-              <span className="font-sans text-xs tracking-widest uppercase text-parchment-light/70 group-hover:text-parchment-light transition-colors duration-300 flex-shrink-0">
-                {m.title}
-              </span>
-              <span
-                className="flex-1 mx-3 h-px bg-parchment-light/20 group-hover:bg-ochre/50 transition-colors duration-300"
-                aria-hidden="true"
-              />
-              <span className="font-sans text-parchment-light/50 group-hover:text-ochre transition-colors duration-300" aria-hidden="true">→</span>
+              Order online
+              <span className="w-6 h-px bg-current transition-all duration-300" aria-hidden="true" />
             </a>
-          ))}
+          </div>
         </div>
       </div>
     </article>

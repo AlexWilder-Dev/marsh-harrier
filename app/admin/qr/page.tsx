@@ -21,13 +21,33 @@ export default function QRGenerator() {
   const generateQR = async () => {
     if (!url || !canvasRef.current) return;
     const QRCode = (await import("qrcode")).default;
-    // Cap at container width minus padding (max 400px) so it never overflows
     const maxWidth = Math.min(400, window.innerWidth - 80);
-    await QRCode.toCanvas(canvasRef.current, url, {
+
+    // Render QR to an offscreen canvas first
+    const offscreen = document.createElement("canvas");
+    await QRCode.toCanvas(offscreen, url, {
       width: maxWidth,
       margin: 2,
       color: { dark: "#0C1A10", light: "#F8F3E8" },
     });
+
+    // Build composite: QR above, table number label below
+    const textAreaHeight = 56;
+    const canvas = canvasRef.current;
+    canvas.width = offscreen.width;
+    canvas.height = offscreen.height + textAreaHeight;
+
+    const ctx = canvas.getContext("2d")!;
+    ctx.fillStyle = "#F8F3E8";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(offscreen, 0, 0);
+
+    ctx.fillStyle = "#0C1A10";
+    ctx.font = "500 18px 'DM Sans', system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(`Table ${tableNumber}`, canvas.width / 2, offscreen.height + textAreaHeight / 2);
+
     setGenerated(true);
   };
 

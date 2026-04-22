@@ -20,7 +20,7 @@ export default function AlesCellar() {
       <div className="absolute inset-0 opacity-[0.07] pointer-events-none" aria-hidden="true">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="https://marshharriercowley.co.uk/media/photo-bar.jpg"
+          src="/images/marsh-harrier-pub-bar.jpg"
           alt=""
           className="absolute inset-0 w-full h-full object-cover object-center"
           loading="lazy"

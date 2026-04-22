@@ -8,22 +8,17 @@ import Footer from "@/components/Footer";
 // ─── Data (replace with real content when client delivers) ───────────────────
 
 const ROOM_IMAGES = [
-  {
-    src: "https://marshharriercowley.co.uk/media/photo-bar.jpg",
-    alt: "The Marsh Harrier upstairs room — [replace with real room photo]",
-  },
-  {
-    src: "https://marshharriercowley.co.uk/media/photo-outside-front.jpg",
-    alt: "The Marsh Harrier exterior — [replace with real room photo]",
-  },
-  {
-    src: "https://marshharriercowley.co.uk/media/photo-crowd.jpg",
-    alt: "The Marsh Harrier — [replace with real room photo]",
-  },
-  {
-    src: "https://marshharriercowley.co.uk/media/photo-food.jpg",
-    alt: "The Marsh Harrier — [replace with real room photo]",
-  },
+  { src: "/images/marsh-harrier-pub-room-kitchen2.avif",      alt: "The Marsh Harrier guest room kitchen" },
+  { src: "/images/marsh-harrier-pub-room-bedroom.avif",      alt: "Guest bedroom" },
+  { src: "/images/marsh-harrier-pub-room-living-space.avif", alt: "Living space" },
+  { src: "/images/marsh-harrier-pub-room-kitchen.avif",      alt: "Kitchen" },
+  { src: "/images/marsh-harrier-pub-room-bathroom.avif",     alt: "En-suite bathroom" },
+  { src: "/images/marsh-harrier-pub-room-bedroom2.avif",     alt: "Bedroom detail" },
+  { src: "/images/marsh-harrier-pub-room-shower.avif",       alt: "Walk-in shower" },
+  { src: "/images/marsh-harrier-pub-room-kitchen2.avif",     alt: "Kitchen detail" },
+  { src: "/images/marsh-harrier-pub-room-books.avif",        alt: "Reading corner" },
+  { src: "/images/marsh-harrier-pub-room-table.avif",        alt: "Dining area" },
+  { src: "/images/marsh-harrier-pub-room-outdoor.avif",      alt: "Private outdoor space" },
 ];
 
 const AMENITIES = [
@@ -41,7 +36,7 @@ const HIGHLIGHTS = [
   { label: "Guests", value: "Up to 2" },
   { label: "Bedrooms", value: "1" },
   { label: "Bathrooms", value: "1 en-suite" },
-  { label: "From", value: "£[TBC] / night" },
+  { label: "From", value: "On enquiry" },
 ];
 
 // ─── Hero ────────────────────────────────────────────────────────────────────
@@ -143,7 +138,6 @@ function RoomsDescription() {
               <div className="rule-ochre w-10 opacity-40" />
             </div>
             <p className="font-sans text-ink/65 text-base leading-relaxed font-light mb-5">
-              {/* Replace with real room description from client */}
               A comfortable, well-appointed room above The Marsh Harrier, giving
               you a home in the heart of Cowley. Ideal for visitors to Oxford
               looking for something with more character than a chain hotel.
@@ -324,8 +318,9 @@ function EnquiryForm() {
 
     const formspreeId = process.env.NEXT_PUBLIC_FORMSPREE_ID;
     if (!formspreeId) {
-      // Dev fallback — just log to console and show success
-      console.log("Enquiry (Formspree not configured):", Object.fromEntries(data));
+      if (process.env.NODE_ENV !== "production") {
+        console.log("Enquiry (Formspree not configured):", Object.fromEntries(data));
+      }
       setState("success");
       return;
     }

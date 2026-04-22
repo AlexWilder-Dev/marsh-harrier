@@ -26,8 +26,8 @@ export default function Hero() {
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="https://marshharriercowley.co.uk/media/photo-bar.jpg"
-          alt="The Marsh Harrier bar — warm timber and golden light"
+          src="/images/marsh-harrier-pub-front.avif"
+          alt="The Marsh Harrier exterior — 40 Marsh Road, Cowley"
           className="absolute inset-0 w-full h-full object-cover object-center"
           fetchPriority="high"
         />

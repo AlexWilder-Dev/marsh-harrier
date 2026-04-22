@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { motion, useScroll, useMotionValueEvent } from "framer-motion";
+import { useFocusTrap } from "@/lib/useFocusTrap";
 
 const ANCHOR_LINKS = [
   { label: "Our Story", href: "#about" },
@@ -44,7 +45,10 @@ export default function Nav() {
 
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
   const { scrollY } = useScroll();
+
+  useFocusTrap(menuRef, menuOpen, () => setMenuOpen(false));
 
   useMotionValueEvent(scrollY, "change", (v) => setScrolled(v > 60));
 
@@ -146,6 +150,7 @@ export default function Nav() {
 
       {/* Mobile menu */}
       <motion.div
+        ref={menuRef}
         id="mobile-menu"
         role="dialog"
         aria-label="Mobile navigation"

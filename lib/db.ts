@@ -22,7 +22,9 @@ export async function initDb() {
         items TEXT NOT NULL,
         status TEXT DEFAULT 'pending',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        delivered_at DATETIME
+        delivered_at DATETIME,
+        customer_name TEXT,
+        customer_phone TEXT
       )`,
     ],
     "write"
