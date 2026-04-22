@@ -13,7 +13,9 @@
       "Bash(npx next *)",
       "Bash(node -e ' *)",
       "Bash(git add *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(rm .github/workflows/deploy.yml)",
+      "Bash(git commit -m 'Remove GitHub Pages workflow — Vercel handles deployments *)"
     ],
     "additionalDirectories": [
       "c:\\Users\\alexf\\.claude\\projects\\Marsh Harrier\\.github",
