@@ -10,22 +10,23 @@ const config: Config = {
     extend: {
       colors: {
         parchment: {
-          DEFAULT: "#c8d5c0",
-          light: "#dce6d8",
-          dark: "#b0bfa9",
+          DEFAULT: "#F5F1EA",   /* warm ivory — main backgrounds */
+          light: "#FFFFFF",     /* pure white — cards, elevated surfaces */
+          dark: "#EDE7DC",      /* deeper cream — section alternates, nav */
         },
         forest: {
-          deep: "#1e2d3d",
-          rich: "#253548",
-          mid: "#3a5068",
-          light: "#4d6880",
+          deep: "#1A1A1A",      /* near-black — headers, nav, dark sections */
+          rich: "#2D2D2D",      /* slightly lifted — hover states */
+          mid: "#7A8068",       /* muted olive-sage — secondary accents */
+          light: "#8A8378",     /* taupe-grey — muted text, meta */
         },
         ochre: {
-          DEFAULT: "#4a5f27",
-          light: "#5c7530",
-          warm: "#3a4d1f",
+          DEFAULT: "#B8A07A",   /* warm champagne — CTAs, highlights */
+          light: "#C9B48D",     /* lighter champagne — hover */
+          warm: "#6B2C2C",      /* restrained burgundy — sale/alert use */
         },
-        ink: "#1e2d3d",
+        ink: "#1A1A1A",
+        border: "#D9D2C5",
       },
       fontFamily: {
         serif: ["var(--font-cormorant)", "Georgia", "serif"],

@@ -28,7 +28,7 @@ export default function QRGenerator() {
     await QRCode.toCanvas(offscreen, url, {
       width: maxWidth,
       margin: 2,
-      color: { dark: "#1e2d3d", light: "#00000000" },
+      color: { dark: "#1A1A1A", light: "#00000000" },
     });
 
     // Build composite: QR above, table number label below
@@ -41,7 +41,7 @@ export default function QRGenerator() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(offscreen, 0, 0);
 
-    ctx.fillStyle = "#1e2d3d";
+    ctx.fillStyle = "#1A1A1A";
     ctx.font = "500 18px 'DM Sans', system-ui, sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
