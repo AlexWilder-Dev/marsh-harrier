@@ -28,7 +28,7 @@ export default function QRGenerator() {
     await QRCode.toCanvas(offscreen, url, {
       width: maxWidth,
       margin: 2,
-      color: { dark: "#1A1A1A", light: "#00000000" },
+      color: { dark: "#7E8A4A", light: "#00000000" },
     });
 
     // Build composite: QR above, table number label below

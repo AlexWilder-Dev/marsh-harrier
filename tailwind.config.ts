@@ -21,8 +21,8 @@ const config: Config = {
           light: "#8A8378",     /* taupe-grey — muted text, meta */
         },
         ochre: {
-          DEFAULT: "#B8A07A",   /* warm champagne — CTAs, highlights */
-          light: "#C9B48D",     /* lighter champagne — hover */
+          DEFAULT: "#7E8A4A",   /* muted olive — CTAs, highlights */
+          light: "#929E59",     /* lighter olive — hover */
           warm: "#6B2C2C",      /* restrained burgundy — sale/alert use */
         },
         ink: "#1A1A1A",
