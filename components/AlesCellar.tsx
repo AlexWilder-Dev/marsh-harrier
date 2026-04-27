@@ -36,7 +36,7 @@ export default function AlesCellar() {
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
           className="mb-20 md:mb-28 max-w-3xl"
         >
-          <p className="font-sans text-ochre text-xs tracking-widest uppercase mb-5">
+          <p className="font-sans text-ink text-xs tracking-widest uppercase mb-5">
             Ales &amp; The Cellar
           </p>
           <h2 className="font-serif font-light text-display-xl text-forest-deep leading-[0.9] text-balance">
@@ -68,7 +68,7 @@ export default function AlesCellar() {
               >
                 <Counter to={stat.to} suffix={stat.suffix} duration={2000} />
               </div>
-              <p className="font-sans text-xs tracking-widest uppercase text-ochre mb-3">
+              <p className="font-sans text-xs tracking-widest uppercase text-ink mb-3">
                 {stat.label}
               </p>
               <p className="font-sans text-ink/55 text-sm leading-relaxed font-light">
@@ -84,23 +84,23 @@ export default function AlesCellar() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-60px" }}
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-          className="flex flex-col md:flex-row items-start md:items-center gap-10 p-8 md:p-12 bg-forest-deep"
+          className="flex flex-col md:flex-row items-start md:items-center gap-10 p-8 md:p-12 bg-ochre"
         >
           {/* Stamp with outer ring */}
           <div className="relative flex-shrink-0" role="img" aria-label="Master Cellarman award">
             <div className="absolute -inset-2 rounded-full border border-ochre/20" aria-hidden="true" />
             <div className="w-36 h-36 rounded-full border border-ochre/60 flex flex-col items-center justify-center text-center px-4">
-              <p className="font-sans text-ochre text-[9px] tracking-widest uppercase leading-tight mb-1">Status</p>
-              <p className="font-serif italic text-parchment-light text-sm leading-tight">Master Cellarman</p>
-              <div className="w-8 h-px bg-ochre/40 my-2" />
-              <p className="font-sans text-parchment-light/40 text-[8px] tracking-widest uppercase">The Marsh Harrier</p>
+              <p className="font-sans text-parchment text-[9px] tracking-widest uppercase leading-tight mb-1">Status</p>
+              <p className="font-serif italic text-parchment text-sm leading-tight">Master Cellarman</p>
+              <div className="w-8 h-px bg-parchment/40 my-2" />
+              <p className="font-sans text-parchment/40 text-[8px] tracking-widest uppercase">The Marsh Harrier</p>
             </div>
           </div>
           <div>
-            <h3 className="font-serif font-light text-parchment-light text-display-sm mb-3">
+            <h3 className="font-serif font-light text-ink text-display-sm mb-3">
               Cellarmanship isn&apos;t a given.
             </h3>
-            <p className="font-sans text-parchment-light/55 text-sm leading-relaxed font-light max-w-lg">
+            <p className="font-sans text-ink/70 text-sm leading-relaxed font-light max-w-lg">
               Master Cellarman status is awarded to pubs that maintain the highest standards
               of cask ale storage, conditioning, and service. It means every pint you&apos;re
               served has been looked after properly — from the brewery to your glass.

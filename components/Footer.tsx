@@ -16,27 +16,27 @@ const menus = [
 export default function Footer() {
   return (
     <footer
-      className="bg-forest-deep text-parchment-light/50 py-16 md:py-20"
+      className="bg-ochre text-ink/60 py-16 md:py-20"
       aria-label="Site footer"
     >
       <div className="max-w-7xl mx-auto px-6 md:px-16">
-        <div className="w-full h-px bg-gradient-to-r from-transparent via-ochre/25 to-transparent mb-12" aria-hidden="true" />
+        <div className="w-full h-px bg-gradient-to-r from-transparent via-parchment/25 to-transparent mb-12" aria-hidden="true" />
 
         <div className="grid md:grid-cols-3 gap-10 md:gap-16 mb-12">
           <div>
-            <h2 className="font-serif font-light text-parchment-light text-display-md leading-none mb-2">
+            <h2 className="font-serif font-light text-ink text-display-md leading-none mb-2">
               The Marsh Harrier
             </h2>
-            <p className="font-serif italic text-parchment-light/30 text-sm mb-4">
+            <p className="font-serif italic text-ink/35 text-sm mb-4">
               Master Cellarman. Est. Cowley.
             </p>
-            <p className="font-sans text-sm font-light leading-relaxed text-parchment-light/45">
+            <p className="font-sans text-sm font-light leading-relaxed text-ink/55">
               A beer fan&apos;s haven in the heart of Cowley, Oxford.
             </p>
           </div>
 
           <nav aria-label="Footer navigation">
-            <p className="font-sans text-[15px] tracking-widest uppercase text-ochre mb-4">
+            <p className="font-sans text-[15px] tracking-widest uppercase text-ink mb-4">
               Navigate
             </p>
             <ul className="flex flex-col gap-2.5">
@@ -44,7 +44,7 @@ export default function Footer() {
                 <li key={link.label}>
                   <a
                     href={link.href}
-                    className="font-sans text-sm text-parchment-light/45 hover:text-parchment-light transition-colors duration-200 font-light focus-visible:outline-ochre"
+                    className="font-sans text-sm text-ink/55 hover:text-ink transition-colors duration-200 font-light focus-visible:outline-ochre"
                   >
                     {link.label}
                   </a>
@@ -54,10 +54,10 @@ export default function Footer() {
           </nav>
 
           <div>
-            <p className="font-sans text-[15px] tracking-widest uppercase text-ochre mb-4">
+            <p className="font-sans text-[15px] tracking-widest uppercase text-ink mb-4">
               Visit
             </p>
-            <address className="font-sans not-italic text-sm text-parchment-light/45 leading-loose font-light mb-5">
+            <address className="font-sans not-italic text-sm text-ink/55 leading-loose font-light mb-5">
               40 Marsh Road<br />
               Cowley, Oxford OX4 2HH
             </address>
@@ -69,17 +69,17 @@ export default function Footer() {
                     href={m.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group flex items-center py-2.5 border-t border-parchment-light/[0.06] hover:border-ochre/30 transition-colors duration-200 focus-visible:outline-ochre"
+                    className="group flex items-center py-2.5 border-t border-ink/[0.06] hover:border-ink/20 transition-colors duration-200 focus-visible:outline-ochre"
                     aria-label={`${m.label} — opens in new tab`}
                   >
-                    <span className="font-sans text-xs tracking-wider uppercase text-ochre/60 group-hover:text-ochre transition-colors duration-200 flex-shrink-0">
+                    <span className="font-sans text-xs tracking-wider uppercase text-ink/55 group-hover:text-ink transition-colors duration-200 flex-shrink-0">
                       {m.label}
                     </span>
                     <span
-                      className="flex-1 mx-3 h-px bg-parchment-light/10 group-hover:bg-ochre/30 transition-colors duration-200"
+                      className="flex-1 mx-3 h-px bg-ink/10 group-hover:bg-ink/20 transition-colors duration-200"
                       aria-hidden="true"
                     />
-                    <span className="text-parchment-light/30 group-hover:text-ochre transition-colors duration-200" aria-hidden="true">→</span>
+                    <span className="text-ink/35 group-hover:text-ink transition-colors duration-200" aria-hidden="true">→</span>
                   </a>
                 </li>
               ))}
@@ -87,14 +87,14 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-          <p className="font-sans text-xs text-parchment-light/25 font-light">
+        <div className="border-t border-ink/10 pt-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+          <p className="font-sans text-xs text-ink/35 font-light">
             © {new Date().getFullYear()} The Marsh Harrier. All rights reserved.
           </p>
-          <p className="font-serif italic text-parchment-light/15 text-sm">
+          <p className="font-serif italic text-ink/25 text-sm">
             Cowley · Oxford · Since 2009
           </p>
-          <p className="font-sans text-xs text-parchment-light/20 font-light">
+          <p className="font-sans text-xs text-ink/30 font-light">
             Please drink responsibly. Challenge 25 in operation.
           </p>
         </div>

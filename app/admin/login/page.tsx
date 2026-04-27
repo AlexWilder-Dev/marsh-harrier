@@ -37,16 +37,16 @@ export default function AdminLogin() {
   };
 
   return (
-    <main className="min-h-screen bg-forest-deep flex items-center justify-center px-6">
+    <main className="min-h-screen bg-ochre flex items-center justify-center px-6">
       <div className="w-full max-w-sm">
         <div className="text-center mb-10">
-          <p className="font-sans text-ochre text-xs tracking-widest uppercase mb-3">
+          <p className="font-sans text-ink text-xs tracking-widest uppercase mb-3">
             Staff access
           </p>
-          <h1 className="font-serif font-light text-parchment-light text-3xl">
+          <h1 className="font-serif font-light text-ink text-3xl">
             The Marsh Harrier
           </h1>
-          <p className="font-serif italic text-parchment-light/30 text-lg mt-1">
+          <p className="font-serif italic text-ink/40 text-lg mt-1">
             Order Dashboard
           </p>
         </div>
@@ -55,7 +55,7 @@ export default function AdminLogin() {
           <div>
             <label
               htmlFor="password"
-              className="block font-sans text-[15px] tracking-widest uppercase text-parchment-light/40 mb-2"
+              className="block font-sans text-[15px] tracking-widest uppercase text-ink/50 mb-2"
             >
               Password
             </label>
@@ -66,7 +66,7 @@ export default function AdminLogin() {
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="current-password"
               required
-              className="w-full bg-forest-rich border border-parchment-light/10 text-parchment-light font-sans text-base px-4 py-3.5 placeholder-parchment-light/20 focus:outline-none focus:border-ochre/50 transition-colors"
+              className="w-full bg-parchment border border-ink/15 text-ink font-sans text-base px-4 py-3.5 placeholder-ink/25 focus:outline-none focus:border-ink/40 transition-colors"
               placeholder="Enter staff password"
             />
           </div>
@@ -78,7 +78,7 @@ export default function AdminLogin() {
           <button
             type="submit"
             disabled={loading || !password}
-            className="w-full font-sans text-xs tracking-widest uppercase px-6 py-4 bg-ochre text-parchment-light hover:bg-ochre-light disabled:opacity-50 transition-colors mt-2"
+            className="w-full font-sans text-xs tracking-widest uppercase px-6 py-4 bg-parchment text-ink hover:bg-parchment-dark disabled:opacity-50 transition-colors mt-2"
           >
             {loading ? "Signing in…" : "Sign In"}
           </button>

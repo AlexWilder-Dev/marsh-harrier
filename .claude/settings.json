@@ -15,11 +15,18 @@
       "Bash(git add *)",
       "Bash(git push *)",
       "Bash(rm .github/workflows/deploy.yml)",
-      "Bash(git commit -m 'Remove GitHub Pages workflow — Vercel handles deployments *)"
+      "Bash(git commit -m 'Remove GitHub Pages workflow — Vercel handles deployments *)",
+      "Bash(git commit --allow-empty -m 'Trigger redeploy — update Turso credentials *)",
+      "Bash(git commit -m 'Use garden image for rooms page hero *)",
+      "Bash(git commit -m ' *)",
+      "WebFetch(domain:www.thebicestercollection.com)",
+      "Bash(git -C \"c:\\\\Users\\\\alexf\\\\.claude\\\\projects\\\\Marsh Harrier\" remote -v)",
+      "Bash(git -C \"c:\\\\Users\\\\alexf\\\\.claude\\\\projects\\\\Marsh Harrier\" status --short)"
     ],
     "additionalDirectories": [
       "c:\\Users\\alexf\\.claude\\projects\\Marsh Harrier\\.github",
-      "c:\\Users\\alexf\\.claude\\projects\\c--Users-alexf--claude-projects-Marsh-Harrier\\memory"
+      "c:\\Users\\alexf\\.claude\\projects\\c--Users-alexf--claude-projects-Marsh-Harrier\\memory",
+      "c:\\Users\\alexf\\.claude\\projects\\Marsh Harrier\\.next"
     ]
   }
 }

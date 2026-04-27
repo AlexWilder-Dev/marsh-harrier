@@ -88,7 +88,7 @@ export default function Nav() {
       <motion.header
         role="banner"
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          scrolled ? "bg-forest-rich/95 backdrop-blur-md shadow-[0_1px_0_rgba(184,137,42,0.15)]" : ""
+          scrolled ? "bg-ochre/95 backdrop-blur-md shadow-[0_1px_0_rgba(14,14,13,0.10)]" : ""
         }`}
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -99,7 +99,7 @@ export default function Nav() {
           <a
             href="/"
             aria-label="The Marsh Harrier — home"
-            className="font-serif text-parchment-light text-xl md:text-2xl leading-none tracking-tight focus-visible:outline-ochre"
+            className={`font-serif text-xl md:text-2xl leading-none tracking-tight focus-visible:outline-ochre ${scrolled ? "text-ink" : "text-parchment-light"}`}
           >
             The Marsh Harrier
           </a>
@@ -111,15 +111,17 @@ export default function Nav() {
                 key={link.href}
                 href={anchorHref(link.href)}
                 onClick={(e) => handleAnchorClick(e, link.href)}
-                className="nav-link font-sans text-xs tracking-widest uppercase text-parchment-light/60 hover:text-parchment-light transition-colors duration-200 cursor-pointer"
+                className={`nav-link font-sans text-xs tracking-widest uppercase transition-colors duration-200 cursor-pointer ${scrolled ? "text-ink/70 hover:text-ink" : "text-parchment-light/60 hover:text-parchment-light"}`}
               >
                 {link.label}
               </a>
             ))}
             <a
               href="/rooms"
-              className={`nav-link font-sans text-xs tracking-widest uppercase text-parchment-light/60 hover:text-parchment-light transition-colors duration-200 ${
-                pathname === "/rooms" ? "text-parchment-light" : ""
+              className={`nav-link font-sans text-xs tracking-widest uppercase transition-colors duration-200 ${
+                scrolled
+                  ? pathname === "/rooms" ? "text-ink font-medium" : "text-ink/70 hover:text-ink"
+                  : pathname === "/rooms" ? "text-parchment-light" : "text-parchment-light/60 hover:text-parchment-light"
               }`}
             >
               Rooms
@@ -141,9 +143,9 @@ export default function Nav() {
             className="md:hidden p-2 flex flex-col gap-[5px] focus-visible:outline-ochre"
             onClick={() => setMenuOpen(!menuOpen)}
           >
-            <span className={`block h-px w-6 bg-parchment-light transition-all duration-300 origin-center ${menuOpen ? "rotate-45 translate-y-[6px]" : ""}`} />
-            <span className={`block h-px w-6 bg-parchment-light transition-all duration-300 ${menuOpen ? "opacity-0 scale-x-0" : ""}`} />
-            <span className={`block h-px w-6 bg-parchment-light transition-all duration-300 origin-center ${menuOpen ? "-rotate-45 -translate-y-[6px]" : ""}`} />
+            <span className={`block h-px w-6 transition-all duration-300 origin-center ${menuOpen ? "rotate-45 translate-y-[6px]" : ""} ${scrolled ? "bg-ink" : "bg-parchment-light"}`} />
+            <span className={`block h-px w-6 transition-all duration-300 ${menuOpen ? "opacity-0 scale-x-0" : ""} ${scrolled ? "bg-ink" : "bg-parchment-light"}`} />
+            <span className={`block h-px w-6 transition-all duration-300 origin-center ${menuOpen ? "-rotate-45 -translate-y-[6px]" : ""} ${scrolled ? "bg-ink" : "bg-parchment-light"}`} />
           </button>
         </div>
       </motion.header>
@@ -155,13 +157,13 @@ export default function Nav() {
         role="dialog"
         aria-label="Mobile navigation"
         aria-modal="true"
-        className="fixed inset-0 z-40 bg-forest-deep flex flex-col justify-center px-8 md:hidden overflow-hidden"
+        className="fixed inset-0 z-40 bg-ochre flex flex-col justify-center px-8 md:hidden overflow-hidden"
         initial={false}
         animate={{ opacity: menuOpen ? 1 : 0, pointerEvents: menuOpen ? "auto" : "none" }}
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
       >
         <div
-          className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-[20%] font-serif text-[50vw] leading-none text-forest-rich/40 select-none pointer-events-none"
+          className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-[20%] font-serif text-[50vw] leading-none text-parchment/20 select-none pointer-events-none"
           aria-hidden="true"
         >
           &amp;
@@ -172,7 +174,7 @@ export default function Nav() {
               key={link.href}
               href={anchorHref(link.href)}
               onClick={(e) => handleMobileAnchorClick(e, link.href)}
-              className="font-serif text-parchment-light text-4xl hover:text-ochre transition-colors cursor-pointer"
+              className="font-serif text-parchment text-4xl hover:text-ink transition-colors cursor-pointer"
               initial={{ x: -24, opacity: 0 }}
               animate={menuOpen ? { x: 0, opacity: 1 } : { x: -24, opacity: 0 }}
               transition={{ delay: i * 0.07, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
@@ -184,7 +186,7 @@ export default function Nav() {
             href="/rooms"
             onClick={() => setMenuOpen(false)}
             className={`font-serif text-4xl transition-colors cursor-pointer ${
-              pathname === "/rooms" ? "text-ochre" : "text-parchment-light hover:text-ochre"
+              pathname === "/rooms" ? "text-ink font-medium" : "text-parchment hover:text-ink"
             }`}
             initial={{ x: -24, opacity: 0 }}
             animate={menuOpen ? { x: 0, opacity: 1 } : { x: -24, opacity: 0 }}

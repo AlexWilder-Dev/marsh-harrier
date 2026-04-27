@@ -159,27 +159,27 @@ function OrderPage() {
   // Success screen
   if (submitted) {
     return (
-      <main className="min-h-screen bg-forest-deep flex items-center justify-center px-6">
+      <main className="min-h-screen bg-ochre flex items-center justify-center px-6">
         <div className="text-center max-w-xs">
           <div className="w-16 h-16 rounded-full border border-ochre/60 flex items-center justify-center mx-auto mb-8">
-            <span className="font-serif italic text-ochre text-2xl">✓</span>
+            <span className="font-serif italic text-ink text-2xl">✓</span>
           </div>
-          <p className="font-sans text-ochre text-xs tracking-widest uppercase mb-4">
+          <p className="font-sans text-ink text-xs tracking-widest uppercase mb-4">
             Order placed
           </p>
-          <h1 className="font-serif font-light text-parchment-light text-3xl mb-4">
+          <h1 className="font-serif font-light text-ink text-3xl mb-4">
             {isTakeaway
               ? "Order received."
               : `We\u2019ll bring it over to Table\u00a0${tableNumber}.`}
           </h1>
-          <p className="font-sans text-parchment-light/50 text-sm font-light leading-relaxed mb-10">
+          <p className="font-sans text-ink/60 text-sm font-light leading-relaxed mb-10">
             {isTakeaway
               ? "Please call us on 01865 718225 to confirm your order and arrange payment."
               : "Payment is by card when your order arrives. Please enjoy your visit."}
           </p>
           <button
             onClick={() => setSubmitted(false)}
-            className="font-sans text-xs tracking-widest uppercase px-8 py-4 border border-parchment-light/30 text-parchment-light hover:bg-parchment-light/10 transition-colors"
+            className="font-sans text-xs tracking-widest uppercase px-8 py-4 border border-ink/30 text-ink hover:bg-ink/10 transition-colors"
           >
             Order More
           </button>
@@ -197,12 +197,12 @@ function OrderPage() {
   return (
     <div className="min-h-screen bg-parchment">
       {/* Header */}
-      <header className="sticky top-0 z-30 bg-forest-deep px-5 h-[72px] flex items-center justify-between">
+      <header className="sticky top-0 z-30 bg-ochre px-5 h-[72px] flex items-center justify-between">
         <div>
-          <p className="font-sans text-ochre text-[15px] tracking-widest uppercase">
+          <p className="font-sans text-ink text-[15px] tracking-widest uppercase">
             The Marsh Harrier
           </p>
-          <h1 className="font-serif font-light text-parchment-light text-lg leading-tight">
+          <h1 className="font-serif font-light text-ink text-lg leading-tight">
             {isTakeaway ? "Takeaway Order" : `Table ${tableNumber}`}
           </h1>
         </div>
@@ -248,7 +248,7 @@ function OrderPage() {
             {Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
-                className="h-24 bg-forest-deep/5 animate-pulse rounded"
+                className="h-24 bg-ink/5 animate-pulse rounded"
               />
             ))}
           </div>
@@ -262,7 +262,7 @@ function OrderPage() {
             </p>
             <button
               onClick={() => { setMenuError(false); setLoading(true); setMenuRetry(n => n + 1); }}
-              className="font-sans text-xs tracking-widest uppercase px-6 py-3 bg-forest-deep text-parchment-light"
+              className="font-sans text-xs tracking-widest uppercase px-6 py-3 bg-ochre text-parchment-light"
             >
               Retry
             </button>
@@ -285,7 +285,7 @@ function OrderPage() {
                         {item.description}
                       </p>
                     )}
-                    <p className="font-sans text-ochre text-sm font-medium mt-1.5">
+                    <p className="font-sans text-ink text-sm font-medium mt-1.5">
                       {formatPrice(item.price)}
                     </p>
                   </div>
@@ -310,7 +310,7 @@ function OrderPage() {
                     <button
                       onClick={() => addToCart(item)}
                       aria-label={`Add ${item.name} to order`}
-                      className="w-10 h-10 flex items-center justify-center bg-forest-deep text-parchment-light font-medium text-lg leading-none hover:bg-forest-rich transition-colors"
+                      className="w-10 h-10 flex items-center justify-center bg-ochre text-parchment-light font-medium text-lg leading-none hover:bg-ochre-light transition-colors"
                     >
                       +
                     </button>
@@ -327,7 +327,7 @@ function OrderPage() {
         <div className="fixed bottom-0 left-0 right-0 z-30 px-4 pt-4 pb-safe-4 bg-parchment border-t border-forest-deep/10">
           <button
             onClick={() => setCartOpen(true)}
-            className="w-full flex items-center justify-between font-sans text-xs tracking-widest uppercase px-6 py-4 bg-forest-deep text-parchment-light hover:bg-forest-rich transition-colors"
+            className="w-full flex items-center justify-between font-sans text-xs tracking-widest uppercase px-6 py-4 bg-ochre text-parchment-light hover:bg-ochre-light transition-colors"
           >
             <span>
               {count} item{count !== 1 ? "s" : ""}
@@ -348,7 +348,7 @@ function OrderPage() {
           aria-modal="true"
         >
           <div
-            className="absolute inset-0 bg-forest-deep/60"
+            className="absolute inset-0 bg-ink/40"
             onClick={() => setCartOpen(false)}
           />
           <div className="relative bg-parchment max-h-[85vh] flex flex-col">
@@ -395,12 +395,12 @@ function OrderPage() {
                     <button
                       onClick={() => addToCart(item)}
                       aria-label={`Add one more ${item.name}`}
-                      className="w-9 h-9 flex items-center justify-center bg-forest-deep text-parchment-light text-lg hover:bg-forest-rich transition-colors"
+                      className="w-9 h-9 flex items-center justify-center bg-ochre text-parchment-light text-lg hover:bg-ochre-light transition-colors"
                     >
                       +
                     </button>
                   </div>
-                  <p className="font-sans text-ochre font-medium text-sm w-14 text-right flex-shrink-0 tabular-nums">
+                  <p className="font-sans text-ink font-medium text-sm w-14 text-right flex-shrink-0 tabular-nums">
                     {formatPrice(item.price * item.quantity)}
                   </p>
                 </li>

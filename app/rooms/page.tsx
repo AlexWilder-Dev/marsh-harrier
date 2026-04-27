@@ -80,7 +80,7 @@ function RoomsHero() {
 
       <div className="relative z-10 px-6 md:px-16 lg:px-24 pb-16 max-w-7xl w-full">
         <motion.p
-          className="font-sans text-ochre text-xs tracking-widest uppercase mb-5"
+          className="font-sans text-parchment-light text-xs tracking-widest uppercase mb-5"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.4 }}
@@ -95,7 +95,7 @@ function RoomsHero() {
         >
           Rooms at the
           <br />
-          <em className="italic text-ochre-light block ml-[6vw] md:ml-[10vw]">
+          <em className="italic text-parchment-light block ml-[6vw] md:ml-[10vw]">
             Marsh Harrier.
           </em>
         </motion.h1>
@@ -123,7 +123,7 @@ function RoomsDescription() {
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
           >
-            <p className="font-sans text-ochre text-xs tracking-widest uppercase mb-5">
+            <p className="font-sans text-ink text-xs tracking-widest uppercase mb-5">
               The room
             </p>
             <h2 className="font-serif font-light text-display-xl text-forest-deep leading-[0.9] mb-8">
@@ -161,7 +161,7 @@ function RoomsDescription() {
                 key={h.label}
                 className="bg-parchment-light px-5 py-7 flex flex-col"
               >
-                <p className="font-sans text-[15px] tracking-widest uppercase text-ochre mb-2">
+                <p className="font-sans text-[15px] tracking-widest uppercase text-ink mb-2">
                   {h.label}
                 </p>
                 <p className="font-serif font-light text-forest-deep text-xl md:text-2xl leading-tight">
@@ -181,11 +181,11 @@ function RoomsDescription() {
 function RoomsAmenities() {
   return (
     <section
-      className="bg-forest-deep py-24 md:py-32 overflow-hidden relative"
+      className="bg-ochre py-24 md:py-32 overflow-hidden relative"
       aria-label="Room amenities"
     >
       <div
-        className="absolute -left-4 top-0 bottom-0 font-serif text-[22vw] leading-none text-forest-rich/60 select-none pointer-events-none flex items-center"
+        className="absolute -left-4 top-0 bottom-0 font-serif text-[22vw] leading-none text-parchment/15 select-none pointer-events-none flex items-center"
         aria-hidden="true"
       >
         &amp;
@@ -199,10 +199,10 @@ function RoomsAmenities() {
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
           className="mb-14"
         >
-          <p className="font-sans text-ochre text-xs tracking-widest uppercase mb-4">
+          <p className="font-sans text-ink text-xs tracking-widest uppercase mb-4">
             What&apos;s included
           </p>
-          <h2 className="font-serif font-light text-parchment-light text-display-lg leading-[0.9]">
+          <h2 className="font-serif font-light text-ink text-display-lg leading-[0.9]">
             Everything you need.
           </h2>
         </motion.div>
@@ -225,7 +225,7 @@ function RoomsAmenities() {
                 className="w-1 h-1 rounded-full bg-ochre flex-shrink-0 mt-2"
                 aria-hidden="true"
               />
-              <p className="font-sans text-parchment-light/70 text-sm font-light leading-relaxed">
+              <p className="font-sans text-ink/70 text-sm font-light leading-relaxed">
                 {item}
               </p>
             </motion.div>
@@ -251,7 +251,7 @@ function RoomsGallery() {
           viewport={{ once: true, margin: "-60px" }}
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
         >
-          <p className="font-sans text-ochre text-xs tracking-widest uppercase mb-4">
+          <p className="font-sans text-ink text-xs tracking-widest uppercase mb-4">
             Take a look
           </p>
           <h2 className="font-serif font-light text-forest-deep text-display-lg leading-[0.9]">
@@ -351,16 +351,16 @@ function EnquiryForm() {
   if (state === "success") {
     return (
       <div className="flex flex-col items-center text-center py-16">
-        <div className="w-14 h-14 rounded-full border border-ochre/50 flex items-center justify-center mb-8">
-          <span className="font-serif italic text-ochre text-xl">✓</span>
+        <div className="w-14 h-14 rounded-full border border-ink/25 flex items-center justify-center mb-8">
+          <span className="font-serif italic text-ink text-xl">✓</span>
         </div>
-        <p className="font-sans text-ochre text-xs tracking-widest uppercase mb-4">
+        <p className="font-sans text-ink text-xs tracking-widest uppercase mb-4">
           Enquiry received
         </p>
-        <h3 className="font-serif font-light text-parchment-light text-display-sm mb-4">
+        <h3 className="font-serif font-light text-ink text-display-sm mb-4">
           Thanks — we&apos;ll be in touch within 24 hours.
         </h3>
-        <p className="font-sans text-parchment-light/50 text-sm font-light max-w-sm">
+        <p className="font-sans text-ink/60 text-sm font-light max-w-sm">
           We check messages daily and will confirm availability and pricing as
           soon as possible.
         </p>
@@ -375,7 +375,7 @@ function EnquiryForm() {
         <div>
           <label
             htmlFor="name"
-            className="block font-sans text-[15px] tracking-widest uppercase text-parchment-light/40 mb-2"
+            className="block font-sans text-[15px] tracking-widest uppercase text-ink/50 mb-2"
           >
             Full Name <span aria-label="required">*</span>
           </label>
@@ -385,14 +385,14 @@ function EnquiryForm() {
             type="text"
             required
             autoComplete="name"
-            className="w-full bg-forest-rich border border-parchment-light/10 text-parchment-light font-sans text-base px-4 py-3.5 placeholder-parchment-light/20 focus:outline-none focus:border-ochre/50 transition-colors"
+            className="w-full bg-parchment border border-ink/15 text-ink font-sans text-base px-4 py-3.5 placeholder-ink/25 focus:outline-none focus:border-ink/40 transition-colors"
             placeholder="Your name"
           />
         </div>
         <div>
           <label
             htmlFor="email"
-            className="block font-sans text-[15px] tracking-widest uppercase text-parchment-light/40 mb-2"
+            className="block font-sans text-[15px] tracking-widest uppercase text-ink/50 mb-2"
           >
             Email <span aria-label="required">*</span>
           </label>
@@ -402,7 +402,7 @@ function EnquiryForm() {
             type="email"
             required
             autoComplete="email"
-            className="w-full bg-forest-rich border border-parchment-light/10 text-parchment-light font-sans text-base px-4 py-3.5 placeholder-parchment-light/20 focus:outline-none focus:border-ochre/50 transition-colors"
+            className="w-full bg-parchment border border-ink/15 text-ink font-sans text-base px-4 py-3.5 placeholder-ink/25 focus:outline-none focus:border-ink/40 transition-colors"
             placeholder="you@example.com"
           />
         </div>
@@ -412,16 +412,16 @@ function EnquiryForm() {
       <div>
         <label
           htmlFor="phone"
-          className="block font-sans text-[15px] tracking-widest uppercase text-parchment-light/40 mb-2"
+          className="block font-sans text-[15px] tracking-widest uppercase text-ink/50 mb-2"
         >
-          Phone <span className="text-parchment-light/20">(optional)</span>
+          Phone <span className="text-ink/30">(optional)</span>
         </label>
         <input
           id="phone"
           name="phone"
           type="tel"
           autoComplete="tel"
-          className="w-full bg-forest-rich border border-parchment-light/10 text-parchment-light font-sans text-base px-4 py-3.5 placeholder-parchment-light/20 focus:outline-none focus:border-ochre/50 transition-colors"
+          className="w-full bg-parchment border border-ink/15 text-ink font-sans text-base px-4 py-3.5 placeholder-ink/25 focus:outline-none focus:border-ink/40 transition-colors"
           placeholder="+44 7700 000000"
         />
       </div>
@@ -431,7 +431,7 @@ function EnquiryForm() {
         <div>
           <label
             htmlFor="checkin"
-            className="block font-sans text-[15px] tracking-widest uppercase text-parchment-light/40 mb-2"
+            className="block font-sans text-[15px] tracking-widest uppercase text-ink/50 mb-2"
           >
             Check-in <span aria-label="required">*</span>
           </label>
@@ -441,13 +441,13 @@ function EnquiryForm() {
             type="date"
             required
             min={today}
-            className="w-full bg-forest-rich border border-parchment-light/10 text-parchment-light font-sans text-base px-4 py-3.5 focus:outline-none focus:border-ochre/50 transition-colors [color-scheme:dark]"
+            className="w-full bg-parchment border border-ink/15 text-ink font-sans text-base px-4 py-3.5 focus:outline-none focus:border-ink/40 transition-colors [color-scheme:light]"
           />
         </div>
         <div>
           <label
             htmlFor="checkout"
-            className="block font-sans text-[15px] tracking-widest uppercase text-parchment-light/40 mb-2"
+            className="block font-sans text-[15px] tracking-widest uppercase text-ink/50 mb-2"
           >
             Check-out <span aria-label="required">*</span>
           </label>
@@ -457,7 +457,7 @@ function EnquiryForm() {
             type="date"
             required
             min={today}
-            className="w-full bg-forest-rich border border-parchment-light/10 text-parchment-light font-sans text-base px-4 py-3.5 focus:outline-none focus:border-ochre/50 transition-colors [color-scheme:dark]"
+            className="w-full bg-parchment border border-ink/15 text-ink font-sans text-base px-4 py-3.5 focus:outline-none focus:border-ink/40 transition-colors [color-scheme:light]"
           />
         </div>
       </div>
@@ -466,7 +466,7 @@ function EnquiryForm() {
       <div>
         <label
           htmlFor="guests"
-          className="block font-sans text-[15px] tracking-widest uppercase text-parchment-light/40 mb-2"
+          className="block font-sans text-[15px] tracking-widest uppercase text-ink/50 mb-2"
         >
           Number of Guests <span aria-label="required">*</span>
         </label>
@@ -476,7 +476,7 @@ function EnquiryForm() {
             name="guests"
             required
             defaultValue=""
-            className="w-full bg-forest-rich border border-parchment-light/10 text-parchment-light font-sans text-base px-4 py-3.5 pr-10 focus:outline-none focus:border-ochre/50 transition-colors appearance-none"
+            className="w-full bg-parchment border border-ink/15 text-ink font-sans text-base px-4 py-3.5 pr-10 focus:outline-none focus:border-ink/40 transition-colors appearance-none"
           >
             <option value="" disabled>
               Select
@@ -488,7 +488,7 @@ function EnquiryForm() {
             ))}
           </select>
           <span
-            className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-parchment-light/30 text-xs"
+            className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-ink/30 text-xs"
             aria-hidden="true"
           >
             ▾
@@ -500,15 +500,15 @@ function EnquiryForm() {
       <div>
         <label
           htmlFor="message"
-          className="block font-sans text-[15px] tracking-widest uppercase text-parchment-light/40 mb-2"
+          className="block font-sans text-[15px] tracking-widest uppercase text-ink/50 mb-2"
         >
-          Message <span className="text-parchment-light/20">(optional)</span>
+          Message <span className="text-ink/30">(optional)</span>
         </label>
         <textarea
           id="message"
           name="message"
           rows={4}
-          className="w-full bg-forest-rich border border-parchment-light/10 text-parchment-light font-sans text-base px-4 py-3.5 placeholder-parchment-light/20 focus:outline-none focus:border-ochre/50 transition-colors resize-none"
+          className="w-full bg-parchment border border-ink/15 text-ink font-sans text-base px-4 py-3.5 placeholder-ink/25 focus:outline-none focus:border-ink/40 transition-colors resize-none"
           placeholder="Anything we should know — special occasions, early arrival, etc."
         />
       </div>
@@ -520,12 +520,12 @@ function EnquiryForm() {
       <button
         type="submit"
         disabled={state === "submitting"}
-        className="w-full font-sans text-xs tracking-widest uppercase px-6 py-4 bg-ochre text-parchment-light hover:bg-ochre-light disabled:opacity-60 transition-colors"
+        className="w-full font-sans text-xs tracking-widest uppercase px-6 py-4 bg-parchment text-ink hover:bg-parchment-dark disabled:opacity-60 transition-colors"
       >
         {state === "submitting" ? "Sending…" : "Send Enquiry"}
       </button>
 
-      <p className="font-sans text-parchment-light/25 text-xs text-center leading-relaxed">
+      <p className="font-sans text-ink/35 text-xs text-center leading-relaxed">
         We&apos;ll reply within 24 hours. No booking fee — we confirm directly
         by email.
       </p>
@@ -537,7 +537,7 @@ function RoomsEnquiry() {
   return (
     <section
       id="enquiry"
-      className="bg-forest-deep py-24 md:py-36 overflow-hidden"
+      className="bg-ochre py-24 md:py-36 overflow-hidden"
       aria-label="Room enquiry form"
     >
       <div className="max-w-7xl mx-auto px-6 md:px-16">
@@ -549,25 +549,25 @@ function RoomsEnquiry() {
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
           >
-            <p className="font-sans text-ochre text-xs tracking-widest uppercase mb-5">
+            <p className="font-sans text-ink text-xs tracking-widest uppercase mb-5">
               Make an enquiry
             </p>
-            <h2 className="font-serif font-light text-parchment-light text-display-xl leading-[0.9] mb-8">
+            <h2 className="font-serif font-light text-ink text-display-xl leading-[0.9] mb-8">
               Book your
               <br />
-              <em className="italic text-ochre-light">stay.</em>
+              <em className="italic text-ink">stay.</em>
             </h2>
             <div className="flex flex-col gap-1 mb-10">
               <div className="rule-ochre w-20" />
               <div className="rule-ochre w-10 opacity-40" />
             </div>
-            <p className="font-sans text-parchment-light/55 text-base leading-relaxed font-light mb-6">
+            <p className="font-sans text-ink/65 text-base leading-relaxed font-light mb-6">
               Fill in the form and we&apos;ll come back to you within 24 hours
               to confirm availability and answer any questions.
             </p>
-            <p className="font-sans text-parchment-light/55 text-base leading-relaxed font-light">
+            <p className="font-sans text-ink/65 text-base leading-relaxed font-light">
               Prefer to call? Find us at{" "}
-              <strong className="font-medium text-parchment-light/80">
+              <strong className="font-medium text-ink">
                 40 Marsh Road, Cowley, Oxford OX4 2HH
               </strong>
               .

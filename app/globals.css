@@ -3,16 +3,16 @@
 @tailwind utilities;
 
 :root {
-  --parchment: #F0E8D6;
-  --parchment-light: #F8F3E8;
-  --parchment-dark: #DDD0B8;
-  --forest-deep: #0C1A10;
-  --forest-rich: #1A3325;
-  --forest-mid: #2E5240;
-  --ochre: #B8892A;
-  --ochre-light: #CFA040;
-  --ochre-warm: #8C6420;
-  --ink: #1C1408;
+  --parchment: #F5F0E6;
+  --parchment-light: #FFFFFF;
+  --parchment-dark: #EBE5D8;
+  --forest-deep: #0E0E0D;
+  --forest-rich: #1C1C1B;
+  --forest-mid: #7E8A4A;
+  --ochre: #7E8A4A;
+  --ochre-light: #929E59;
+  --ochre-warm: #6B2C2C;
+  --ink: #0E0E0D;
 }
 
 /* Skip to content — accessibility */
@@ -60,7 +60,7 @@ body {
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: var(--forest-deep); }
+::-webkit-scrollbar-track { background: var(--parchment); }
 ::-webkit-scrollbar-thumb { background: var(--ochre); border-radius: 2px; }
 
 /* Reduced motion */

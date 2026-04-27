@@ -43,7 +43,7 @@ export default function Hero() {
       {/* Content */}
       <div className="relative z-20 px-6 md:px-16 lg:px-24 max-w-7xl w-full">
         <motion.p
-          className="font-sans text-ochre text-xs tracking-widest uppercase mb-6"
+          className="font-sans text-parchment-light text-xs tracking-widest uppercase mb-6"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.5 }}
@@ -60,7 +60,7 @@ export default function Hero() {
         >
           A beer fan&apos;s
           <br />
-          <em className="italic text-ochre-light block ml-[8vw] md:ml-[18vw]">haven.</em>
+          <em className="italic text-parchment-light block ml-[8vw] md:ml-[18vw]">haven.</em>
         </motion.h1>
 
         {/* Sub-copy aligns with the indented italic line */}

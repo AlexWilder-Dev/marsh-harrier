@@ -35,7 +35,7 @@ function AboutPanel() {
         </div>
 
         <div className="relative z-10 max-w-md">
-          <p className="font-sans text-ochre text-xs tracking-widest uppercase mb-6">Est. Cowley</p>
+          <p className="font-sans text-ink text-xs tracking-widest uppercase mb-6">Est. Cowley</p>
           <h2 className="font-serif font-light text-display-xl text-forest-deep leading-[0.9] mb-8">
             Unpretentious.
             <br />
@@ -109,7 +109,7 @@ function GardenPanel() {
       </p>
 
       <div className="absolute bottom-0 left-0 right-0 p-8 md:p-16 lg:p-24">
-        <p className="font-sans text-ochre text-xs tracking-widest uppercase mb-5">The Garden</p>
+        <p className="font-sans text-parchment-light text-xs tracking-widest uppercase mb-5">The Garden</p>
         <h2 className="font-serif font-light text-parchment-light text-display-xl leading-[0.9] mb-6">
           Sun,
           <br />
@@ -147,7 +147,7 @@ function FoodPanel() {
       <div className="absolute inset-0 bg-gradient-to-r from-forest-deep/45 to-transparent" aria-hidden="true" />
 
       <div className="absolute bottom-0 left-0 right-0 p-8 md:p-16 lg:p-24">
-        <p className="font-sans text-ochre text-xs tracking-widest uppercase mb-5">Food &amp; Drink</p>
+        <p className="font-sans text-parchment-light text-xs tracking-widest uppercase mb-5">Food &amp; Drink</p>
         <h2 className="font-serif font-light text-parchment-light text-display-xl leading-[0.9] mb-8">
           Proper food,
           <br />
@@ -184,7 +184,7 @@ function FoodPanel() {
 
           {/* Order online — takeaway CTA */}
           <div className="border-t border-parchment-light/15 pt-5 md:border-t-0 md:pt-0 md:border-l md:border-parchment-light/15 md:pl-12">
-            <p className="font-sans text-ochre text-[15px] tracking-widest uppercase mb-2">Order for collection</p>
+            <p className="font-sans text-parchment-light text-[15px] tracking-widest uppercase mb-2">Order for collection</p>
             <a
               href="/order?type=takeaway"
               className="inline-flex items-center gap-3 font-sans text-xs tracking-widest uppercase text-parchment-light hover:text-ochre transition-colors duration-300 focus-visible:outline-ochre"

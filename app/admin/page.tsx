@@ -153,14 +153,14 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-parchment-dark">
       {/* Header */}
-      <header className="bg-forest-deep px-5 py-4">
+      <header className="bg-ochre px-5 py-4">
         {/* Top row: title + icon actions */}
         <div className="flex items-start justify-between gap-4 mb-1">
           <div>
-            <p className="font-sans text-ochre text-[15px] tracking-widest uppercase">
+            <p className="font-sans text-ink text-[15px] tracking-widest uppercase">
               Staff Dashboard
             </p>
-            <h1 className="font-serif font-light text-parchment-light text-xl leading-tight">
+            <h1 className="font-serif font-light text-ink text-xl leading-tight">
               The Marsh Harrier
             </h1>
           </div>
@@ -170,7 +170,7 @@ export default function AdminDashboard() {
               href="/admin/qr"
               title="QR Codes"
               aria-label="QR code generator"
-              className="w-10 h-10 flex items-center justify-center text-parchment-light/50 hover:text-parchment-light transition-colors text-base"
+              className="w-10 h-10 flex items-center justify-center text-ink/50 hover:text-ink transition-colors text-base"
             >
               ▦
             </a>
@@ -178,7 +178,7 @@ export default function AdminDashboard() {
               onClick={logout}
               title="Sign out"
               aria-label="Sign out"
-              className="w-10 h-10 flex items-center justify-center text-parchment-light/30 hover:text-parchment-light/60 transition-colors text-sm"
+              className="w-10 h-10 flex items-center justify-center text-ink/30 hover:text-ink/60 transition-colors text-sm"
             >
               ⏻
             </button>
@@ -186,7 +186,7 @@ export default function AdminDashboard() {
         </div>
         {/* Status row + Close All on same line */}
         <div className="flex items-center justify-between gap-4">
-          <p className="font-sans text-parchment-light/30 text-xs">
+          <p className="font-sans text-ink/40 text-xs">
             {openCount} table{openCount !== 1 ? "s" : ""} open
             {lastUpdated && (
               <span className="ml-2">
@@ -294,13 +294,13 @@ export default function AdminDashboard() {
                             {order.customer_name && (
                               <div className="mb-2">
                                 <p className="font-sans text-sm font-medium text-forest-deep">{order.customer_name}</p>
-                                <a href={`tel:${order.customer_phone}`} className="font-sans text-xs text-ochre hover:underline">
+                                <a href={`tel:${order.customer_phone}`} className="font-sans text-xs text-ink/60 hover:underline">
                                   {order.customer_phone}
                                 </a>
                               </div>
                             )}
                             <div className="flex items-center justify-between mb-2">
-                              <p className="font-sans text-[15px] tracking-widest uppercase text-ochre">
+                              <p className="font-sans text-[15px] tracking-widest uppercase text-ink/60">
                                 Order #{order.id} · {formatTime(order.created_at)}
                               </p>
                               <div className="text-right">
@@ -323,7 +323,7 @@ export default function AdminDashboard() {
                             <button
                               onClick={() => markDelivered(order.id)}
                               disabled={deliveringOrder === order.id}
-                              className="w-full font-sans text-xs tracking-widest uppercase px-4 py-3 bg-forest-deep text-parchment-light hover:bg-forest-rich disabled:opacity-50 transition-colors"
+                              className="w-full font-sans text-xs tracking-widest uppercase px-4 py-3 bg-ochre text-parchment-light hover:bg-ochre-light disabled:opacity-50 transition-colors"
                             >
                               {deliveringOrder === order.id
                                 ? "Marking…"

@@ -41,7 +41,7 @@ function HourRow({ row, index }: { row: typeof hours[0]; index: number }) {
         >
           {row.day}
           {today && (
-            <span className="ml-2 font-sans text-ochre text-[15px] tracking-widest uppercase">
+            <span className="ml-2 font-sans text-ink text-[15px] tracking-widest uppercase">
               Today
             </span>
           )}
@@ -66,7 +66,7 @@ function HourRow({ row, index }: { row: typeof hours[0]; index: number }) {
           )}
         </p>
         {row.note && (
-          <p className="font-sans text-ochre text-[15px] tracking-wide uppercase mt-0.5">
+          <p className="font-sans text-ink text-[15px] tracking-wide uppercase mt-0.5">
             {row.note}
           </p>
         )}
@@ -98,7 +98,7 @@ export default function OpeningHours() {
           transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
           className="mb-14"
         >
-          <p className="font-sans text-ochre text-xs tracking-widest uppercase mb-5">
+          <p className="font-sans text-ink text-xs tracking-widest uppercase mb-5">
             When to find us
           </p>
           <h2 className="font-serif font-light text-display-xl text-forest-deep leading-[0.9]">

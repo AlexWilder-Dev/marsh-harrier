@@ -10,23 +10,23 @@ const config: Config = {
     extend: {
       colors: {
         parchment: {
-          DEFAULT: "#F5F1EA",   /* warm ivory — main backgrounds */
-          light: "#FFFFFF",     /* pure white — cards, elevated surfaces */
-          dark: "#EDE7DC",      /* deeper cream — section alternates, nav */
+          DEFAULT: "#F5F0E6",   /* main background */
+          light: "#FFFFFF",     /* elevated surfaces */
+          dark: "#EBE5D8",      /* alt sections, nav */
         },
         forest: {
-          deep: "#1A1A1A",      /* near-black — headers, nav, dark sections */
-          rich: "#2D2D2D",      /* slightly lifted — hover states */
-          mid: "#7A8068",       /* muted olive-sage — secondary accents */
-          light: "#8A8378",     /* taupe-grey — muted text, meta */
+          deep: "#0E0E0D",      /* near-black — headers, nav, dark sections */
+          rich: "#1C1C1B",      /* hover states */
+          mid: "#7E8A4A",       /* olive — mid accent */
+          light: "#929E59",     /* lighter olive */
         },
         ochre: {
-          DEFAULT: "#7E8A4A",   /* muted olive — CTAs, highlights */
-          light: "#929E59",     /* lighter olive — hover */
-          warm: "#6B2C2C",      /* restrained burgundy — sale/alert use */
+          DEFAULT: "#7E8A4A",   /* olive — CTAs, highlights, alt backgrounds */
+          light: "#929E59",     /* hover */
+          warm: "#6B2C2C",      /* burgundy — restrained use */
         },
-        ink: "#1A1A1A",
-        border: "#D9D2C5",
+        ink: "#0E0E0D",
+        border: "#DDD7CA",
       },
       fontFamily: {
         serif: ["var(--font-cormorant)", "Georgia", "serif"],

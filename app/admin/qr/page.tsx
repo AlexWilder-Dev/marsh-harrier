@@ -41,7 +41,7 @@ export default function QRGenerator() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(offscreen, 0, 0);
 
-    ctx.fillStyle = "#1A1A1A";
+    ctx.fillStyle = "#0E0E0D";
     ctx.font = "500 18px 'DM Sans', system-ui, sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -61,18 +61,18 @@ export default function QRGenerator() {
   return (
     <div className="min-h-screen bg-parchment-dark">
       {/* Header */}
-      <header className="bg-forest-deep px-5 py-4 flex items-center justify-between">
+      <header className="bg-ochre px-5 py-4 flex items-center justify-between">
         <div>
-          <p className="font-sans text-ochre text-[15px] tracking-widest uppercase">
+          <p className="font-sans text-ink text-[15px] tracking-widest uppercase">
             Staff — QR Codes
           </p>
-          <h1 className="font-serif font-light text-parchment-light text-xl">
+          <h1 className="font-serif font-light text-ink text-xl">
             Table QR Generator
           </h1>
         </div>
         <a
           href="/admin"
-          className="font-sans text-xs tracking-widest uppercase text-parchment-light/40 hover:text-parchment-light transition-colors"
+          className="font-sans text-xs tracking-widest uppercase text-ink/40 hover:text-ink transition-colors"
         >
           ← Dashboard
         </a>
@@ -127,7 +127,7 @@ export default function QRGenerator() {
         <button
           onClick={generateQR}
           disabled={!url}
-          className="w-full font-sans text-xs tracking-widest uppercase px-6 py-4 bg-forest-deep text-parchment-light hover:bg-forest-rich disabled:opacity-40 transition-colors mb-8"
+          className="w-full font-sans text-xs tracking-widest uppercase px-6 py-4 bg-parchment text-ink hover:bg-parchment-dark disabled:opacity-40 transition-colors mb-8"
         >
           Generate QR Code
         </button>
