@@ -11,6 +11,9 @@ const nav = [
 const menus = [
   { label: "Food Menu", href: "https://marshharriercowley.co.uk/media/food-menu.pdf" },
   { label: "Drinks Menu", href: "https://marshharriercowley.co.uk/media/drinks-menu.pdf" },
+  { label: "BBQ Menu", href: "https://marshharriercowley.co.uk/media/bbq-menu.pdf" },
+  { label: "Buffet Menu", href: "https://marshharriercowley.co.uk/media/buffet-menu.pdf" },
+  { label: "Christmas Menu", href: "https://marshharriercowley.co.uk/media/christmas-menu-2025.pdf" },
 ];
 
 const social = [

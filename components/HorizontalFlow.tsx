@@ -152,6 +152,9 @@ function FoodPanel() {
             {[
               { title: "Food Menu", href: "https://marshharriercowley.co.uk/media/food-menu.pdf" },
               { title: "Drinks Menu", href: "https://marshharriercowley.co.uk/media/drinks-menu.pdf" },
+              { title: "BBQ Menu", href: "https://marshharriercowley.co.uk/media/bbq-menu.pdf" },
+              { title: "Buffet Menu", href: "https://marshharriercowley.co.uk/media/buffet-menu.pdf" },
+              { title: "Christmas Menu", href: "https://marshharriercowley.co.uk/media/christmas-menu-2025.pdf" },
             ].map((m) => (
               <a
                 key={m.title}

@@ -5,13 +5,13 @@ import { motion, useInView } from "framer-motion";
 import Counter from "./Counter";
 
 const hours = [
-  { day: "Monday",    openH: 4,  openSuffix: ":00pm", closeH: 11, closeSuffix: ":00pm" },
-  { day: "Tuesday",   openH: 4,  openSuffix: ":00pm", closeH: 11, closeSuffix: ":00pm" },
-  { day: "Wednesday", openH: 4,  openSuffix: ":00pm", closeH: 11, closeSuffix: ":00pm" },
-  { day: "Thursday",  openH: 4,  openSuffix: ":00pm", closeH: 11, closeSuffix: ":00pm" },
-  { day: "Friday",    openH: 3,  openSuffix: ":00pm", closeH: 12, closeSuffix: ":00am" },
-  { day: "Saturday",  openH: 12, openSuffix: ":00pm", closeH: 12, closeSuffix: ":00am" },
-  { day: "Sunday",    openH: 12, openSuffix: ":00pm", closeH: 10, closeSuffix: ":30pm", note: "Roasts from noon" },
+  { day: "Monday",    openH: 5,  openSuffix: ":00pm", closeH: 11, closeSuffix: ":00pm", food: "6–9pm" },
+  { day: "Tuesday",   openH: 12, openSuffix: ":00pm", closeH: 11, closeSuffix: ":00pm", food: "noon–3pm & 6–9pm" },
+  { day: "Wednesday", openH: 12, openSuffix: ":00pm", closeH: 11, closeSuffix: ":00pm", food: "noon–3pm & 6–9pm" },
+  { day: "Thursday",  openH: 12, openSuffix: ":00pm", closeH: 11, closeSuffix: ":00pm", food: "noon–3pm & 4–9pm" },
+  { day: "Friday",    openH: 12, openSuffix: ":00pm", closeH: 11, closeSuffix: ":00pm", food: "noon–3pm & 4–9pm" },
+  { day: "Saturday",  openH: 12, openSuffix: ":00pm", closeH: 11, closeSuffix: ":00pm", food: "noon–3pm & 4–9pm" },
+  { day: "Sunday",    openH: 12, openSuffix: ":00pm", closeH: 11, closeSuffix: ":00pm", food: "noon–4pm & 5–8pm", note: "Roasts from noon" },
 ];
 
 function getTodayName() {
@@ -29,7 +29,7 @@ function HourRow({ row, index }: { row: typeof hours[0]; index: number }) {
       initial={{ opacity: 0, x: -12 }}
       animate={isInView ? { opacity: 1, x: 0 } : {}}
       transition={{ delay: index * 0.06, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-      className={`flex items-start sm:items-center justify-between py-5 border-b gap-4 ${
+      className={`flex items-start justify-between py-5 border-b gap-4 ${
         today ? "border-ochre/40 bg-ochre/[0.04]" : "border-forest-deep/10"
       }`}
     >
@@ -53,7 +53,7 @@ function HourRow({ row, index }: { row: typeof hours[0]; index: number }) {
           className={`font-sans text-base tabular-nums ${
             today ? "text-forest-deep" : "text-ink/55 font-light"
           }`}
-          aria-label={`Opens ${row.openH}${row.openSuffix}, closes ${row.closeH}${row.closeSuffix}`}
+          aria-label={`Bar opens ${row.openH}${row.openSuffix}, closes ${row.closeH}${row.closeSuffix}`}
         >
           {isInView ? (
             <>
@@ -65,8 +65,15 @@ function HourRow({ row, index }: { row: typeof hours[0]; index: number }) {
             <span className="text-ink/20">–</span>
           )}
         </p>
+        <p
+          className={`font-sans text-xs mt-0.5 ${
+            today ? "text-ochre/80" : "text-ink/35 font-light"
+          }`}
+        >
+          Kitchen: {row.food}
+        </p>
         {row.note && (
-          <p className="font-sans text-ink text-[15px] tracking-wide uppercase mt-0.5">
+          <p className="font-sans text-ink text-[13px] tracking-wide uppercase mt-0.5">
             {row.note}
           </p>
         )}
@@ -108,6 +115,14 @@ export default function OpeningHours() {
             The Marsh Harrier, Cowley
           </p>
         </motion.div>
+
+        {/* Column headers */}
+        <div className="flex justify-between pb-3 border-b border-forest-deep/10 mb-1">
+          <span className="font-sans text-[11px] tracking-widest uppercase text-ink/30">Day</span>
+          <div className="text-right">
+            <span className="font-sans text-[11px] tracking-widest uppercase text-ink/30">Bar · Kitchen</span>
+          </div>
+        </div>
 
         <div role="list" aria-label="Opening hours by day">
           {hours.map((row, i) => (
