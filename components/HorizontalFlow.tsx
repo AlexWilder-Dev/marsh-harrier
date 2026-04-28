@@ -22,13 +22,13 @@ function AboutPanel() {
   return (
     <article
       id="about"
-      className="flex-shrink-0 w-full md:w-screen h-auto md:h-full flex flex-col md:flex-row"
+      className="flex-shrink-0 w-full md:w-screen h-auto md:h-full flex flex-col-reverse md:flex-row"
       aria-label="About The Marsh Harrier"
     >
-      <div className="flex-1 bg-parchment relative flex items-center px-8 md:px-16 lg:px-24 py-20 md:py-0 min-h-[60vh] md:min-h-0 overflow-hidden">
-        {/* Large decorative ampersand — centred behind copy */}
+      <div className="flex-1 bg-parchment relative flex items-center px-8 md:px-16 lg:px-24 py-12 sm:py-16 md:py-0 overflow-hidden">
+        {/* Large decorative ampersand — hidden on mobile to save paint */}
         <div
-          className="absolute left-1/2 -translate-x-1/4 top-1/2 -translate-y-1/2 font-serif text-[22vw] leading-none text-forest-deep/[0.055] select-none pointer-events-none"
+          className="hidden md:block absolute left-1/2 -translate-x-1/4 top-1/2 -translate-y-1/2 font-serif text-[22vw] leading-none text-forest-deep/[0.055] select-none pointer-events-none"
           aria-hidden="true"
         >
           &amp;
@@ -65,7 +65,7 @@ function AboutPanel() {
         </div>
       </div>
 
-      <div className="relative w-full md:w-[38%] h-64 md:h-full overflow-hidden flex-shrink-0">
+      <div className="relative w-full md:w-[38%] h-[50vw] sm:h-64 md:h-full overflow-hidden flex-shrink-0">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/images/marsh-harrier-pub-front.avif"
@@ -84,7 +84,7 @@ function GardenPanel() {
   return (
     <article
       id="garden"
-      className="relative flex-shrink-0 w-full md:w-screen h-[75vw] md:h-full overflow-hidden"
+      className="relative flex-shrink-0 w-full md:w-screen h-[65vw] min-h-[260px] md:h-full overflow-hidden"
       aria-label="The beer garden"
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -100,7 +100,7 @@ function GardenPanel() {
       <div className="absolute bottom-0 left-0 right-0 h-[65%] bg-gradient-to-t from-forest-deep/90 via-forest-deep/50 to-transparent" aria-hidden="true" />
       <div className="absolute inset-0 bg-gradient-to-r from-forest-deep/35 to-transparent" aria-hidden="true" />
 
-      {/* Editorial date stamp — rotated top-right */}
+      {/* Editorial date stamp — rotated top-right, desktop only */}
       <p
         className="absolute top-10 right-10 font-sans text-[9px] tracking-widest uppercase text-parchment-light/30 rotate-90 origin-top-right hidden md:block"
         aria-hidden="true"
@@ -108,7 +108,7 @@ function GardenPanel() {
         South-facing · Oxford
       </p>
 
-      <div className="absolute bottom-0 left-0 right-0 p-8 md:p-16 lg:p-24">
+      <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8 md:p-16 lg:p-24">
         <p className="font-sans text-parchment-light text-xs tracking-widest uppercase mb-5">The Garden</p>
         <h2 className="font-serif font-light text-parchment-light text-display-xl leading-[0.9] mb-6">
           Sun,
@@ -130,7 +130,7 @@ function FoodPanel() {
   return (
     <article
       id="food"
-      className="relative flex-shrink-0 w-full md:w-screen h-[75vw] md:h-full overflow-hidden"
+      className="relative flex-shrink-0 w-full md:w-screen h-[65vw] min-h-[260px] md:h-full overflow-hidden"
       aria-label="Food and drink"
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -146,7 +146,7 @@ function FoodPanel() {
       <div className="absolute bottom-0 left-0 right-0 h-[65%] bg-gradient-to-t from-forest-deep/95 via-forest-deep/55 to-transparent" aria-hidden="true" />
       <div className="absolute inset-0 bg-gradient-to-r from-forest-deep/45 to-transparent" aria-hidden="true" />
 
-      <div className="absolute bottom-0 left-0 right-0 p-8 md:p-16 lg:p-24">
+      <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8 md:p-16 lg:p-24">
         <p className="font-sans text-parchment-light text-xs tracking-widest uppercase mb-5">Food &amp; Drink</p>
         <h2 className="font-serif font-light text-parchment-light text-display-xl leading-[0.9] mb-8">
           Proper food,
@@ -395,7 +395,7 @@ export default function HorizontalFlow() {
       <div
         ref={wrapperRef}
         data-horizontal-flow
-        className="overflow-hidden h-auto md:h-screen"
+        className="overflow-hidden h-auto md:h-dvh"
       >
         <motion.div
           className="flex flex-col md:flex-row md:w-[300vw] h-auto md:h-full"

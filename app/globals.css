@@ -3,16 +3,18 @@
 @tailwind utilities;
 
 :root {
-  --parchment: #F5F0E6;
-  --parchment-light: #FFFFFF;
-  --parchment-dark: #EBE5D8;
-  --forest-deep: #0E0E0D;
-  --forest-rich: #1C1C1B;
-  --forest-mid: #7E8A4A;
-  --ochre: #7E8A4A;
-  --ochre-light: #929E59;
-  --ochre-warm: #6B2C2C;
-  --ink: #0E0E0D;
+  --color-parchment:       245 240 230;
+  --color-parchment-light: 255 255 255;
+  --color-parchment-dark:  235 229 216;
+  --color-forest-deep:     14 14 13;
+  --color-forest-rich:     28 28 27;
+  --color-forest-mid:      126 138 74;
+  --color-forest-light:    146 158 89;
+  --color-ochre:           126 138 74;
+  --color-ochre-light:     146 158 89;
+  --color-ochre-warm:      107 44 44;
+  --color-ink:             14 14 13;
+  --color-border:          221 215 202;
 }
 
 /* Skip to content — accessibility */
@@ -21,8 +23,8 @@
   top: -100%;
   left: 1rem;
   z-index: 9999;
-  background: var(--ochre);
-  color: var(--parchment-light);
+  background: rgb(var(--color-ochre));
+  color: rgb(var(--color-parchment-light));
   padding: 0.75rem 1.5rem;
   font-family: var(--font-dm-sans), system-ui, sans-serif;
   font-size: 0.875rem;
@@ -38,8 +40,8 @@ html {
 }
 
 body {
-  background-color: var(--parchment);
-  color: var(--ink);
+  background-color: rgb(var(--color-parchment));
+  color: rgb(var(--color-ink));
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
@@ -48,20 +50,20 @@ body {
 
 /* Focus styles — visible, branded */
 :focus-visible {
-  outline: 2px solid var(--ochre);
+  outline: 2px solid rgb(var(--color-ochre));
   outline-offset: 3px;
 }
 
 /* Selection */
 ::selection {
-  background: var(--ochre);
-  color: var(--parchment-light);
+  background: rgb(var(--color-ochre));
+  color: rgb(var(--color-parchment-light));
 }
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: var(--parchment); }
-::-webkit-scrollbar-thumb { background: var(--ochre); border-radius: 2px; }
+::-webkit-scrollbar-track { background: rgb(var(--color-parchment)); }
+::-webkit-scrollbar-thumb { background: rgb(var(--color-ochre)); border-radius: 2px; }
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
@@ -76,7 +78,7 @@ body {
 .rule-ochre {
   border: none;
   height: 1px;
-  background: linear-gradient(to right, var(--ochre), transparent);
+  background: linear-gradient(to right, rgb(var(--color-ochre)), transparent);
 }
 
 /* Nav link underline */
@@ -90,7 +92,7 @@ body {
   left: 0;
   width: 0;
   height: 1px;
-  background: var(--ochre);
+  background: rgb(var(--color-ochre));
   transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .nav-link:hover::after,

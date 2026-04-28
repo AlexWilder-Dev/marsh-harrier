@@ -22,6 +22,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
+  themeColor: "#7E8A4A",
 };
 
 export const metadata: Metadata = {
@@ -103,6 +104,12 @@ const jsonLd = {
   servesCuisine: ["British", "Traditional pub food"],
   priceRange: "££",
   image: "https://marshharriercowley.co.uk/images/marsh-harrier-pub-bar.jpg",
+  telephone: "01865718225",
+  sameAs: [
+    "https://www.facebook.com/marshharriercowley",
+    "https://www.instagram.com/marshharriercowley",
+    "https://www.youtube.com/@marshharriercowley",
+  ],
 };
 
 export default function RootLayout({

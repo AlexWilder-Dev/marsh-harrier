@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 
 export default function Hero() {
@@ -11,17 +11,25 @@ export default function Hero() {
   });
 
   const imageY = useTransform(scrollYProgress, [0, 1], ["0%", "25%"]);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   return (
     <section
       ref={ref}
       aria-label="Hero — The Marsh Harrier"
-      className="relative h-screen min-h-[600px] overflow-hidden flex items-center"
+      className="relative h-dvh min-h-[600px] overflow-hidden flex items-center"
     >
-      {/* Background image with parallax */}
+      {/* Background image with parallax — disabled on mobile to avoid jank */}
       <motion.div
         className="absolute inset-0 scale-[1.15]"
-        style={{ y: imageY }}
+        style={{ y: isMobile ? "0%" : imageY }}
         aria-hidden="true"
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -96,9 +104,9 @@ export default function Hero() {
         </motion.div>
       </div>
 
-      {/* Scroll indicator — left edge, rotated vertical */}
+      {/* Scroll indicator — desktop only */}
       <motion.div
-        className="absolute bottom-16 left-8 z-20 flex items-center gap-3 rotate-[-90deg] origin-bottom-left"
+        className="absolute bottom-16 left-8 z-20 hidden md:flex items-center gap-3 rotate-[-90deg] origin-bottom-left"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.8, duration: 0.8 }}
