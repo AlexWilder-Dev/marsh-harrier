@@ -120,7 +120,7 @@ export default function RootLayout({
       <head>
         <link
           rel="preload"
-          href="/images/marsh-harrier-pub-front.avif"
+          href="/images/marsh-harrier-pub-front.webp"
           as="image"
           fetchPriority="high"
         />

@@ -34,7 +34,7 @@ export default function Hero() {
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/images/marsh-harrier-pub-front.avif"
+          src="/images/marsh-harrier-pub-front.webp"
           alt="The Marsh Harrier exterior — 40 Marsh Road, Cowley"
           className="absolute inset-0 w-full h-full object-cover object-center"
           fetchPriority="high"

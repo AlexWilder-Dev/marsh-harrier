@@ -66,8 +66,8 @@ function AboutPanel() {
       <div className="relative w-full md:w-[38%] h-[38%] md:h-full overflow-hidden flex-shrink-0">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/images/marsh-harrier-pub-front.avif"
-          alt="The Marsh Harrier exterior — 40 Marsh Road, Cowley"
+          src="/images/marsh-harrier-pub-sign-beautiful.webp"
+          alt="The Marsh Harrier pub sign"
           className="absolute inset-0 w-full h-full object-cover object-center"
           loading="lazy"
         />
