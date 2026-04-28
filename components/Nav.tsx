@@ -17,7 +17,7 @@ const HORIZONTAL_PANELS: Record<string, number> = {
   "#garden": 1,
   "#food": 2,
 };
-const HORIZONTAL_PANEL_COUNT = 3;
+
 
 function scrollToSection(href: string) {
   // Panel links — delegate entirely to HorizontalFlow's API so it handles
@@ -168,13 +168,13 @@ export default function Nav() {
         >
           &amp;
         </div>
-        <nav aria-label="Mobile navigation links" className="flex flex-col gap-8 relative z-10">
+        <nav aria-label="Mobile navigation links" className="flex flex-col gap-5 sm:gap-8 relative z-10">
           {ANCHOR_LINKS.map((link, i) => (
             <motion.a
               key={link.href}
               href={anchorHref(link.href)}
               onClick={(e) => handleMobileAnchorClick(e, link.href)}
-              className="font-serif text-parchment text-4xl hover:text-ink transition-colors cursor-pointer"
+              className="font-serif text-parchment text-3xl sm:text-4xl hover:text-ink transition-colors cursor-pointer"
               initial={{ x: -24, opacity: 0 }}
               animate={menuOpen ? { x: 0, opacity: 1 } : { x: -24, opacity: 0 }}
               transition={{ delay: i * 0.07, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
@@ -185,7 +185,7 @@ export default function Nav() {
           <motion.a
             href="/rooms"
             onClick={() => setMenuOpen(false)}
-            className={`font-serif text-4xl transition-colors cursor-pointer ${
+            className={`font-serif text-3xl sm:text-4xl transition-colors cursor-pointer ${
               pathname === "/rooms" ? "text-ink font-medium" : "text-parchment hover:text-ink"
             }`}
             initial={{ x: -24, opacity: 0 }}
@@ -197,7 +197,7 @@ export default function Nav() {
           <motion.a
             href={anchorHref("#food")}
             onClick={(e) => handleMobileAnchorClick(e, "#food")}
-            className="mt-2 self-start font-sans text-xs tracking-widest uppercase px-6 py-3 bg-ochre text-parchment-light cursor-pointer"
+            className="mt-2 self-start font-sans text-xs tracking-widest uppercase px-6 py-3 border border-parchment/50 text-parchment hover:bg-parchment/10 transition-colors cursor-pointer"
             initial={{ x: -24, opacity: 0 }}
             animate={menuOpen ? { x: 0, opacity: 1 } : { x: -24, opacity: 0 }}
             transition={{ delay: (ANCHOR_LINKS.length + 1) * 0.07, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}

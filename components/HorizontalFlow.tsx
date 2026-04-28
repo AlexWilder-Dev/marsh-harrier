@@ -6,9 +6,7 @@ import { motion } from "framer-motion";
 declare global {
   interface Window {
     __horizontalFlow?: {
-      /** Jump directly to a panel. If section not active, scrolls to it first. */
       navigate: (panelIndex: number) => void;
-      /** Release the section lock so the nav can scroll elsewhere. */
       release: () => void;
     };
   }
@@ -22,11 +20,11 @@ function AboutPanel() {
   return (
     <article
       id="about"
-      className="flex-shrink-0 w-full md:w-screen h-auto md:h-full flex flex-col-reverse md:flex-row"
+      className="flex-shrink-0 w-screen h-full flex flex-col-reverse md:flex-row"
       aria-label="About The Marsh Harrier"
     >
-      <div className="flex-1 bg-parchment relative flex items-center px-8 md:px-16 lg:px-24 py-12 sm:py-16 md:py-0 overflow-hidden">
-        {/* Large decorative ampersand — hidden on mobile to save paint */}
+      {/* Text content — scrollable on mobile if needed */}
+      <div className="flex-1 bg-parchment relative flex items-start md:items-center overflow-y-auto md:overflow-hidden px-6 sm:px-8 md:px-16 lg:px-24 py-8 md:py-0">
         <div
           className="hidden md:block absolute left-1/2 -translate-x-1/4 top-1/2 -translate-y-1/2 font-serif text-[22vw] leading-none text-forest-deep/[0.055] select-none pointer-events-none"
           aria-hidden="true"
@@ -34,12 +32,12 @@ function AboutPanel() {
           &amp;
         </div>
 
-        <div className="relative z-10 max-w-md">
-          <p className="font-sans text-ink text-xs tracking-widest uppercase mb-6">Est. Cowley</p>
-          <h2 className="font-serif font-light text-display-xl text-forest-deep leading-[0.9] mb-8">
+        <div className="relative z-10 max-w-md w-full">
+          <p className="font-sans text-ink text-xs tracking-widest uppercase mb-4 md:mb-6">Est. Cowley</p>
+          <h2 className="font-serif font-light text-2xl sm:text-display-xl text-forest-deep leading-[0.9] mb-6 md:mb-8">
             Unpretentious.
             <br />
-            <em className="italic block ml-8">Genuinely good.</em>
+            <em className="italic block ml-6 sm:ml-8">Genuinely good.</em>
           </h2>
           <p className="font-sans text-ink/65 text-base leading-relaxed font-light mb-4">
             The Marsh Harrier is a proper community local — not a gastro-pub experience,
@@ -52,8 +50,7 @@ function AboutPanel() {
             {" "}— your pint will be perfectly kept, served at the right temperature,
             and taste exactly as the brewer intended.
           </p>
-          {/* Double rule stack — Victorian printer's detail */}
-          <div className="mt-10 flex items-start gap-4">
+          <div className="mt-8 flex items-start gap-4">
             <div className="flex flex-col gap-1 flex-shrink-0 mt-1">
               <div className="rule-ochre w-20" />
               <div className="rule-ochre w-10 opacity-40" />
@@ -65,7 +62,8 @@ function AboutPanel() {
         </div>
       </div>
 
-      <div className="relative w-full md:w-[38%] h-[50vw] sm:h-64 md:h-full overflow-hidden flex-shrink-0">
+      {/* Image — top portion on mobile, right column on desktop */}
+      <div className="relative w-full md:w-[38%] h-[38%] md:h-full overflow-hidden flex-shrink-0">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/images/marsh-harrier-pub-front.avif"
@@ -73,7 +71,6 @@ function AboutPanel() {
           className="absolute inset-0 w-full h-full object-cover object-center"
           loading="lazy"
         />
-        {/* Ochre rule at right edge */}
         <div className="absolute top-0 bottom-0 right-0 w-px bg-gradient-to-b from-transparent via-ochre/30 to-transparent hidden md:block" aria-hidden="true" />
       </div>
     </article>
@@ -84,7 +81,7 @@ function GardenPanel() {
   return (
     <article
       id="garden"
-      className="relative flex-shrink-0 w-full md:w-screen h-[65vw] min-h-[260px] md:h-full overflow-hidden"
+      className="relative flex-shrink-0 w-screen h-full overflow-hidden"
       aria-label="The beer garden"
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -94,13 +91,10 @@ function GardenPanel() {
         className="absolute inset-0 w-full h-full object-cover object-center"
         loading="lazy"
       />
-      {/* Consistent midtone depth layer */}
       <div className="absolute inset-0 bg-forest-rich/20" aria-hidden="true" />
-      {/* Tightened bottom gradient — sky breathes */}
       <div className="absolute bottom-0 left-0 right-0 h-[65%] bg-gradient-to-t from-forest-deep/90 via-forest-deep/50 to-transparent" aria-hidden="true" />
       <div className="absolute inset-0 bg-gradient-to-r from-forest-deep/35 to-transparent" aria-hidden="true" />
 
-      {/* Editorial date stamp — rotated top-right, desktop only */}
       <p
         className="absolute top-10 right-10 font-sans text-[9px] tracking-widest uppercase text-parchment-light/30 rotate-90 origin-top-right hidden md:block"
         aria-hidden="true"
@@ -109,8 +103,8 @@ function GardenPanel() {
       </p>
 
       <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8 md:p-16 lg:p-24">
-        <p className="font-sans text-parchment-light text-xs tracking-widest uppercase mb-5">The Garden</p>
-        <h2 className="font-serif font-light text-parchment-light text-display-xl leading-[0.9] mb-6">
+        <p className="font-sans text-parchment-light text-xs tracking-widest uppercase mb-4 md:mb-5">The Garden</p>
+        <h2 className="font-serif font-light text-parchment-light text-display-xl leading-[0.9] mb-5 md:mb-6">
           Sun,
           <br />
           ale &amp;
@@ -130,7 +124,7 @@ function FoodPanel() {
   return (
     <article
       id="food"
-      className="relative flex-shrink-0 w-full md:w-screen h-[65vw] min-h-[260px] md:h-full overflow-hidden"
+      className="relative flex-shrink-0 w-screen h-full overflow-hidden"
       aria-label="Food and drink"
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -140,23 +134,20 @@ function FoodPanel() {
         className="absolute inset-0 w-full h-full object-cover object-[center_30%]"
         loading="lazy"
       />
-      {/* Midtone depth layer */}
       <div className="absolute inset-0 bg-forest-rich/25" aria-hidden="true" />
-      {/* Tightened bottom gradient */}
       <div className="absolute bottom-0 left-0 right-0 h-[65%] bg-gradient-to-t from-forest-deep/95 via-forest-deep/55 to-transparent" aria-hidden="true" />
       <div className="absolute inset-0 bg-gradient-to-r from-forest-deep/45 to-transparent" aria-hidden="true" />
 
       <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8 md:p-16 lg:p-24">
-        <p className="font-sans text-parchment-light text-xs tracking-widest uppercase mb-5">Food &amp; Drink</p>
-        <h2 className="font-serif font-light text-parchment-light text-display-xl leading-[0.9] mb-8">
+        <p className="font-sans text-parchment-light text-xs tracking-widest uppercase mb-4 md:mb-5">Food &amp; Drink</p>
+        <h2 className="font-serif font-light text-parchment-light text-display-xl leading-[0.9] mb-6 md:mb-8">
           Proper food,
           <br />
           <em className="italic">done</em>
           <br />
           properly.
         </h2>
-        <div className="flex flex-col md:flex-row md:items-end gap-8 md:gap-16">
-          {/* Arrow-rule menu links */}
+        <div className="flex flex-col md:flex-row md:items-end gap-6 md:gap-16">
           <div className="flex flex-col gap-0 max-w-xs">
             {[
               { title: "Food Menu", href: "https://marshharriercowley.co.uk/media/food-menu.pdf" },
@@ -173,17 +164,13 @@ function FoodPanel() {
                 <span className="font-sans text-xs tracking-widest uppercase text-parchment-light/70 group-hover:text-parchment-light transition-colors duration-300 flex-shrink-0">
                   {m.title}
                 </span>
-                <span
-                  className="flex-1 mx-3 h-px bg-parchment-light/20 group-hover:bg-ochre/50 transition-colors duration-300"
-                  aria-hidden="true"
-                />
+                <span className="flex-1 mx-3 h-px bg-parchment-light/20 group-hover:bg-ochre/50 transition-colors duration-300" aria-hidden="true" />
                 <span className="font-sans text-parchment-light/50 group-hover:text-ochre transition-colors duration-300" aria-hidden="true">→</span>
               </a>
             ))}
           </div>
 
-          {/* Order online — takeaway CTA */}
-          <div className="border-t border-parchment-light/15 pt-5 md:border-t-0 md:pt-0 md:border-l md:border-parchment-light/15 md:pl-12">
+          <div className="border-t border-parchment-light/15 pt-4 md:border-t-0 md:pt-0 md:border-l md:border-parchment-light/15 md:pl-12">
             <p className="font-sans text-parchment-light text-[15px] tracking-widest uppercase mb-2">Order for collection</p>
             <a
               href="/order?type=takeaway"
@@ -199,12 +186,12 @@ function FoodPanel() {
   );
 }
 
-// ─── Progress dots (desktop, right-anchored) ────────────────────────────────
+// ─── Progress dots ───────────────────────────────────────────────────────────
 
 function ProgressDots({ active }: { active: number }) {
   return (
     <div
-      className="hidden md:flex absolute bottom-8 right-12 z-30 gap-2 items-center"
+      className="absolute bottom-6 left-1/2 -translate-x-1/2 md:bottom-8 md:left-auto md:right-12 md:translate-x-0 z-30 flex gap-2 items-center"
       role="tablist"
       aria-label="Section progress"
     >
@@ -228,22 +215,21 @@ function ProgressDots({ active }: { active: number }) {
 export default function HorizontalFlow() {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [panelIndex, setPanelIndex] = useState(0);
-  const panelIndexRef = useRef(0);       // mirrors panelIndex for use in effects
+  const panelIndexRef = useRef(0);
   const isActive = useRef(false);
   const isAnimating = useRef(false);
   const exitCooldown = useRef(false);
-  const pendingPanel = useRef<number | null>(null); // set by nav before scrolling to section
-  const [windowWidth, setWindowWidth] = useState(0); // drives animate x; updates on resize
+  const pendingPanel = useRef<number | null>(null);
+  const [windowWidth, setWindowWidth] = useState(0);
 
-  // Initialise windowWidth client-side (0 on SSR is fine — panels start at x:0)
+  // Touch tracking for mobile swipe
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
+
   useEffect(() => { setWindowWidth(window.innerWidth); }, []);
 
-  // Keep panelIndexRef in sync so wheel handler can read it without closure staleness
   panelIndexRef.current = panelIndex;
 
-  // exitSection — called when threshold is met at the first or last panel.
-  // Sets isActive false first so the wheel handler stops blocking immediately,
-  // then hands control back to Lenis and scrolls past the section.
   const exitSection = useCallback((direction: number) => {
     const wrapper = wrapperRef.current;
     if (!wrapper) return;
@@ -269,9 +255,31 @@ export default function HorizontalFlow() {
     }
   }, []);
 
-  // IntersectionObserver — activate when section fills the viewport.
-  // Snaps scroll to section top, locks Lenis, sets initial panel.
-  // exitCooldown prevents re-activation during the exit scroll animation.
+  // Touch swipe — horizontal only; vertical movement cancels the swipe
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  }, []);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (touchStartX.current === null || touchStartY.current === null || isAnimating.current) return;
+    const dx = touchStartX.current - e.changedTouches[0].clientX;
+    const dy = touchStartY.current - e.changedTouches[0].clientY;
+    touchStartX.current = null;
+    touchStartY.current = null;
+
+    // Only fire if horizontal movement clearly dominates and exceeds threshold
+    if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+
+    const direction = dx > 0 ? 1 : -1;
+    const next = panelIndexRef.current + direction;
+    if (next >= 0 && next < NUM_PANELS) {
+      isAnimating.current = true;
+      setPanelIndex(next);
+    }
+  }, []);
+
+  // IntersectionObserver — desktop scroll-lock activation
   useEffect(() => {
     const wrapper = wrapperRef.current;
     if (!wrapper) return;
@@ -286,11 +294,9 @@ export default function HorizontalFlow() {
         const lenis = window.__lenis;
         const sectionTop = wrapper.getBoundingClientRect().top + window.scrollY;
 
-        // Snap scroll precisely to section top before locking
         if (lenis) lenis.scrollTo(sectionTop, { immediate: true });
         else window.scrollTo({ top: sectionTop });
 
-        // Use nav-requested panel if set, otherwise infer from scroll direction
         const enteringFromTop = entry.boundingClientRect.top >= -10;
         const target = pendingPanel.current !== null
           ? pendingPanel.current
@@ -307,20 +313,17 @@ export default function HorizontalFlow() {
     return () => observer.disconnect();
   }, []);
 
-  // Global API — lets Nav navigate to a specific panel or release the lock.
+  // Global API for Nav
   useEffect(() => {
     window.__horizontalFlow = {
       navigate: (index: number) => {
         if (isActive.current) {
-          // Section already locked — just change the panel
           setPanelIndex(index);
           return;
         }
-        // Section not active — store the desired panel, then scroll to section.
-        // IntersectionObserver will activate it and pick up pendingPanel.
         pendingPanel.current = index;
         const lenis = window.__lenis;
-        if (lenis) lenis.start(); // ensure Lenis is running before scrollTo
+        if (lenis) lenis.start();
         const wrapper = wrapperRef.current;
         if (!wrapper) return;
         const sectionTop = wrapper.getBoundingClientRect().top + window.scrollY;
@@ -339,9 +342,7 @@ export default function HorizontalFlow() {
     return () => { delete window.__horizontalFlow; };
   }, []);
 
-  // Wheel handler — only active while isActive is true.
-  // Reads panelIndexRef directly (no functional updater) to avoid side effects
-  // inside a state setter, which React Strict Mode double-invokes.
+  // Wheel handler — desktop only
   useEffect(() => {
     let wheelDelta = 0;
     let resetTimer: ReturnType<typeof setTimeout>;
@@ -380,12 +381,9 @@ export default function HorizontalFlow() {
     };
   }, [exitSection]);
 
-  // Resize — update windowWidth so animate x stays correct if user resizes mid-section
+  // Resize — update windowWidth on all screen sizes
   useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 768) return;
-      setWindowWidth(window.innerWidth);
-    };
+    const handleResize = () => { setWindowWidth(window.innerWidth); };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
@@ -395,10 +393,12 @@ export default function HorizontalFlow() {
       <div
         ref={wrapperRef}
         data-horizontal-flow
-        className="overflow-hidden h-auto md:h-dvh"
+        className="relative overflow-hidden h-dvh"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
       >
         <motion.div
-          className="flex flex-col md:flex-row md:w-[300vw] h-auto md:h-full"
+          className="flex flex-row w-[300vw] h-full"
           animate={{ x: -panelIndex * windowWidth }}
           transition={{ duration: 0.55, ease: [0.32, 0, 0.67, 0] }}
           onAnimationComplete={() => { isAnimating.current = false; }}
