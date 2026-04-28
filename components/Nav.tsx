@@ -22,7 +22,7 @@ const HORIZONTAL_PANELS: Record<string, number> = {
 function scrollToSection(href: string) {
   // Panel links — delegate entirely to HorizontalFlow's API so it handles
   // its own lock state. Works whether the section is active or not.
-  if (href in HORIZONTAL_PANELS && window.innerWidth >= 768) {
+  if (href in HORIZONTAL_PANELS && window.innerWidth >= 1100) {
     window.__horizontalFlow?.navigate(HORIZONTAL_PANELS[href]);
     return;
   }
@@ -58,7 +58,7 @@ export default function Nav() {
   }, [menuOpen]);
 
   useEffect(() => {
-    const handler = () => { if (window.innerWidth >= 768) setMenuOpen(false); };
+    const handler = () => { if (window.innerWidth >= 1100) setMenuOpen(false); };
     window.addEventListener("resize", handler);
     return () => window.removeEventListener("resize", handler);
   }, []);
@@ -105,7 +105,7 @@ export default function Nav() {
           </a>
 
           {/* Desktop nav */}
-          <nav aria-label="Main navigation" className="hidden md:flex items-center gap-5 lg:gap-8">
+          <nav aria-label="Main navigation" className="hidden nav:flex items-center gap-5 lg:gap-8">
             {ANCHOR_LINKS.map((link) => (
               <a
                 key={link.href}
@@ -144,7 +144,7 @@ export default function Nav() {
             aria-label={menuOpen ? "Close menu" : "Open menu"}
             aria-expanded={menuOpen}
             aria-controls="mobile-menu"
-            className="md:hidden p-2 flex flex-col gap-[5px] focus-visible:outline-ochre"
+            className="nav:hidden p-2 flex flex-col gap-[5px] focus-visible:outline-ochre"
             onClick={() => setMenuOpen(!menuOpen)}
           >
             <span className={`block h-px w-6 transition-all duration-300 origin-center ${menuOpen ? "rotate-45 translate-y-[6px]" : ""} ${scrolled ? "bg-ink" : "bg-parchment-light"}`} />
@@ -161,7 +161,7 @@ export default function Nav() {
         role="dialog"
         aria-label="Mobile navigation"
         aria-modal="true"
-        className="fixed inset-0 z-40 bg-ochre flex flex-col justify-center px-8 md:hidden overflow-hidden"
+        className="fixed inset-0 z-40 bg-ochre flex flex-col justify-center px-8 nav:hidden overflow-hidden"
         initial={false}
         animate={{ opacity: menuOpen ? 1 : 0, pointerEvents: menuOpen ? "auto" : "none" }}
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}

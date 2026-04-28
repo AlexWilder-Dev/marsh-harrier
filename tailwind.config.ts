@@ -34,6 +34,9 @@ const config: Config = {
       minHeight: {
         dvh: "100dvh",
       },
+      screens: {
+        nav: "1100px",
+      },
       fontFamily: {
         serif: ["var(--font-cormorant)", "Georgia", "serif"],
         sans:  ["var(--font-dm-sans)", "system-ui", "sans-serif"],
