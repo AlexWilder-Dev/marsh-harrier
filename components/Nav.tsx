@@ -94,7 +94,7 @@ export default function Nav() {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
       >
-        <div className="mx-auto px-6 md:px-12 lg:px-16 flex items-center justify-between h-16 md:h-20">
+        <div className="mx-auto px-5 md:px-8 lg:px-14 flex items-center justify-between h-16 md:h-20">
           {/* Wordmark */}
           <a
             href="/"
@@ -105,7 +105,7 @@ export default function Nav() {
           </a>
 
           {/* Desktop nav */}
-          <nav aria-label="Main navigation" className="hidden md:flex items-center gap-8">
+          <nav aria-label="Main navigation" className="hidden md:flex items-center gap-5 lg:gap-8">
             {ANCHOR_LINKS.map((link) => (
               <a
                 key={link.href}
@@ -129,7 +129,11 @@ export default function Nav() {
             <a
               href={anchorHref("#food")}
               onClick={(e) => handleAnchorClick(e, "#food")}
-              className="ml-2 font-sans text-xs tracking-widest uppercase px-5 py-2.5 bg-ochre text-parchment-light hover:bg-ochre-light transition-colors duration-300 focus-visible:outline-ochre cursor-pointer"
+              className={`font-sans text-xs tracking-widest uppercase px-4 py-2.5 transition-colors duration-300 focus-visible:outline-ochre cursor-pointer ${
+                scrolled
+                  ? "bg-parchment text-ink hover:bg-parchment-dark"
+                  : "bg-ochre text-parchment-light hover:bg-ochre-light"
+              }`}
             >
               View Menu
             </a>

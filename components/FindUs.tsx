@@ -127,7 +127,7 @@ export default function FindUs() {
     <>
       <section
         id="find-us"
-        className="bg-parchment py-28 md:py-40 overflow-hidden"
+        className="bg-parchment py-20 sm:py-28 md:py-40 overflow-hidden"
         aria-label="Location and directions"
       >
         <div className="max-w-7xl mx-auto px-6 md:px-16">
@@ -271,7 +271,7 @@ export default function FindUs() {
       {/* Contact form */}
       <section
         id="contact"
-        className="bg-ochre py-24 md:py-36 overflow-hidden"
+        className="bg-ochre py-20 sm:py-24 md:py-36 overflow-hidden"
         aria-label="Contact form"
       >
         <div className="max-w-7xl mx-auto px-6 md:px-16">

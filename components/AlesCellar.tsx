@@ -13,7 +13,7 @@ export default function AlesCellar() {
   return (
     <section
       id="ales"
-      className="bg-parchment py-28 md:py-40 overflow-hidden relative"
+      className="bg-parchment py-20 sm:py-28 md:py-40 overflow-hidden relative"
       aria-label="Ales and cellar"
     >
       {/* Faint background texture */}
@@ -34,7 +34,7 @@ export default function AlesCellar() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-20 md:mb-28 max-w-3xl"
+          className="mb-16 sm:mb-20 md:mb-28 max-w-3xl"
         >
           <p className="font-sans text-ink text-xs tracking-widest uppercase mb-5">
             Ales &amp; The Cellar
@@ -52,7 +52,7 @@ export default function AlesCellar() {
         </motion.div>
 
         {/* Stats — column treatment with left ochre border */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-0 mb-24 md:mb-32">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-0 mb-20 sm:mb-24 md:mb-32">
           {stats.map((stat, i) => (
             <motion.div
               key={stat.label}
@@ -84,7 +84,7 @@ export default function AlesCellar() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-60px" }}
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-          className="flex flex-col md:flex-row items-start md:items-center gap-10 p-8 md:p-12 bg-ochre"
+          className="flex flex-col md:flex-row items-start md:items-center gap-10 p-6 sm:p-8 md:p-12 bg-ochre"
         >
           {/* Stamp with outer ring */}
           <div className="relative flex-shrink-0" role="img" aria-label="Master Cellarman award">

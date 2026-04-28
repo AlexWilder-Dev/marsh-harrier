@@ -49,7 +49,7 @@ export default function Hero() {
       <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-parchment to-transparent z-10 pointer-events-none" aria-hidden="true" />
 
       {/* Content */}
-      <div className="relative z-20 px-6 md:px-16 lg:px-24 max-w-7xl w-full">
+      <div className="relative z-20 px-6 sm:px-10 md:px-16 lg:px-24 max-w-7xl w-full">
         <motion.p
           className="font-sans text-parchment-light text-xs tracking-widest uppercase mb-6"
           initial={{ opacity: 0, y: 16 }}

@@ -52,7 +52,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-6 md:px-16">
         <div className="w-full h-px bg-gradient-to-r from-transparent via-parchment/25 to-transparent mb-12" aria-hidden="true" />
 
-        <div className="grid md:grid-cols-3 gap-10 md:gap-16 mb-12">
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-10 md:gap-16 mb-12">
           <div>
             <h2 className="font-serif font-light text-ink text-display-md leading-none mb-2">
               The Marsh Harrier
