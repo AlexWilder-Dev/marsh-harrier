@@ -59,6 +59,10 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  if (phone && !/^[\d\s\+\-\(\)]{7,20}$/.test(phone)) {
+    return NextResponse.json({ error: "Please enter a valid phone number." }, { status: 400 });
+  }
+
   // Auto-create table entry for dine-in and takeaway (table 0)
   await client.execute({
     sql: "INSERT OR IGNORE INTO tables (table_number) VALUES (?)",

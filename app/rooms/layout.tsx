@@ -21,10 +21,48 @@ export const metadata: Metadata = {
   },
 };
 
+const lodgingSchema = {
+  "@context": "https://schema.org",
+  "@type": "LodgingBusiness",
+  name: "The Marsh Harrier — Guest Room",
+  url: "https://marshharriercowley.co.uk/rooms",
+  image: "https://marshharriercowley.co.uk/images/marsh-harrier-pub-room-bedroom.avif",
+  description:
+    "A comfortable, well-appointed guest room above The Marsh Harrier pub in the heart of Cowley, Oxford.",
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: "40 Marsh Road",
+    addressLocality: "Cowley",
+    addressRegion: "Oxford",
+    postalCode: "OX4 2HH",
+    addressCountry: "GB",
+  },
+  geo: {
+    "@type": "GeoCoordinates",
+    latitude: 51.742,
+    longitude: -1.228,
+  },
+  telephone: "01865718225",
+  priceRange: "££",
+  amenityFeature: [
+    { "@type": "LocationFeatureSpecification", name: "WiFi", value: true },
+    { "@type": "LocationFeatureSpecification", name: "En-suite bathroom", value: true },
+    { "@type": "LocationFeatureSpecification", name: "Private room", value: true },
+  ],
+};
+
 export default function RoomsLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(lodgingSchema) }}
+      />
+      {children}
+    </>
+  );
 }

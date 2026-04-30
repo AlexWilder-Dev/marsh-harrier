@@ -97,8 +97,15 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     fetchData();
-    const timer = setInterval(fetchData, POLL_INTERVAL);
-    return () => clearInterval(timer);
+    const timer = setInterval(() => {
+      if (!document.hidden) fetchData();
+    }, POLL_INTERVAL);
+    const onVisible = () => { if (!document.hidden) fetchData(); };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, [fetchData]);
 
   const markDelivered = async (orderId: number) => {

@@ -52,6 +52,7 @@ function OrderPage() {
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const cartSheetRef = useRef<HTMLDivElement>(null);
+  const submittingRef = useRef(false);
 
   useFocusTrap(cartSheetRef, cartOpen, () => setCartOpen(false));
 
@@ -98,11 +99,13 @@ function OrderPage() {
   }, []);
 
   const submitOrder = async () => {
+    if (submittingRef.current) return;
     if (tableNumber === null || isNaN(tableNumber) || cartCount(cart) === 0) return;
     if (isTakeaway && (!customerName.trim() || !customerPhone.trim())) {
       setError("Please enter your name and phone number.");
       return;
     }
+    submittingRef.current = true;
     setSubmitting(true);
     setError(null);
 
@@ -136,6 +139,7 @@ function OrderPage() {
     } catch {
       setError("Could not connect. Please check your connection and try again.");
     } finally {
+      submittingRef.current = false;
       setSubmitting(false);
     }
   };

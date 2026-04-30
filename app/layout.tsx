@@ -96,10 +96,8 @@ const jsonLd = {
     longitude: -1.228,
   },
   openingHoursSpecification: [
-    { "@type": "OpeningHoursSpecification", dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday"], opens: "16:00", closes: "23:00" },
-    { "@type": "OpeningHoursSpecification", dayOfWeek: ["Friday"], opens: "15:00", closes: "00:00" },
-    { "@type": "OpeningHoursSpecification", dayOfWeek: ["Saturday"], opens: "12:00", closes: "00:00" },
-    { "@type": "OpeningHoursSpecification", dayOfWeek: ["Sunday"], opens: "12:00", closes: "22:30" },
+    { "@type": "OpeningHoursSpecification", dayOfWeek: ["Monday"], opens: "17:00", closes: "23:00" },
+    { "@type": "OpeningHoursSpecification", dayOfWeek: ["Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"], opens: "12:00", closes: "23:00" },
   ],
   servesCuisine: ["British", "Traditional pub food"],
   priceRange: "££",

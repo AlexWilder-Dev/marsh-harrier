@@ -282,7 +282,8 @@ function RoomsGallery() {
               src={img.src}
               alt={img.alt}
               className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 hover:scale-105"
-              loading="lazy"
+              loading={i === 0 ? "eager" : "lazy"}
+              fetchPriority={i === 0 ? "high" : "auto"}
             />
           </motion.div>
         ))}
@@ -307,9 +308,17 @@ function EnquiryForm() {
     const form = e.currentTarget;
     const data = new FormData(form);
 
-    // Validate check-out is after check-in
-    const checkIn = new Date(data.get("checkin") as string);
-    const checkOut = new Date(data.get("checkout") as string);
+    // Validate dates
+    const todayStr = new Date().toISOString().split("T")[0];
+    const checkInStr = data.get("checkin") as string;
+    const checkOutStr = data.get("checkout") as string;
+    const checkIn = new Date(checkInStr);
+    const checkOut = new Date(checkOutStr);
+    if (checkInStr < todayStr) {
+      setErrorMsg("Check-in date cannot be in the past.");
+      setState("error");
+      return;
+    }
     if (checkOut <= checkIn) {
       setErrorMsg("Check-out date must be after check-in date.");
       setState("error");

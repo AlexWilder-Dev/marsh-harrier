@@ -129,29 +129,49 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-ink/10 pt-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <p className="font-sans text-xs text-ink/35 font-light">
-            © {new Date().getFullYear()} The Marsh Harrier. All rights reserved.
-          </p>
-
-          <div className="flex items-center gap-5">
-            {social.map((s) => (
+        <div className="border-t border-ink/10 pt-8 flex flex-col gap-5">
+          <div className="flex flex-wrap gap-x-5 gap-y-2">
+            {[
+              { label: "Privacy Policy", href: "/privacy" },
+              { label: "Terms & Conditions", href: "/terms" },
+              { label: "Cookie Policy", href: "/cookies" },
+              { label: "Allergen Info", href: "/allergens" },
+              { label: "Responsible Drinking", href: "/responsible-drinking" },
+            ].map((l) => (
               <a
-                key={s.label}
-                href={s.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={s.label}
-                className="text-ink/40 hover:text-ink transition-colors duration-200 focus-visible:outline-ochre"
+                key={l.label}
+                href={l.href}
+                className="font-sans text-xs text-ink/35 hover:text-ink/60 transition-colors duration-200 font-light"
               >
-                {s.icon}
+                {l.label}
               </a>
             ))}
           </div>
 
-          <p className="font-sans text-xs text-ink/30 font-light">
-            Please drink responsibly. Challenge 25 in operation.
-          </p>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <p className="font-sans text-xs text-ink/35 font-light">
+              © {new Date().getFullYear()} The Marsh Harrier. All rights reserved.
+            </p>
+
+            <div className="flex items-center gap-5">
+              {social.map((s) => (
+                <a
+                  key={s.label}
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={s.label}
+                  className="text-ink/40 hover:text-ink transition-colors duration-200 focus-visible:outline-ochre"
+                >
+                  {s.icon}
+                </a>
+              ))}
+            </div>
+
+            <p className="font-sans text-xs text-ink/30 font-light">
+              Please drink responsibly. Challenge 25 in operation.
+            </p>
+          </div>
         </div>
       </div>
     </footer>

@@ -22,10 +22,15 @@ export async function GET() {
      ORDER BY created_at ASC`
   );
 
-  const ordersWithParsedItems = ordersResult.rows.map((o) => ({
-    ...o,
-    items: JSON.parse(o.items as string),
-  }));
+  const ordersWithParsedItems = ordersResult.rows.map((o) => {
+    let items: unknown[] = [];
+    try {
+      items = JSON.parse(o.items as string);
+    } catch {
+      items = [];
+    }
+    return { ...o, items };
+  });
 
   return NextResponse.json({ tables: tablesResult.rows, orders: ordersWithParsedItems });
 }
