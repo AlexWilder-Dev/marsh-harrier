@@ -1,5 +1,25 @@
 "use client";
 
+/**
+ * HorizontalFlow — horizontal scroll section (About → Garden → Food)
+ *
+ * Architecture:
+ * - An IntersectionObserver watches the wrapper div. When it's fully in the
+ *   viewport, `isActive` is set and wheel/touch events are intercepted to
+ *   drive horizontal panel navigation instead of vertical page scroll.
+ * - Lenis (window.__lenis) is stopped while the horizontal lock is active and
+ *   restarted when the user scrolls past the last panel or back past the first.
+ *   If Lenis is removed or renamed, this component will break — the lock relies
+ *   on lenis.stop() / lenis.start() to suppress the native smooth scroll.
+ * - window.__horizontalFlow is a small API exposed so Nav.tsx can trigger panel
+ *   navigation from outside this component (e.g. clicking "Food & Drink" in the
+ *   nav jumps directly to panel 2). This is intentional global state — the
+ *   alternative (prop drilling or context) would require Nav to be a child of
+ *   this component, which it isn't.
+ * - Do not add CSS transitions to the panel container's transform — the position
+ *   is driven frame-by-frame by Framer Motion's useMotionValue for performance.
+ */
+
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 

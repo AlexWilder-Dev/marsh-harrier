@@ -1,0 +1,28 @@
+-- The Marsh Harrier — Ordering System Schema
+-- Turso (libSQL/SQLite)
+--
+-- This file is for reference only. The live schema is created automatically
+-- by calling POST /api/init after first deployment (requires admin auth).
+-- See README.md for setup instructions.
+
+CREATE TABLE IF NOT EXISTS tables (
+  id           INTEGER PRIMARY KEY,
+  table_number INTEGER UNIQUE NOT NULL,
+  status       TEXT    DEFAULT 'closed',  -- 'open' | 'closed'
+  opened_at    DATETIME,
+  closed_at    DATETIME
+);
+
+-- Tables 1–20 are pre-seeded by /api/init on first run.
+-- Table 0 is reserved for takeaway orders and is auto-created on first takeaway order.
+
+CREATE TABLE IF NOT EXISTS orders (
+  id             INTEGER  PRIMARY KEY AUTOINCREMENT,
+  table_number   INTEGER  NOT NULL,
+  items          TEXT     NOT NULL,       -- JSON array: [{ id, name, quantity, price }]
+  status         TEXT     DEFAULT 'pending', -- 'pending' | 'delivered'
+  created_at     DATETIME DEFAULT CURRENT_TIMESTAMP,
+  delivered_at   DATETIME,
+  customer_name  TEXT,                    -- takeaway orders only
+  customer_phone TEXT                     -- takeaway orders only
+);

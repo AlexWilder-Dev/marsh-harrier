@@ -17,6 +17,10 @@
 /data/ordering.sqlite-wal
 /data/ordering.sqlite-shm
 
+# Source assets (originals — deployed versions live in public/media/)
+*.pdf
+*.PDF
+
 # OS
 .DS_Store
 *.pem
