@@ -9,11 +9,11 @@ const nav = [
 ];
 
 const menus = [
-  { label: "Food Menu", href: "https://marshharriercowley.co.uk/media/food-menu.pdf" },
-  { label: "Drinks Menu", href: "https://marshharriercowley.co.uk/media/drinks-menu.pdf" },
-  { label: "BBQ Menu", href: "https://marshharriercowley.co.uk/media/bbq-menu.pdf" },
-  { label: "Buffet Menu", href: "https://marshharriercowley.co.uk/media/buffet-menu.pdf" },
-  { label: "Christmas Menu", href: "https://marshharriercowley.co.uk/media/christmas-menu-2025.pdf" },
+  { label: "Food Menu", href: "/media/food-menu.pdf" },
+  { label: "Drinks Menu", href: "/media/drinks-menu.pdf" },
+  { label: "BBQ Menu", href: "/media/bbq-menu.pdf" },
+  { label: "Buffet Menu", href: "/media/buffet-menu.pdf" },
+  { label: "Christmas Menu", href: "/media/christmas-menu-2025.pdf" },
 ];
 
 const social = [

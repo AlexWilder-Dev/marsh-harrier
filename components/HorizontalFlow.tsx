@@ -150,11 +150,11 @@ function FoodPanel() {
         <div className="flex flex-col md:flex-row md:items-end gap-6 md:gap-16">
           <div className="flex flex-col gap-0 max-w-xs">
             {[
-              { title: "Food Menu", href: "https://marshharriercowley.co.uk/media/food-menu.pdf" },
-              { title: "Drinks Menu", href: "https://marshharriercowley.co.uk/media/drinks-menu.pdf" },
-              { title: "BBQ Menu", href: "https://marshharriercowley.co.uk/media/bbq-menu.pdf" },
-              { title: "Buffet Menu", href: "https://marshharriercowley.co.uk/media/buffet-menu.pdf" },
-              { title: "Christmas Menu", href: "https://marshharriercowley.co.uk/media/christmas-menu-2025.pdf" },
+              { title: "Food Menu", href: "/media/food-menu.pdf" },
+              { title: "Drinks Menu", href: "/media/drinks-menu.pdf" },
+              { title: "BBQ Menu", href: "/media/bbq-menu.pdf" },
+              { title: "Buffet Menu", href: "/media/buffet-menu.pdf" },
+              { title: "Christmas Menu", href: "/media/christmas-menu-2025.pdf" },
             ].map((m) => (
               <a
                 key={m.title}
