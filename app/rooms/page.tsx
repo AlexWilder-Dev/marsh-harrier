@@ -33,7 +33,7 @@ const AMENITIES = [
 ];
 
 const HIGHLIGHTS = [
-  { label: "Guests", value: "Up to 2" },
+  { label: "WiFi", value: "Included" },
   { label: "Bedrooms", value: "1" },
   { label: "Bathrooms", value: "1 en-suite" },
   { label: "From", value: "On enquiry" },

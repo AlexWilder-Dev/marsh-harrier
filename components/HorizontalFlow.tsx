@@ -129,7 +129,7 @@ function FoodPanel() {
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/images/marsh-harrier-pub-food.jpg"
+        src="/images/marsh-harrier-oxford-burger-most-delicious.jpeg"
         alt="Food at The Marsh Harrier"
         className="absolute inset-0 w-full h-full object-cover object-[center_30%]"
         loading="lazy"
