@@ -49,15 +49,15 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  if (table === 0 && (!customerName || !customerPhone)) {
+  const name = typeof customerName === "string" ? customerName.trim().slice(0, 100) : null;
+  const phone = typeof customerPhone === "string" ? customerPhone.trim().slice(0, 30) : null;
+
+  if (table === 0 && (!name || !phone)) {
     return NextResponse.json(
       { error: "Name and phone number are required for takeaway orders." },
       { status: 400 }
     );
   }
-
-  const name = typeof customerName === "string" ? customerName.trim().slice(0, 100) : null;
-  const phone = typeof customerPhone === "string" ? customerPhone.trim().slice(0, 30) : null;
 
   // Auto-create table entry for dine-in and takeaway (table 0)
   await client.execute({
