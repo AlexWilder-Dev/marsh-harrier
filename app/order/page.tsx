@@ -17,6 +17,8 @@ type MenuItem = {
 type CartItem = MenuItem & { quantity: number };
 type Cart = Record<number, CartItem>;
 
+const MIXER_PROMPT_CATEGORIES = ["Gin", "Vodka", "Whisky", "Bourbon", "Liqueurs"];
+
 function formatPrice(pence: number) {
   return `£${(pence / 100).toFixed(2)}`;
 }
@@ -43,6 +45,7 @@ function OrderPage() {
   const [activeCategory, setActiveCategory] = useState<string>("");
   const [cart, setCart] = useState<Cart>({});
   const [cartOpen, setCartOpen] = useState(false);
+  const [mixerPromptFor, setMixerPromptFor] = useState<MenuItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [menuError, setMenuError] = useState(false);
   const [menuRetry, setMenuRetry] = useState(0);
@@ -52,9 +55,11 @@ function OrderPage() {
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const cartSheetRef = useRef<HTMLDivElement>(null);
+  const mixerSheetRef = useRef<HTMLDivElement>(null);
   const submittingRef = useRef(false);
 
   useFocusTrap(cartSheetRef, cartOpen, () => setCartOpen(false));
+  useFocusTrap(mixerSheetRef, mixerPromptFor !== null, () => setMixerPromptFor(null));
 
   useEffect(() => {
     fetch("/api/menu")
@@ -65,7 +70,9 @@ function OrderPage() {
       .then((data: MenuItem[]) => {
         const available = data.filter((item) => item.available);
         setMenu(available);
-        const cats = Array.from(new Set(available.map((i) => i.category)));
+        const cats = Array.from(new Set(available.map((i) => i.category))).filter(
+          (c) => c !== "Mixers"
+        );
         setCategories(cats);
         setActiveCategory(cats[0] ?? "");
       })
@@ -84,6 +91,17 @@ function OrderPage() {
       };
     });
   }, []);
+
+  const handleMenuAdd = useCallback(
+    (item: MenuItem) => {
+      const isFirstAdd = !cart[item.id];
+      addToCart(item);
+      if (isFirstAdd && MIXER_PROMPT_CATEGORIES.includes(item.category)) {
+        setMixerPromptFor(item);
+      }
+    },
+    [cart, addToCart]
+  );
 
   const removeFromCart = useCallback((itemId: number) => {
     setCart((prev) => {
@@ -174,7 +192,7 @@ function OrderPage() {
           <h1 className="font-serif font-light text-ink text-3xl mb-4">
             {isTakeaway
               ? "Order received."
-              : `We\u2019ll bring it over to Table\u00a0${tableNumber}.`}
+              : `We’ll bring it over to Table ${tableNumber}.`}
           </h1>
           <p className="font-sans text-ink/60 text-sm font-light leading-relaxed mb-10">
             {isTakeaway
@@ -197,6 +215,21 @@ function OrderPage() {
   const serviceCharge = Math.round(subtotal * 0.1);
   const total = subtotal + serviceCharge;
   const visibleItems = menu.filter((i) => i.category === activeCategory);
+  const mixers = menu.filter((i) => i.category === "Mixers");
+  const mixerGroups = [
+    {
+      label: "Tonics & Ginger",
+      items: mixers.filter((m) => m.price === 310),
+    },
+    {
+      label: "Soft Drinks",
+      items: mixers.filter((m) => m.price === 80),
+    },
+    {
+      label: "Cordials",
+      items: mixers.filter((m) => m.price === 200 || m.price === 300),
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-parchment">
@@ -312,7 +345,7 @@ function OrderPage() {
                       <span className="w-[64px]" aria-hidden="true" />
                     )}
                     <button
-                      onClick={() => addToCart(item)}
+                      onClick={() => handleMenuAdd(item)}
                       aria-label={`Add ${item.name} to order`}
                       className="w-10 h-10 flex items-center justify-center bg-ochre text-parchment-light font-medium text-lg leading-none hover:bg-ochre-light transition-colors"
                     >
@@ -484,6 +517,95 @@ function OrderPage() {
                 className="w-full font-sans text-xs tracking-widest uppercase px-6 py-4 bg-ochre text-parchment-light hover:bg-ochre-light disabled:opacity-60 transition-colors"
               >
                 {submitting ? "Placing order…" : "Place Order"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mixer prompt sheet */}
+      {mixerPromptFor && (
+        <div
+          ref={mixerSheetRef}
+          className="fixed inset-0 z-50 flex flex-col justify-end"
+          role="dialog"
+          aria-label="Add a mixer"
+          aria-modal="true"
+        >
+          <div
+            className="absolute inset-0 bg-ink/40"
+            onClick={() => setMixerPromptFor(null)}
+          />
+          <div className="relative bg-parchment max-h-[80vh] flex flex-col">
+            {/* Sheet header */}
+            <div className="flex items-start justify-between px-5 py-4 border-b border-forest-deep/10">
+              <div>
+                <h2 className="font-serif font-light text-forest-deep text-xl">
+                  Add a mixer?
+                </h2>
+                <p className="font-sans text-ink/50 text-xs mt-0.5">
+                  You&apos;ve added {mixerPromptFor.name}
+                </p>
+              </div>
+              <button
+                onClick={() => setMixerPromptFor(null)}
+                aria-label="No mixer, close"
+                className="w-10 h-10 flex items-center justify-center text-ink/40 hover:text-ink transition-colors flex-shrink-0"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Mixer groups */}
+            <div className="overflow-y-auto flex-1">
+              {mixerGroups
+                .filter((g) => g.items.length > 0)
+                .map((group) => (
+                  <div key={group.label}>
+                    <p className="font-sans text-[10px] tracking-widest uppercase text-ink/40 px-5 pt-4 pb-2">
+                      {group.label}
+                    </p>
+                    <ul className="divide-y divide-forest-deep/5">
+                      {group.items.map((mixer) => (
+                        <li
+                          key={mixer.id}
+                          className="flex items-center gap-4 px-5 py-3"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <p className="font-sans text-forest-deep text-sm">
+                              {mixer.name}
+                            </p>
+                          </div>
+                          <p className="font-sans text-ink/60 text-sm tabular-nums flex-shrink-0">
+                            {formatPrice(mixer.price)}
+                          </p>
+                          <button
+                            onClick={() => {
+                              addToCart(mixer);
+                              setMixerPromptFor(null);
+                            }}
+                            aria-label={`Add ${mixer.name}`}
+                            className="w-9 h-9 flex items-center justify-center bg-ochre text-parchment-light text-lg hover:bg-ochre-light transition-colors flex-shrink-0"
+                          >
+                            +
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+            </div>
+
+            {/* Dismiss */}
+            <div
+              className="px-5 pt-4 border-t border-forest-deep/10 bg-parchment"
+              style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}
+            >
+              <button
+                onClick={() => setMixerPromptFor(null)}
+                className="w-full font-sans text-xs tracking-widest uppercase px-6 py-4 border border-forest-deep/20 text-ink/60 hover:text-ink hover:border-forest-deep/40 transition-colors"
+              >
+                No mixer, thanks
               </button>
             </div>
           </div>
