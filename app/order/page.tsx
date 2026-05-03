@@ -17,7 +17,7 @@ type MenuItem = {
 type CartItem = MenuItem & { quantity: number };
 type Cart = Record<number, CartItem>;
 
-const MIXER_PROMPT_CATEGORIES = ["Gin", "Vodka", "Whisky", "Bourbon", "Liqueurs"];
+const MIXER_PROMPT_CATEGORIES = ["Gin", "Vodka", "Rum", "Whisky", "Bourbon", "Liqueurs"];
 
 function formatPrice(pence: number) {
   return `£${(pence / 100).toFixed(2)}`;
@@ -216,18 +216,33 @@ function OrderPage() {
   const total = subtotal + serviceCharge;
   const visibleItems = menu.filter((i) => i.category === activeCategory);
   const mixers = menu.filter((i) => i.category === "Mixers");
+  const n = (m: MenuItem) => m.name.toLowerCase();
   const mixerGroups = [
     {
-      label: "Tonics & Ginger",
-      items: mixers.filter((m) => m.price === 310),
+      label: "Tonic",
+      items: mixers.filter((m) => n(m).includes("tonic")),
+    },
+    {
+      label: "Ginger",
+      items: mixers.filter((m) => n(m).includes("ginger")),
+    },
+    {
+      label: "Red Bull",
+      items: mixers.filter((m) => n(m).includes("red bull")),
+    },
+    {
+      label: "Juices",
+      items: mixers.filter((m) => n(m).includes("juice")),
     },
     {
       label: "Soft Drinks",
-      items: mixers.filter((m) => m.price === 80),
+      items: mixers.filter((m) =>
+        ["pepsi", "lemonade", "soda"].some((k) => n(m).includes(k))
+      ),
     },
     {
-      label: "Cordials",
-      items: mixers.filter((m) => m.price === 200 || m.price === 300),
+      label: "Bottles",
+      items: mixers.filter((m) => n(m).includes("bottle")),
     },
   ];
 
