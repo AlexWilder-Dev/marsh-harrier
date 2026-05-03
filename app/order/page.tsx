@@ -23,15 +23,32 @@ type DisplayGroup =
 
 const MIXER_PROMPT_CATEGORIES = ["Gin", "Vodka", "Rum", "Whisky", "Bourbon", "Liqueurs"];
 
+// Two-level navigation — groups map display labels to underlying menu categories
+const DRINK_GROUPS = [
+  { label: "Beers & Ciders", categories: ["Draught", "Bottles"] },
+  { label: "Wine",           categories: ["White Wine", "Red Wine", "Rosé & Sparkling"] },
+  { label: "Spirits",        categories: ["Gin", "Vodka", "Rum", "Whisky", "Bourbon", "Liqueurs"] },
+  { label: "Cocktails",      categories: ["Cocktails", "Mocktails"] },
+  { label: "Shots",          categories: ["Shots"] },
+  { label: "Soft Drinks",    categories: ["Soft Drinks", "Juices"] },
+];
+
+const FOOD_GROUPS = [
+  { label: "Starters",       categories: ["Starters"] },
+  { label: "Mains",          categories: ["Mains", "Burgers", "Pizza"] },
+  { label: "Sunday Roast",   categories: ["Sunday Roast"] },
+  { label: "Sides & Salads", categories: ["Sides", "Salads"] },
+  { label: "Vegan",          categories: ["Vegan"] },
+  { label: "Children's",     categories: ["Children's"] },
+  { label: "Puddings",       categories: ["Puddings"] },
+];
+
 function formatPrice(pence: number) {
   return `£${(pence / 100).toFixed(2)}`;
 }
 
 function cartTotal(cart: Cart) {
-  return Object.values(cart).reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
+  return Object.values(cart).reduce((sum, item) => sum + item.price * item.quantity, 0);
 }
 
 function cartCount(cart: Cart) {
@@ -77,8 +94,8 @@ function OrderPage() {
   const tableNumber = tableParam ? parseInt(tableParam, 10) : (isTakeaway ? 0 : null);
 
   const [menu, setMenu] = useState<MenuItem[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
-  const [activeCategory, setActiveCategory] = useState<string>("");
+  const [activeSection, setActiveSection] = useState<"food" | "drink">("drink");
+  const [activeGroup, setActiveGroup] = useState<string>("");
   const [cart, setCart] = useState<Cart>({});
   const [pairings, setPairings] = useState<Pairing[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
@@ -107,15 +124,23 @@ function OrderPage() {
       .then((data: MenuItem[]) => {
         const available = data.filter((item) => item.available);
         setMenu(available);
-        const cats = Array.from(new Set(available.map((i) => i.category))).filter(
-          (c) => c !== "Mixers"
+        const firstGroup = DRINK_GROUPS.find(g =>
+          g.categories.some(c => available.some(i => i.category === c))
         );
-        setCategories(cats);
-        setActiveCategory(cats[0] ?? "");
+        setActiveGroup(firstGroup?.label ?? "");
       })
       .catch(() => setMenuError(true))
       .finally(() => setLoading(false));
   }, [menuRetry]);
+
+  const handleSectionChange = (section: "food" | "drink") => {
+    setActiveSection(section);
+    const groups = section === "drink" ? DRINK_GROUPS : FOOD_GROUPS;
+    const firstGroup = groups.find(g =>
+      g.categories.some(c => menu.some(i => i.category === c))
+    );
+    setActiveGroup(firstGroup?.label ?? "");
+  };
 
   const addToCart = useCallback((item: MenuItem) => {
     setCart((prev) => {
@@ -211,14 +236,11 @@ function OrderPage() {
     }
   };
 
-  // Invalid table number (takeaway uses table 0 and bypasses this check)
   if (!isTakeaway && (!tableNumber || isNaN(tableNumber) || tableNumber < 1)) {
     return (
       <main className="min-h-screen bg-parchment flex items-center justify-center px-6">
         <div className="text-center max-w-xs">
-          <p className="font-serif text-forest-deep text-2xl mb-3">
-            No table found.
-          </p>
+          <p className="font-serif text-forest-deep text-2xl mb-3">No table found.</p>
           <p className="font-sans text-ink/60 text-sm font-light">
             Please scan the QR code on your table to order.
           </p>
@@ -227,7 +249,6 @@ function OrderPage() {
     );
   }
 
-  // Success screen
   if (submitted) {
     return (
       <main className="min-h-screen bg-ochre flex items-center justify-center px-6">
@@ -235,9 +256,7 @@ function OrderPage() {
           <div className="w-16 h-16 rounded-full border border-ochre/60 flex items-center justify-center mx-auto mb-8">
             <span className="font-serif italic text-ink text-2xl">✓</span>
           </div>
-          <p className="font-sans text-ink text-xs tracking-widest uppercase mb-4">
-            Order placed
-          </p>
+          <p className="font-sans text-ink text-xs tracking-widest uppercase mb-4">Order placed</p>
           <h1 className="font-serif font-light text-ink text-3xl mb-4">
             {isTakeaway
               ? "Order received."
@@ -263,7 +282,19 @@ function OrderPage() {
   const subtotal = cartTotal(cart);
   const serviceCharge = Math.round(subtotal * 0.1);
   const total = subtotal + serviceCharge;
-  const visibleItems = menu.filter((i) => i.category === activeCategory);
+
+  // Navigation state
+  const allGroups = activeSection === "drink" ? DRINK_GROUPS : FOOD_GROUPS;
+  const availableGroups = allGroups.filter(g =>
+    g.categories.some(c => menu.some(i => i.category === c))
+  );
+  const currentGroupDef = availableGroups.find(g => g.label === activeGroup);
+  const showSubHeaders = (currentGroupDef?.categories.length ?? 0) > 1;
+  const visibleItems = currentGroupDef
+    ? menu.filter(i => currentGroupDef.categories.includes(i.category))
+    : [];
+
+  // Mixers for prompt sheet
   const mixers = menu.filter((i) => i.category === "Mixers");
   const nl = (m: MenuItem) => m.name.toLowerCase();
   const mixerGroups = [
@@ -275,7 +306,7 @@ function OrderPage() {
     { label: "Bottles",     items: mixers.filter((m) => nl(m).includes("bottle")) },
   ];
 
-  // Build display groups: paired spirits with their mixers in one card, everything else flat
+  // Cart display groups
   const pairedMixerIds = new Set(pairings.map((p) => p.mixerId));
   const spiritToMixers = new Map<number, number[]>();
   for (const p of pairings) {
@@ -295,8 +326,52 @@ function OrderPage() {
     return acc;
   }, []);
 
+  // Inline item renderer — reused for flat lists and sub-headed lists
+  const renderMenuItem = (item: MenuItem) => {
+    const qty = cart[item.id]?.quantity ?? 0;
+    return (
+      <li key={item.id} className="bg-parchment-light flex items-start gap-4 p-4">
+        <div className="flex-1 min-w-0">
+          <p className="font-sans text-forest-deep font-medium text-sm">{item.name}</p>
+          {item.description && (
+            <p className="font-sans text-ink/50 text-xs font-light mt-0.5 leading-relaxed">
+              {item.description}
+            </p>
+          )}
+          <p className="font-sans text-ink text-sm font-medium mt-1.5">{formatPrice(item.price)}</p>
+        </div>
+        <div className="flex items-center gap-2 flex-shrink-0 mt-0.5">
+          {qty > 0 ? (
+            <>
+              <button
+                onClick={() => removeFromCart(item.id)}
+                aria-label={`Remove one ${item.name}`}
+                className="w-10 h-10 flex items-center justify-center border border-forest-deep/20 text-forest-deep font-medium text-lg leading-none hover:bg-forest-deep/5 transition-colors"
+              >
+                −
+              </button>
+              <span className="font-sans text-forest-deep font-medium text-sm w-4 text-center tabular-nums">
+                {qty}
+              </span>
+            </>
+          ) : (
+            <span className="w-[64px]" aria-hidden="true" />
+          )}
+          <button
+            onClick={() => handleMenuAdd(item)}
+            aria-label={`Add ${item.name} to order`}
+            className="w-10 h-10 flex items-center justify-center bg-ochre text-parchment-light font-medium text-lg leading-none hover:bg-ochre-light transition-colors"
+          >
+            +
+          </button>
+        </div>
+      </li>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-parchment">
+
       {/* Header */}
       <header className="sticky top-0 z-30 bg-ochre px-5 h-[72px] flex items-center justify-between">
         <div>
@@ -310,7 +385,7 @@ function OrderPage() {
         {count > 0 && (
           <button
             onClick={() => setCartOpen(true)}
-            className="flex items-center gap-2 font-sans text-xs tracking-widest uppercase px-4 py-2.5 bg-ochre text-parchment-light"
+            className="flex items-center gap-2 font-sans text-xs tracking-widest uppercase px-4 py-2.5 bg-parchment text-ink hover:bg-parchment-dark transition-colors"
             aria-label={`View cart — ${count} item${count !== 1 ? "s" : ""}`}
           >
             <span>{count}</span>
@@ -320,41 +395,56 @@ function OrderPage() {
         )}
       </header>
 
-      {/* Category tabs */}
+      {/* Food / Drink toggle — sticky below header */}
+      <div className="sticky top-[72px] z-20 grid grid-cols-2 border-b border-forest-deep/15">
+        {(["drink", "food"] as const).map((section) => (
+          <button
+            key={section}
+            onClick={() => handleSectionChange(section)}
+            className={`py-3.5 font-sans text-xs tracking-widest uppercase transition-colors ${
+              activeSection === section
+                ? "bg-forest-deep text-parchment-light"
+                : "bg-parchment-dark text-ink/50 hover:text-ink hover:bg-parchment"
+            }`}
+          >
+            {section === "drink" ? "Drink" : "Food"}
+          </button>
+        ))}
+      </div>
+
+      {/* Category tabs — sticky below toggle */}
       <nav
         aria-label="Menu categories"
-        className="sticky top-[72px] z-20 bg-parchment-dark overflow-x-auto"
+        className="sticky top-[124px] z-20 bg-parchment-dark overflow-x-auto border-b border-forest-deep/10"
       >
         <div className="flex min-w-max px-4 gap-0">
-          {categories.map((cat) => (
+          {availableGroups.map((g) => (
             <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
+              key={g.label}
+              onClick={() => setActiveGroup(g.label)}
               className={`font-sans text-xs tracking-widest uppercase px-4 py-3.5 border-b-2 transition-colors whitespace-nowrap ${
-                activeCategory === cat
+                activeGroup === g.label
                   ? "border-ochre text-forest-deep font-medium"
                   : "border-transparent text-ink/45 hover:text-ink/70"
               }`}
             >
-              {cat}
+              {g.label}
             </button>
           ))}
         </div>
       </nav>
 
       {/* Menu items */}
-      <main className="px-4 py-6 pb-44">
+      <main className="pb-44">
         {loading ? (
-          <div className="space-y-3">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="h-24 bg-ink/5 animate-pulse rounded" />
+          <div className="space-y-px px-4 pt-4">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="h-20 bg-ink/5 animate-pulse" />
             ))}
           </div>
         ) : menuError ? (
           <div className="flex flex-col items-center justify-center py-16 text-center px-4">
-            <p className="font-serif text-forest-deep text-xl mb-2">
-              Couldn&apos;t load the menu.
-            </p>
+            <p className="font-serif text-forest-deep text-xl mb-2">Couldn&apos;t load the menu.</p>
             <p className="font-sans text-ink/50 text-sm font-light mb-6">
               Please check your connection and try again.
             </p>
@@ -365,53 +455,28 @@ function OrderPage() {
               Retry
             </button>
           </div>
-        ) : (
-          <ul className="space-y-px" role="list">
-            {visibleItems.map((item) => {
-              const qty = cart[item.id]?.quantity ?? 0;
+        ) : showSubHeaders ? (
+          // Multi-category group: render with sticky section headers
+          <div>
+            {currentGroupDef!.categories.map((cat) => {
+              const catItems = menu.filter((i) => i.category === cat);
+              if (!catItems.length) return null;
               return (
-                <li key={item.id} className="bg-parchment-light flex items-start gap-4 p-4">
-                  <div className="flex-1 min-w-0">
-                    <p className="font-sans text-forest-deep font-medium text-sm">
-                      {item.name}
-                    </p>
-                    {item.description && (
-                      <p className="font-sans text-ink/50 text-xs font-light mt-0.5 leading-relaxed">
-                        {item.description}
-                      </p>
-                    )}
-                    <p className="font-sans text-ink text-sm font-medium mt-1.5">
-                      {formatPrice(item.price)}
-                    </p>
+                <div key={cat}>
+                  <div className="sticky top-[176px] z-10 -mx-0 px-4 py-2.5 bg-parchment-dark border-b border-forest-deep/10">
+                    <p className="font-sans text-[11px] tracking-widest uppercase text-ink/50">{cat}</p>
                   </div>
-                  <div className="flex items-center gap-2 flex-shrink-0 mt-0.5">
-                    {qty > 0 ? (
-                      <>
-                        <button
-                          onClick={() => removeFromCart(item.id)}
-                          aria-label={`Remove one ${item.name}`}
-                          className="w-10 h-10 flex items-center justify-center border border-forest-deep/20 text-forest-deep font-medium text-lg leading-none hover:bg-forest-deep/5 transition-colors"
-                        >
-                          −
-                        </button>
-                        <span className="font-sans text-forest-deep font-medium text-sm w-4 text-center tabular-nums">
-                          {qty}
-                        </span>
-                      </>
-                    ) : (
-                      <span className="w-[64px]" aria-hidden="true" />
-                    )}
-                    <button
-                      onClick={() => handleMenuAdd(item)}
-                      aria-label={`Add ${item.name} to order`}
-                      className="w-10 h-10 flex items-center justify-center bg-ochre text-parchment-light font-medium text-lg leading-none hover:bg-ochre-light transition-colors"
-                    >
-                      +
-                    </button>
-                  </div>
-                </li>
+                  <ul className="space-y-px" role="list">
+                    {catItems.map(renderMenuItem)}
+                  </ul>
+                </div>
               );
             })}
+          </div>
+        ) : (
+          // Single-category group: flat list
+          <ul className="space-y-px pt-px" role="list">
+            {visibleItems.map(renderMenuItem)}
           </ul>
         )}
       </main>
@@ -441,7 +506,6 @@ function OrderPage() {
         >
           <div className="absolute inset-0 bg-ink/40" onClick={() => setCartOpen(false)} />
           <div className="relative bg-parchment max-h-[85vh] flex flex-col">
-            {/* Sheet header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-forest-deep/10">
               <h2 className="font-serif font-light text-forest-deep text-xl">
                 {isTakeaway ? "Your Takeaway Order" : `Your Order — Table ${tableNumber}`}
@@ -455,19 +519,14 @@ function OrderPage() {
               </button>
             </div>
 
-            {/* Items list */}
             <ul className="overflow-y-auto flex-1 divide-y divide-forest-deep/5">
               {displayGroups.map((group) => {
                 if (group.kind === "single") {
                   return (
                     <li key={group.item.id} className="flex items-center gap-4 px-5 py-4">
                       <div className="flex-1 min-w-0">
-                        <p className="font-sans text-forest-deep font-medium text-sm">
-                          {group.item.name}
-                        </p>
-                        <p className="font-sans text-ink/50 text-xs">
-                          {formatPrice(group.item.price)} each
-                        </p>
+                        <p className="font-sans text-forest-deep font-medium text-sm">{group.item.name}</p>
+                        <p className="font-sans text-ink/50 text-xs">{formatPrice(group.item.price)} each</p>
                       </div>
                       <ItemControls
                         item={group.item}
@@ -481,20 +540,14 @@ function OrderPage() {
                   );
                 }
 
-                // Paired group — spirit + mixer(s) in one card
                 const { spirit, mixers: pairedMixers } = group;
                 return (
                   <li key={spirit.id} className="px-5 py-3">
                     <div className="border border-forest-deep/10">
-                      {/* Spirit row */}
                       <div className="flex items-center gap-4 px-4 py-3">
                         <div className="flex-1 min-w-0">
-                          <p className="font-sans text-forest-deep font-medium text-sm">
-                            {spirit.name}
-                          </p>
-                          <p className="font-sans text-ink/50 text-xs">
-                            {formatPrice(spirit.price)} each
-                          </p>
+                          <p className="font-sans text-forest-deep font-medium text-sm">{spirit.name}</p>
+                          <p className="font-sans text-ink/50 text-xs">{formatPrice(spirit.price)} each</p>
                         </div>
                         <ItemControls
                           item={spirit}
@@ -508,19 +561,14 @@ function OrderPage() {
                           {formatPrice(spirit.price * spirit.quantity)}
                         </p>
                       </div>
-                      {/* Mixer rows */}
                       {pairedMixers.map((mixer) => (
                         <div
                           key={mixer.id}
                           className="flex items-center gap-4 px-4 py-3 bg-parchment-dark/60 border-t border-forest-deep/5"
                         >
                           <div className="flex-1 min-w-0">
-                            <p className="font-sans text-ink/70 text-xs font-medium">
-                              + {mixer.name}
-                            </p>
-                            <p className="font-sans text-ink/40 text-xs">
-                              {formatPrice(mixer.price)} each
-                            </p>
+                            <p className="font-sans text-ink/70 text-xs font-medium">+ {mixer.name}</p>
+                            <p className="font-sans text-ink/40 text-xs">{formatPrice(mixer.price)} each</p>
                           </div>
                           <ItemControls
                             item={mixer}
@@ -541,7 +589,6 @@ function OrderPage() {
               })}
             </ul>
 
-            {/* Total + submit */}
             <div className="px-5 pt-4 border-t border-forest-deep/10 bg-parchment" style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}>
               <div className="flex items-center justify-between mb-2">
                 <p className="font-sans text-xs tracking-widest uppercase text-ink/40">Subtotal</p>
@@ -621,7 +668,6 @@ function OrderPage() {
         >
           <div className="absolute inset-0 bg-ink/40" onClick={() => setMixerPromptFor(null)} />
           <div className="relative bg-parchment max-h-[80vh] flex flex-col">
-            {/* Sheet header */}
             <div className="flex items-start justify-between px-5 py-4 border-b border-forest-deep/10">
               <div>
                 <h2 className="font-serif font-light text-forest-deep text-xl">Add a mixer?</h2>
@@ -638,7 +684,6 @@ function OrderPage() {
               </button>
             </div>
 
-            {/* Mixer groups */}
             <div className="overflow-y-auto flex-1">
               {mixerGroups
                 .filter((g) => g.items.length > 0)
@@ -677,7 +722,6 @@ function OrderPage() {
                 ))}
             </div>
 
-            {/* Dismiss */}
             <div
               className="px-5 pt-4 border-t border-forest-deep/10 bg-parchment"
               style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}
@@ -692,6 +736,7 @@ function OrderPage() {
           </div>
         </div>
       )}
+
     </div>
   );
 }

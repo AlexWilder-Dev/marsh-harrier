@@ -11,7 +11,7 @@ export default function PullQuote() {
   return (
     <section
       ref={ref}
-      className="relative bg-ochre min-h-dvh flex items-center py-16 md:py-32 overflow-hidden"
+      className="relative bg-ochre min-h-dvh flex items-center py-20 sm:py-28 md:py-44 overflow-hidden"
       aria-label="Quote"
     >
       {/* Radial glow */}

@@ -127,7 +127,7 @@ export default function FindUs() {
     <>
       <section
         id="find-us"
-        className="bg-parchment py-20 sm:py-28 md:py-40 overflow-hidden"
+        className="bg-parchment py-24 sm:py-36 md:py-52 overflow-hidden"
         aria-label="Location and directions"
       >
         <div className="max-w-7xl mx-auto px-6 md:px-16">

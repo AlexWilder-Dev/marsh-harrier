@@ -86,7 +86,7 @@ export default function OpeningHours() {
   return (
     <section
       id="opening-hours"
-      className="bg-parchment-dark py-20 sm:py-28 md:py-40 relative overflow-hidden"
+      className="bg-parchment-dark py-24 sm:py-36 md:py-52 relative overflow-hidden"
       aria-label="Opening hours"
     >
       {/* Full-height decorative H letterform */}

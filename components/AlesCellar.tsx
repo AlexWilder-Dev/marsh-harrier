@@ -13,7 +13,7 @@ export default function AlesCellar() {
   return (
     <section
       id="ales"
-      className="bg-parchment py-20 sm:py-28 md:py-40 overflow-hidden relative"
+      className="bg-parchment py-24 sm:py-36 md:py-52 overflow-hidden relative"
       aria-label="Ales and cellar"
     >
       {/* Faint background texture */}
