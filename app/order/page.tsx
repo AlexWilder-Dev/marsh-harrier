@@ -16,6 +16,10 @@ type MenuItem = {
 
 type CartItem = MenuItem & { quantity: number };
 type Cart = Record<number, CartItem>;
+type Pairing = { spiritId: number; mixerId: number };
+type DisplayGroup =
+  | { kind: "single"; item: CartItem }
+  | { kind: "paired"; spirit: CartItem; mixers: CartItem[] };
 
 const MIXER_PROMPT_CATEGORIES = ["Gin", "Vodka", "Rum", "Whisky", "Bourbon", "Liqueurs"];
 
@@ -34,6 +38,38 @@ function cartCount(cart: Cart) {
   return Object.values(cart).reduce((sum, item) => sum + item.quantity, 0);
 }
 
+function ItemControls({
+  item,
+  onRemove,
+  onAdd,
+}: {
+  item: CartItem;
+  onRemove: () => void;
+  onAdd: () => void;
+}) {
+  return (
+    <div className="flex items-center gap-2 flex-shrink-0">
+      <button
+        onClick={onRemove}
+        aria-label={`Remove one ${item.name}`}
+        className="w-9 h-9 flex items-center justify-center border border-forest-deep/20 text-forest-deep text-lg hover:bg-forest-deep/5 transition-colors"
+      >
+        −
+      </button>
+      <span className="font-sans text-forest-deep font-medium w-4 text-center tabular-nums">
+        {item.quantity}
+      </span>
+      <button
+        onClick={onAdd}
+        aria-label={`Add one more ${item.name}`}
+        className="w-9 h-9 flex items-center justify-center bg-ochre text-parchment-light text-lg hover:bg-ochre-light transition-colors"
+      >
+        +
+      </button>
+    </div>
+  );
+}
+
 function OrderPage() {
   const searchParams = useSearchParams();
   const tableParam = searchParams.get("table");
@@ -44,6 +80,7 @@ function OrderPage() {
   const [categories, setCategories] = useState<string[]>([]);
   const [activeCategory, setActiveCategory] = useState<string>("");
   const [cart, setCart] = useState<Cart>({});
+  const [pairings, setPairings] = useState<Pairing[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
   const [mixerPromptFor, setMixerPromptFor] = useState<MenuItem | null>(null);
   const [loading, setLoading] = useState(true);
@@ -115,6 +152,18 @@ function OrderPage() {
     });
   }, []);
 
+  const removeLastPairingFor = useCallback(
+    (field: "spiritId" | "mixerId", id: number, qty: number) => {
+      setPairings((prev) => {
+        if (qty <= 1) return prev.filter((p) => p[field] !== id);
+        const idx = prev.map((p) => p[field]).lastIndexOf(id);
+        if (idx === -1) return prev;
+        return [...prev.slice(0, idx), ...prev.slice(idx + 1)];
+      });
+    },
+    []
+  );
+
   const submitOrder = async () => {
     if (submittingRef.current) return;
     if (tableNumber === null || isNaN(tableNumber) || cartCount(cart) === 0) return;
@@ -152,6 +201,7 @@ function OrderPage() {
 
       setSubmitted(true);
       setCart({});
+      setPairings([]);
       setCartOpen(false);
     } catch {
       setError("Could not connect. Please check your connection and try again.");
@@ -191,7 +241,7 @@ function OrderPage() {
           <h1 className="font-serif font-light text-ink text-3xl mb-4">
             {isTakeaway
               ? "Order received."
-              : `We’ll bring it over to Table ${tableNumber}.`}
+              : `We'll bring it over to Table ${tableNumber}.`}
           </h1>
           <p className="font-sans text-ink/60 text-sm font-light leading-relaxed mb-10">
             {isTakeaway
@@ -215,35 +265,35 @@ function OrderPage() {
   const total = subtotal + serviceCharge;
   const visibleItems = menu.filter((i) => i.category === activeCategory);
   const mixers = menu.filter((i) => i.category === "Mixers");
-  const n = (m: MenuItem) => m.name.toLowerCase();
+  const nl = (m: MenuItem) => m.name.toLowerCase();
   const mixerGroups = [
-    {
-      label: "Tonic",
-      items: mixers.filter((m) => n(m).includes("tonic")),
-    },
-    {
-      label: "Ginger",
-      items: mixers.filter((m) => n(m).includes("ginger")),
-    },
-    {
-      label: "Red Bull",
-      items: mixers.filter((m) => n(m).includes("red bull")),
-    },
-    {
-      label: "Juices",
-      items: mixers.filter((m) => n(m).includes("juice")),
-    },
-    {
-      label: "Soft Drinks",
-      items: mixers.filter((m) =>
-        ["pepsi", "lemonade", "soda"].some((k) => n(m).includes(k))
-      ),
-    },
-    {
-      label: "Bottles",
-      items: mixers.filter((m) => n(m).includes("bottle")),
-    },
+    { label: "Tonic",       items: mixers.filter((m) => nl(m).includes("tonic")) },
+    { label: "Ginger",      items: mixers.filter((m) => nl(m).includes("ginger")) },
+    { label: "Red Bull",    items: mixers.filter((m) => nl(m).includes("red bull")) },
+    { label: "Juices",      items: mixers.filter((m) => nl(m).includes("juice")) },
+    { label: "Soft Drinks", items: mixers.filter((m) => ["pepsi", "lemonade", "soda"].some((k) => nl(m).includes(k))) },
+    { label: "Bottles",     items: mixers.filter((m) => nl(m).includes("bottle")) },
   ];
+
+  // Build display groups: paired spirits with their mixers in one card, everything else flat
+  const pairedMixerIds = new Set(pairings.map((p) => p.mixerId));
+  const spiritToMixers = new Map<number, number[]>();
+  for (const p of pairings) {
+    if (!spiritToMixers.has(p.spiritId)) spiritToMixers.set(p.spiritId, []);
+    spiritToMixers.get(p.spiritId)!.push(p.mixerId);
+  }
+  const displayGroups = Object.values(cart).reduce<DisplayGroup[]>((acc, item) => {
+    if (pairedMixerIds.has(item.id)) return acc;
+    const mixerIds = spiritToMixers.get(item.id);
+    if (mixerIds && mixerIds.length > 0) {
+      const uniqueIds = [...new Set(mixerIds)];
+      const mixerItems = uniqueIds.map((id) => cart[id]).filter(Boolean) as CartItem[];
+      acc.push({ kind: "paired", spirit: item, mixers: mixerItems });
+    } else {
+      acc.push({ kind: "single", item });
+    }
+    return acc;
+  }, []);
 
   return (
     <div className="min-h-screen bg-parchment">
@@ -297,10 +347,7 @@ function OrderPage() {
         {loading ? (
           <div className="space-y-3">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div
-                key={i}
-                className="h-24 bg-ink/5 animate-pulse rounded"
-              />
+              <div key={i} className="h-24 bg-ink/5 animate-pulse rounded" />
             ))}
           </div>
         ) : menuError ? (
@@ -312,7 +359,7 @@ function OrderPage() {
               Please check your connection and try again.
             </p>
             <button
-              onClick={() => { setMenuError(false); setLoading(true); setMenuRetry(n => n + 1); }}
+              onClick={() => { setMenuError(false); setLoading(true); setMenuRetry((r) => r + 1); }}
               className="font-sans text-xs tracking-widest uppercase px-6 py-3 bg-ochre text-parchment-light"
             >
               Retry
@@ -323,10 +370,7 @@ function OrderPage() {
             {visibleItems.map((item) => {
               const qty = cart[item.id]?.quantity ?? 0;
               return (
-                <li
-                  key={item.id}
-                  className="bg-parchment-light flex items-start gap-4 p-4"
-                >
+                <li key={item.id} className="bg-parchment-light flex items-start gap-4 p-4">
                   <div className="flex-1 min-w-0">
                     <p className="font-sans text-forest-deep font-medium text-sm">
                       {item.name}
@@ -340,7 +384,6 @@ function OrderPage() {
                       {formatPrice(item.price)}
                     </p>
                   </div>
-
                   <div className="flex items-center gap-2 flex-shrink-0 mt-0.5">
                     {qty > 0 ? (
                       <>
@@ -380,9 +423,7 @@ function OrderPage() {
             onClick={() => setCartOpen(true)}
             className="w-full flex items-center justify-between font-sans text-xs tracking-widest uppercase px-6 py-4 bg-ochre text-parchment-light hover:bg-ochre-light transition-colors"
           >
-            <span>
-              {count} item{count !== 1 ? "s" : ""}
-            </span>
+            <span>{count} item{count !== 1 ? "s" : ""}</span>
             <span>Review Order</span>
             <span className="font-medium">{formatPrice(total)}</span>
           </button>
@@ -398,10 +439,7 @@ function OrderPage() {
           aria-label="Your order"
           aria-modal="true"
         >
-          <div
-            className="absolute inset-0 bg-ink/40"
-            onClick={() => setCartOpen(false)}
-          />
+          <div className="absolute inset-0 bg-ink/40" onClick={() => setCartOpen(false)} />
           <div className="relative bg-parchment max-h-[85vh] flex flex-col">
             {/* Sheet header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-forest-deep/10">
@@ -419,66 +457,103 @@ function OrderPage() {
 
             {/* Items list */}
             <ul className="overflow-y-auto flex-1 divide-y divide-forest-deep/5">
-              {Object.values(cart).map((item) => (
-                <li
-                  key={item.id}
-                  className="flex items-center gap-4 px-5 py-4"
-                >
-                  <div className="flex-1 min-w-0">
-                    <p className="font-sans text-forest-deep font-medium text-sm">
-                      {item.name}
-                    </p>
-                    <p className="font-sans text-ink/50 text-xs">
-                      {formatPrice(item.price)} each
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <button
-                      onClick={() => removeFromCart(item.id)}
-                      aria-label={`Remove one ${item.name}`}
-                      className="w-9 h-9 flex items-center justify-center border border-forest-deep/20 text-forest-deep text-lg hover:bg-forest-deep/5 transition-colors"
-                    >
-                      −
-                    </button>
-                    <span className="font-sans text-forest-deep font-medium w-4 text-center tabular-nums">
-                      {item.quantity}
-                    </span>
-                    <button
-                      onClick={() => addToCart(item)}
-                      aria-label={`Add one more ${item.name}`}
-                      className="w-9 h-9 flex items-center justify-center bg-ochre text-parchment-light text-lg hover:bg-ochre-light transition-colors"
-                    >
-                      +
-                    </button>
-                  </div>
-                  <p className="font-sans text-ink font-medium text-sm w-14 text-right flex-shrink-0 tabular-nums">
-                    {formatPrice(item.price * item.quantity)}
-                  </p>
-                </li>
-              ))}
+              {displayGroups.map((group) => {
+                if (group.kind === "single") {
+                  return (
+                    <li key={group.item.id} className="flex items-center gap-4 px-5 py-4">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-sans text-forest-deep font-medium text-sm">
+                          {group.item.name}
+                        </p>
+                        <p className="font-sans text-ink/50 text-xs">
+                          {formatPrice(group.item.price)} each
+                        </p>
+                      </div>
+                      <ItemControls
+                        item={group.item}
+                        onRemove={() => removeFromCart(group.item.id)}
+                        onAdd={() => addToCart(group.item)}
+                      />
+                      <p className="font-sans text-ink font-medium text-sm w-14 text-right flex-shrink-0 tabular-nums">
+                        {formatPrice(group.item.price * group.item.quantity)}
+                      </p>
+                    </li>
+                  );
+                }
+
+                // Paired group — spirit + mixer(s) in one card
+                const { spirit, mixers: pairedMixers } = group;
+                return (
+                  <li key={spirit.id} className="px-5 py-3">
+                    <div className="border border-forest-deep/10">
+                      {/* Spirit row */}
+                      <div className="flex items-center gap-4 px-4 py-3">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-sans text-forest-deep font-medium text-sm">
+                            {spirit.name}
+                          </p>
+                          <p className="font-sans text-ink/50 text-xs">
+                            {formatPrice(spirit.price)} each
+                          </p>
+                        </div>
+                        <ItemControls
+                          item={spirit}
+                          onRemove={() => {
+                            removeFromCart(spirit.id);
+                            removeLastPairingFor("spiritId", spirit.id, spirit.quantity);
+                          }}
+                          onAdd={() => addToCart(spirit)}
+                        />
+                        <p className="font-sans text-ink font-medium text-sm w-14 text-right flex-shrink-0 tabular-nums">
+                          {formatPrice(spirit.price * spirit.quantity)}
+                        </p>
+                      </div>
+                      {/* Mixer rows */}
+                      {pairedMixers.map((mixer) => (
+                        <div
+                          key={mixer.id}
+                          className="flex items-center gap-4 px-4 py-3 bg-parchment-dark/60 border-t border-forest-deep/5"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <p className="font-sans text-ink/70 text-xs font-medium">
+                              + {mixer.name}
+                            </p>
+                            <p className="font-sans text-ink/40 text-xs">
+                              {formatPrice(mixer.price)} each
+                            </p>
+                          </div>
+                          <ItemControls
+                            item={mixer}
+                            onRemove={() => {
+                              removeFromCart(mixer.id);
+                              removeLastPairingFor("mixerId", mixer.id, mixer.quantity);
+                            }}
+                            onAdd={() => addToCart(mixer)}
+                          />
+                          <p className="font-sans text-ink/70 font-medium text-sm w-14 text-right flex-shrink-0 tabular-nums">
+                            {formatPrice(mixer.price * mixer.quantity)}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
 
             {/* Total + submit */}
             <div className="px-5 pt-4 border-t border-forest-deep/10 bg-parchment" style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}>
               <div className="flex items-center justify-between mb-2">
-                <p className="font-sans text-xs tracking-widest uppercase text-ink/40">
-                  Subtotal
-                </p>
+                <p className="font-sans text-xs tracking-widest uppercase text-ink/40">Subtotal</p>
                 <p className="font-sans text-forest-deep text-sm tabular-nums">{formatPrice(subtotal)}</p>
               </div>
               <div className="flex items-center justify-between mb-4">
-                <p className="font-sans text-xs tracking-widest uppercase text-ink/40">
-                  Service charge (10%)
-                </p>
+                <p className="font-sans text-xs tracking-widest uppercase text-ink/40">Service charge (10%)</p>
                 <p className="font-sans text-forest-deep text-sm tabular-nums">{formatPrice(serviceCharge)}</p>
               </div>
               <div className="flex items-center justify-between border-t border-forest-deep/10 pt-4 mb-4">
-                <p className="font-sans text-xs tracking-widest uppercase text-ink/50">
-                  Total
-                </p>
-                <p className="font-serif text-forest-deep text-2xl tabular-nums">
-                  {formatPrice(total)}
-                </p>
+                <p className="font-sans text-xs tracking-widest uppercase text-ink/50">Total</p>
+                <p className="font-serif text-forest-deep text-2xl tabular-nums">{formatPrice(total)}</p>
               </div>
               <p className="font-sans text-ink/40 text-xs leading-relaxed mb-5">
                 A service charge of 10% has been added to your bill.
@@ -520,9 +595,7 @@ function OrderPage() {
               )}
 
               {error && (
-                <p className="font-sans text-sm text-red-600 mb-4 leading-relaxed">
-                  {error}
-                </p>
+                <p className="font-sans text-sm text-red-600 mb-4 leading-relaxed">{error}</p>
               )}
 
               <button
@@ -546,17 +619,12 @@ function OrderPage() {
           aria-label="Add a mixer"
           aria-modal="true"
         >
-          <div
-            className="absolute inset-0 bg-ink/40"
-            onClick={() => setMixerPromptFor(null)}
-          />
+          <div className="absolute inset-0 bg-ink/40" onClick={() => setMixerPromptFor(null)} />
           <div className="relative bg-parchment max-h-[80vh] flex flex-col">
             {/* Sheet header */}
             <div className="flex items-start justify-between px-5 py-4 border-b border-forest-deep/10">
               <div>
-                <h2 className="font-serif font-light text-forest-deep text-xl">
-                  Add a mixer?
-                </h2>
+                <h2 className="font-serif font-light text-forest-deep text-xl">Add a mixer?</h2>
                 <p className="font-sans text-ink/50 text-xs mt-0.5">
                   You&apos;ve added {mixerPromptFor.name}
                 </p>
@@ -581,14 +649,9 @@ function OrderPage() {
                     </p>
                     <ul className="divide-y divide-forest-deep/5">
                       {group.items.map((mixer) => (
-                        <li
-                          key={mixer.id}
-                          className="flex items-center gap-4 px-5 py-3"
-                        >
+                        <li key={mixer.id} className="flex items-center gap-4 px-5 py-3">
                           <div className="flex-1 min-w-0">
-                            <p className="font-sans text-forest-deep text-sm">
-                              {mixer.name}
-                            </p>
+                            <p className="font-sans text-forest-deep text-sm">{mixer.name}</p>
                           </div>
                           <p className="font-sans text-ink/60 text-sm tabular-nums flex-shrink-0">
                             {formatPrice(mixer.price)}
@@ -596,6 +659,10 @@ function OrderPage() {
                           <button
                             onClick={() => {
                               addToCart(mixer);
+                              setPairings((prev) => [
+                                ...prev,
+                                { spiritId: mixerPromptFor.id, mixerId: mixer.id },
+                              ]);
                               setMixerPromptFor(null);
                             }}
                             aria-label={`Add ${mixer.name}`}
