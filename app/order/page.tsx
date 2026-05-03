@@ -94,13 +94,12 @@ function OrderPage() {
 
   const handleMenuAdd = useCallback(
     (item: MenuItem) => {
-      const isFirstAdd = !cart[item.id];
       addToCart(item);
-      if (isFirstAdd && MIXER_PROMPT_CATEGORIES.includes(item.category)) {
+      if (MIXER_PROMPT_CATEGORIES.includes(item.category)) {
         setMixerPromptFor(item);
       }
     },
-    [cart, addToCart]
+    [addToCart]
   );
 
   const removeFromCart = useCallback((itemId: number) => {
