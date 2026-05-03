@@ -129,13 +129,25 @@ export default function Nav() {
             <a
               href={anchorHref("#food")}
               onClick={(e) => handleAnchorClick(e, "#food")}
+              className={`font-sans text-xs tracking-widest uppercase px-4 py-2.5 border transition-colors duration-300 focus-visible:outline-ochre cursor-pointer ${
+                scrolled
+                  ? "border-ink/30 text-ink hover:border-ink/60"
+                  : "border-parchment-light/40 text-parchment-light/70 hover:border-parchment-light/70 hover:text-parchment-light"
+              }`}
+            >
+              View Menu
+            </a>
+            {/* TODO: replace href with your booking system URL (OpenTable, ResDiary, etc.) */}
+            <a
+              href={anchorHref("#find-us")}
+              onClick={(e) => handleAnchorClick(e, "#find-us")}
               className={`font-sans text-xs tracking-widest uppercase px-4 py-2.5 transition-colors duration-300 focus-visible:outline-ochre cursor-pointer ${
                 scrolled
                   ? "bg-parchment text-ink hover:bg-parchment-dark"
                   : "bg-ochre text-parchment-light hover:bg-ochre-light"
               }`}
             >
-              View Menu
+              Book a Table
             </a>
           </nav>
 
@@ -198,16 +210,27 @@ export default function Nav() {
           >
             Rooms
           </motion.a>
-          <motion.a
-            href={anchorHref("#food")}
-            onClick={(e) => handleMobileAnchorClick(e, "#food")}
-            className="mt-2 self-start font-sans text-xs tracking-widest uppercase px-6 py-3 border border-parchment/50 text-parchment hover:bg-parchment/10 transition-colors cursor-pointer"
+          <motion.div
+            className="mt-2 flex gap-3"
             initial={{ x: -24, opacity: 0 }}
             animate={menuOpen ? { x: 0, opacity: 1 } : { x: -24, opacity: 0 }}
             transition={{ delay: (ANCHOR_LINKS.length + 1) * 0.07, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           >
-            View Menu
-          </motion.a>
+            <a
+              href={anchorHref("#food")}
+              onClick={(e) => handleMobileAnchorClick(e, "#food")}
+              className="font-sans text-xs tracking-widest uppercase px-6 py-3 border border-parchment/50 text-parchment hover:bg-parchment/10 transition-colors cursor-pointer"
+            >
+              View Menu
+            </a>
+            <a
+              href={anchorHref("#find-us")}
+              onClick={(e) => handleMobileAnchorClick(e, "#find-us")}
+              className="font-sans text-xs tracking-widest uppercase px-6 py-3 bg-parchment text-ink hover:bg-parchment-dark transition-colors cursor-pointer"
+            >
+              Book a Table
+            </a>
+          </motion.div>
         </nav>
       </motion.div>
     </>
