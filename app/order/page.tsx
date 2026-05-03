@@ -35,7 +35,8 @@ const DRINK_GROUPS = [
 
 const FOOD_GROUPS = [
   { label: "Starters",       categories: ["Starters"] },
-  { label: "Mains",          categories: ["Mains", "Burgers", "Pizza"] },
+  { label: "Mains",          categories: ["Mains"] },
+  { label: "Pizza",          categories: ["Pizza"] },
   { label: "Sunday Roast",   categories: ["Sunday Roast"] },
   { label: "Sides & Salads", categories: ["Sides", "Salads"] },
   { label: "Vegan",          categories: ["Vegan"] },
@@ -132,12 +133,20 @@ function OrderPage() {
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [expandedCats, setExpandedCats] = useState<Set<string>>(new Set());
+  const [pizzaToppingFor, setPizzaToppingFor] = useState<MenuItem | null>(null);
+  const [steakPendingItem, setSteakPendingItem] = useState<MenuItem | null>(null);
+  const [steakDoneness, setSteakDoneness] = useState("Medium");
+  const [steakSauce, setSteakSauce] = useState("Peppercorn");
   const cartSheetRef = useRef<HTMLDivElement>(null);
   const mixerSheetRef = useRef<HTMLDivElement>(null);
+  const pizzaSheetRef = useRef<HTMLDivElement>(null);
+  const steakSheetRef = useRef<HTMLDivElement>(null);
   const submittingRef = useRef(false);
 
   useFocusTrap(cartSheetRef, cartOpen, () => setCartOpen(false));
   useFocusTrap(mixerSheetRef, mixerPromptFor !== null, () => setMixerPromptFor(null));
+  useFocusTrap(pizzaSheetRef, pizzaToppingFor !== null, () => setPizzaToppingFor(null));
+  useFocusTrap(steakSheetRef, steakPendingItem !== null, () => setSteakPendingItem(null));
 
   useEffect(() => {
     fetch("/api/menu")
@@ -186,13 +195,32 @@ function OrderPage() {
 
   const handleMenuAdd = useCallback(
     (item: MenuItem) => {
+      // Steak: show customisation modal before the first add
+      if (item.name.startsWith("8oz Sirloin Steak") && (cart[item.id]?.quantity ?? 0) === 0) {
+        setSteakPendingItem(item);
+        setSteakDoneness("Medium");
+        setSteakSauce("Peppercorn");
+        return;
+      }
       addToCart(item);
+      // Pizza: show topping prompt after adding (skip for Extra Topping lines themselves)
+      if (item.category === "Pizza" && !item.name.startsWith("Extra Topping")) {
+        setPizzaToppingFor(item);
+        return;
+      }
       if (MIXER_PROMPT_CATEGORIES.includes(item.category)) {
         setMixerPromptFor(item);
       }
     },
-    [addToCart]
+    [addToCart, cart]
   );
+
+  const confirmSteak = useCallback(() => {
+    if (!steakPendingItem) return;
+    const suffix = steakSauce === "No sauce" ? steakDoneness : `${steakDoneness}, ${steakSauce}`;
+    addToCart({ ...steakPendingItem, name: `${steakPendingItem.name} — ${suffix}` });
+    setSteakPendingItem(null);
+  }, [steakPendingItem, steakDoneness, steakSauce, addToCart]);
 
   const removeFromCart = useCallback((itemId: number) => {
     setCart((prev) => {
@@ -326,6 +354,7 @@ function OrderPage() {
 
   // Mixers for prompt sheet
   const mixers = menu.filter((i) => i.category === "Mixers");
+  const pizzaToppings = menu.filter((i) => i.category === "Pizza" && i.name.startsWith("Extra Topping"));
   const nl = (m: MenuItem) => m.name.toLowerCase();
   const mixerGroups = [
     { label: "Tonic",       items: mixers.filter((m) => nl(m).includes("tonic")) },
@@ -360,7 +389,7 @@ function OrderPage() {
   const renderMenuItem = (item: MenuItem) => {
     const qty = cart[item.id]?.quantity ?? 0;
     return (
-      <li key={item.id} className="bg-parchment-light flex items-start gap-4 p-4">
+      <li key={item.id} className={`bg-parchment-light flex items-start gap-4 p-4 border-l-2 ${qty > 0 ? "border-ochre" : "border-transparent"}`}>
         <div className="flex-1 min-w-0">
           <p className="font-sans text-forest-deep font-medium text-sm">{item.name}</p>
           {item.description && (
@@ -400,8 +429,10 @@ function OrderPage() {
   };
 
   // Multi-size card — groups e.g. "House White (175ml / 250ml / Bottle)" into one row
-  const renderVariantCard = (group: ItemGroup) => (
-    <li key={group.base} className="bg-parchment-light">
+  const renderVariantCard = (group: ItemGroup) => {
+    const anyInCart = group.variants.some(v => (cart[v.id]?.quantity ?? 0) > 0);
+    return (
+    <li key={group.base} className={`bg-parchment-light border-l-2 ${anyInCart ? "border-ochre" : "border-transparent"}`}>
       <div className="px-4 pt-4 pb-2">
         <p className="font-sans text-forest-deep font-medium text-sm">{group.base}</p>
         {group.description && (
@@ -419,7 +450,8 @@ function OrderPage() {
             key={variant.id}
             className={`flex items-center gap-3 px-4 py-2.5 ${isLast ? "pb-4" : "border-b border-forest-deep/8"}`}
           >
-            <span className="font-sans text-ink/60 text-xs flex-1">{size ?? variant.name}</span>
+            <span className="font-sans text-[11px] text-ink/55 px-2.5 py-0.5 border border-ink/15 rounded-full leading-none flex-shrink-0">{size ?? variant.name}</span>
+            <span className="flex-1" aria-hidden="true" />
             <span className="font-sans text-ink text-xs font-medium tabular-nums w-12 text-right flex-shrink-0">
               {formatPrice(variant.price)}
             </span>
@@ -452,7 +484,8 @@ function OrderPage() {
         );
       })}
     </li>
-  );
+    );
+  };
 
   const renderGroup = (group: ItemGroup) =>
     group.variants.length === 1 ? renderMenuItem(group.variants[0]) : renderVariantCard(group);
@@ -483,21 +516,27 @@ function OrderPage() {
         )}
       </header>
 
-      {/* Food / Drink toggle — sticky below header */}
-      <div className="sticky top-[72px] z-20 grid grid-cols-2 border-b border-forest-deep/15">
-        {(["drink", "food"] as const).map((section) => (
-          <button
-            key={section}
-            onClick={() => handleSectionChange(section)}
-            className={`py-3.5 font-sans text-xs tracking-widest uppercase transition-colors ${
-              activeSection === section
-                ? "bg-ochre text-parchment-light"
-                : "bg-parchment-dark text-ink/50 hover:text-ink hover:bg-parchment"
+      {/* Food / Drink toggle — sliding pill */}
+      <div className="sticky top-[72px] z-20 border-b border-forest-deep/15 overflow-hidden">
+        <div className="relative grid grid-cols-2 bg-parchment-dark">
+          <div
+            className={`absolute inset-y-0 w-1/2 bg-ochre transition-transform duration-200 ease-out ${
+              activeSection === "food" ? "translate-x-full" : "translate-x-0"
             }`}
-          >
-            {section === "drink" ? "Drink" : "Food"}
-          </button>
-        ))}
+            aria-hidden="true"
+          />
+          {(["drink", "food"] as const).map((section) => (
+            <button
+              key={section}
+              onClick={() => handleSectionChange(section)}
+              className={`relative z-10 py-3.5 font-sans text-xs tracking-widest uppercase transition-colors duration-200 ${
+                activeSection === section ? "text-parchment-light" : "text-ink/50 hover:text-ink"
+              }`}
+            >
+              {section === "drink" ? "Drink" : "Food"}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Category tabs — sticky below toggle */}
@@ -505,15 +544,15 @@ function OrderPage() {
         aria-label="Menu categories"
         className="sticky top-[124px] z-20 bg-parchment-dark overflow-x-auto border-b border-forest-deep/10"
       >
-        <div className="flex min-w-max px-4 gap-0">
+        <div className="flex min-w-max px-3 py-2 gap-1.5">
           {availableGroups.map((g) => (
             <button
               key={g.label}
               onClick={() => setActiveGroup(g.label)}
-              className={`font-sans text-xs tracking-widest uppercase px-4 py-3.5 border-b-2 transition-colors whitespace-nowrap ${
+              className={`font-sans text-xs tracking-widest uppercase px-4 py-2.5 rounded-full transition-colors whitespace-nowrap ${
                 activeGroup === g.label
-                  ? "border-ochre text-forest-deep font-medium"
-                  : "border-transparent text-ink/45 hover:text-ink/70"
+                  ? "bg-ochre text-parchment-light"
+                  : "text-ink/45 hover:text-ink/70 hover:bg-parchment/50"
               }`}
             >
               {g.label}
@@ -545,7 +584,7 @@ function OrderPage() {
           </div>
         ) : showSubHeaders ? (
           // Multi-category group: accordion dropdowns per sub-category
-          <div className="pt-px">
+          <div className="pt-2">
             {currentGroupDef!.categories.map((cat) => {
               const catItems = menu.filter((i) => i.category === cat);
               if (!catItems.length) return null;
@@ -562,7 +601,11 @@ function OrderPage() {
                       })
                     }
                     aria-expanded={isExpanded}
-                    className="w-full flex items-center justify-between px-4 py-4 bg-parchment-dark text-left hover:bg-parchment transition-colors"
+                    className={`w-full flex items-center justify-between px-4 py-4 text-left transition-colors border-l-2 ${
+                      isExpanded
+                        ? "bg-parchment border-ochre"
+                        : "bg-parchment-dark hover:bg-parchment border-transparent"
+                    }`}
                   >
                     <div className="flex items-center gap-3">
                       <span className="font-sans text-sm font-medium text-forest-deep">{cat}</span>
@@ -768,6 +811,150 @@ function OrderPage() {
                 className="w-full font-sans text-xs tracking-widest uppercase px-6 py-4 bg-ochre text-parchment-light hover:bg-ochre-light disabled:opacity-60 transition-colors"
               >
                 {submitting ? "Placing order…" : "Place Order"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Pizza topping prompt sheet */}
+      {pizzaToppingFor && (
+        <div
+          ref={pizzaSheetRef}
+          className="fixed inset-0 z-50 flex flex-col justify-end"
+          role="dialog"
+          aria-label="Add extra toppings"
+          aria-modal="true"
+        >
+          <div className="absolute inset-0 bg-ink/40" onClick={() => setPizzaToppingFor(null)} />
+          <div className="relative bg-parchment max-h-[70vh] flex flex-col">
+            <div className="flex items-start justify-between px-5 py-4 border-b border-forest-deep/10">
+              <div>
+                <h2 className="font-serif font-light text-forest-deep text-xl">Add extra toppings?</h2>
+                <p className="font-sans text-ink/50 text-xs mt-0.5">
+                  You&apos;ve added {pizzaToppingFor.name}
+                </p>
+              </div>
+              <button
+                onClick={() => setPizzaToppingFor(null)}
+                aria-label="No toppings, close"
+                className="w-10 h-10 flex items-center justify-center text-ink/40 hover:text-ink transition-colors flex-shrink-0"
+              >
+                ✕
+              </button>
+            </div>
+            <ul className="divide-y divide-forest-deep/5 flex-1">
+              {pizzaToppings.map((topping) => (
+                <li key={topping.id} className="flex items-center gap-4 px-5 py-4">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-sans text-forest-deep text-sm font-medium">{topping.name}</p>
+                    {topping.description && (
+                      <p className="font-sans text-ink/50 text-xs font-light mt-0.5 leading-relaxed">
+                        {topping.description}
+                      </p>
+                    )}
+                  </div>
+                  <p className="font-sans text-ink/60 text-sm tabular-nums flex-shrink-0">
+                    {formatPrice(topping.price)}
+                  </p>
+                  <button
+                    onClick={() => { addToCart(topping); }}
+                    aria-label={`Add ${topping.name}`}
+                    className="w-9 h-9 flex items-center justify-center bg-ochre text-parchment-light text-lg hover:bg-ochre-light transition-colors flex-shrink-0"
+                  >
+                    +
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <div
+              className="px-5 pt-4 border-t border-forest-deep/10 bg-parchment"
+              style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}
+            >
+              <button
+                onClick={() => setPizzaToppingFor(null)}
+                className="w-full font-sans text-xs tracking-widest uppercase px-6 py-4 border border-forest-deep/20 text-ink/60 hover:text-ink hover:border-forest-deep/40 transition-colors"
+              >
+                No extra toppings, thanks
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Steak customisation sheet */}
+      {steakPendingItem && (
+        <div
+          ref={steakSheetRef}
+          className="fixed inset-0 z-50 flex flex-col justify-end"
+          role="dialog"
+          aria-label="Customise your steak"
+          aria-modal="true"
+        >
+          <div className="absolute inset-0 bg-ink/40" onClick={() => setSteakPendingItem(null)} />
+          <div className="relative bg-parchment max-h-[85vh] flex flex-col">
+            <div className="flex items-start justify-between px-5 py-4 border-b border-forest-deep/10">
+              <div>
+                <h2 className="font-serif font-light text-forest-deep text-xl">How would you like your steak?</h2>
+                <p className="font-sans text-ink/50 text-xs mt-0.5">8oz Sirloin</p>
+              </div>
+              <button
+                onClick={() => setSteakPendingItem(null)}
+                aria-label="Cancel"
+                className="w-10 h-10 flex items-center justify-center text-ink/40 hover:text-ink transition-colors flex-shrink-0"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="overflow-y-auto flex-1 px-5 py-5 space-y-6">
+              <fieldset>
+                <legend className="font-sans text-[10px] tracking-widest uppercase text-ink/40 mb-3">Doneness</legend>
+                <div className="grid grid-cols-3 gap-2">
+                  {["Very Rare", "Rare", "Medium Rare", "Medium", "Medium Well", "Well Done"].map((opt) => (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => setSteakDoneness(opt)}
+                      className={`py-2.5 px-2 font-sans text-xs text-center transition-colors border ${
+                        steakDoneness === opt
+                          ? "bg-ochre border-ochre text-parchment-light"
+                          : "border-forest-deep/20 text-ink/60 hover:border-forest-deep/40 hover:text-ink"
+                      }`}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+              <fieldset>
+                <legend className="font-sans text-[10px] tracking-widest uppercase text-ink/40 mb-3">Sauce</legend>
+                <div className="grid grid-cols-3 gap-2">
+                  {["Peppercorn", "Garlic Butter", "No sauce"].map((opt) => (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => setSteakSauce(opt)}
+                      className={`py-2.5 px-2 font-sans text-xs text-center transition-colors border ${
+                        steakSauce === opt
+                          ? "bg-ochre border-ochre text-parchment-light"
+                          : "border-forest-deep/20 text-ink/60 hover:border-forest-deep/40 hover:text-ink"
+                      }`}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+            </div>
+            <div
+              className="px-5 pt-4 border-t border-forest-deep/10 bg-parchment"
+              style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}
+            >
+              <button
+                onClick={confirmSteak}
+                className="w-full font-sans text-xs tracking-widest uppercase px-6 py-4 bg-ochre text-parchment-light hover:bg-ochre-light transition-colors"
+              >
+                Add to order
               </button>
             </div>
           </div>

@@ -211,7 +211,7 @@ function FoodPanel() {
 
 // ─── Progress dots ───────────────────────────────────────────────────────────
 
-function ProgressDots({ active }: { active: number }) {
+function ProgressDots({ active, onNavigate }: { active: number; onNavigate: (i: number) => void }) {
   return (
     <div
       className="absolute bottom-6 left-1/2 -translate-x-1/2 md:bottom-8 md:left-auto md:right-12 md:translate-x-0 z-30 flex gap-2 items-center"
@@ -219,12 +219,13 @@ function ProgressDots({ active }: { active: number }) {
       aria-label="Section progress"
     >
       {Array.from({ length: NUM_PANELS }).map((_, i) => (
-        <div
+        <button
           key={i}
           role="tab"
           aria-selected={active === i}
-          aria-label={`Panel ${i + 1} of ${NUM_PANELS}`}
-          className={`rounded-full transition-all duration-500 ${
+          aria-label={`Go to panel ${i + 1} of ${NUM_PANELS}`}
+          onClick={() => onNavigate(i)}
+          className={`rounded-full transition-all duration-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ochre ${
             active === i ? "w-6 h-1.5 bg-ochre" : "w-1.5 h-1.5 bg-parchment-light/30"
           }`}
         />
@@ -404,6 +405,32 @@ export default function HorizontalFlow() {
     };
   }, [exitSection]);
 
+  // Keyboard handler — left/right arrows navigate panels; up/down exit section (desktop only)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (window.innerWidth < 768) return;
+      if (!isActive.current) return;
+      if (isAnimating.current) return;
+
+      const advance = e.key === "ArrowRight" || e.key === "ArrowDown";
+      const retreat = e.key === "ArrowLeft" || e.key === "ArrowUp";
+      if (!advance && !retreat) return;
+      e.preventDefault();
+
+      const current = panelIndexRef.current;
+      const next = current + (advance ? 1 : -1);
+      if (next < 0 || next >= NUM_PANELS) {
+        exitSection(advance ? 1 : -1);
+      } else {
+        isAnimating.current = true;
+        setPanelIndex(next);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [exitSection]);
+
   // Resize — update windowWidth on all screen sizes
   useEffect(() => {
     const handleResize = () => { setWindowWidth(window.innerWidth); };
@@ -431,7 +458,15 @@ export default function HorizontalFlow() {
           <FoodPanel />
         </motion.div>
 
-        <ProgressDots active={panelIndex} />
+        <ProgressDots
+          active={panelIndex}
+          onNavigate={(i) => {
+            if (!isAnimating.current) {
+              isAnimating.current = true;
+              setPanelIndex(i);
+            }
+          }}
+        />
       </div>
     </section>
   );
