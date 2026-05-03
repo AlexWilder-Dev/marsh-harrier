@@ -43,6 +43,29 @@ const FOOD_GROUPS = [
   { label: "Puddings",       categories: ["Puddings"] },
 ];
 
+// Splits "House White (175ml)" → { base: "House White", size: "175ml" }
+function parseItemName(name: string): { base: string; size: string | null } {
+  const match = name.match(/^(.*)\s+\(([^)]+)\)$/);
+  return match ? { base: match[1], size: match[2] } : { base: name, size: null };
+}
+
+type ItemGroup = { base: string; description: string; variants: MenuItem[] };
+
+// Groups items by base name so size variants collapse into one card
+function groupItems(items: MenuItem[]): ItemGroup[] {
+  const map = new Map<string, MenuItem[]>();
+  for (const item of items) {
+    const { base } = parseItemName(item.name);
+    if (!map.has(base)) map.set(base, []);
+    map.get(base)!.push(item);
+  }
+  return Array.from(map.entries()).map(([base, variants]) => ({
+    base,
+    description: variants[0].description,
+    variants,
+  }));
+}
+
 function formatPrice(pence: number) {
   return `£${(pence / 100).toFixed(2)}`;
 }
@@ -333,7 +356,7 @@ function OrderPage() {
     return acc;
   }, []);
 
-  // Inline item renderer — reused for flat lists and sub-headed lists
+  // Single item row — used when a drink/food has no size variants
   const renderMenuItem = (item: MenuItem) => {
     const qty = cart[item.id]?.quantity ?? 0;
     return (
@@ -375,6 +398,64 @@ function OrderPage() {
       </li>
     );
   };
+
+  // Multi-size card — groups e.g. "House White (175ml / 250ml / Bottle)" into one row
+  const renderVariantCard = (group: ItemGroup) => (
+    <li key={group.base} className="bg-parchment-light">
+      <div className="px-4 pt-4 pb-2">
+        <p className="font-sans text-forest-deep font-medium text-sm">{group.base}</p>
+        {group.description && (
+          <p className="font-sans text-ink/50 text-xs font-light mt-0.5 leading-relaxed">
+            {group.description}
+          </p>
+        )}
+      </div>
+      {group.variants.map((variant, idx) => {
+        const { size } = parseItemName(variant.name);
+        const qty = cart[variant.id]?.quantity ?? 0;
+        const isLast = idx === group.variants.length - 1;
+        return (
+          <div
+            key={variant.id}
+            className={`flex items-center gap-3 px-4 py-2.5 ${isLast ? "pb-4" : "border-b border-forest-deep/8"}`}
+          >
+            <span className="font-sans text-ink/60 text-xs flex-1">{size ?? variant.name}</span>
+            <span className="font-sans text-ink text-xs font-medium tabular-nums w-12 text-right flex-shrink-0">
+              {formatPrice(variant.price)}
+            </span>
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              {qty > 0 ? (
+                <>
+                  <button
+                    onClick={() => removeFromCart(variant.id)}
+                    aria-label={`Remove one ${variant.name}`}
+                    className="w-8 h-8 flex items-center justify-center border border-forest-deep/20 text-forest-deep text-base hover:bg-forest-deep/5 transition-colors"
+                  >
+                    −
+                  </button>
+                  <span className="font-sans text-forest-deep font-medium text-xs w-4 text-center tabular-nums">
+                    {qty}
+                  </span>
+                </>
+              ) : (
+                <span className="w-[42px]" aria-hidden="true" />
+              )}
+              <button
+                onClick={() => handleMenuAdd(variant)}
+                aria-label={`Add ${variant.name}`}
+                className="w-8 h-8 flex items-center justify-center bg-ochre text-parchment-light text-base hover:bg-ochre-light transition-colors"
+              >
+                +
+              </button>
+            </div>
+          </div>
+        );
+      })}
+    </li>
+  );
+
+  const renderGroup = (group: ItemGroup) =>
+    group.variants.length === 1 ? renderMenuItem(group.variants[0]) : renderVariantCard(group);
 
   return (
     <div className="min-h-screen bg-parchment">
@@ -501,7 +582,7 @@ function OrderPage() {
                   >
                     <div className="overflow-hidden">
                       <ul className="space-y-px" role="list">
-                        {catItems.map(renderMenuItem)}
+                        {groupItems(catItems).map(renderGroup)}
                       </ul>
                     </div>
                   </div>
@@ -512,7 +593,7 @@ function OrderPage() {
         ) : (
           // Single-category group: flat list
           <ul className="space-y-px pt-px" role="list">
-            {visibleItems.map(renderMenuItem)}
+            {groupItems(visibleItems).map(renderGroup)}
           </ul>
         )}
       </main>
