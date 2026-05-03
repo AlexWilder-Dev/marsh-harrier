@@ -108,6 +108,7 @@ function OrderPage() {
   const [error, setError] = useState<string | null>(null);
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
+  const [expandedCats, setExpandedCats] = useState<Set<string>>(new Set());
   const cartSheetRef = useRef<HTMLDivElement>(null);
   const mixerSheetRef = useRef<HTMLDivElement>(null);
   const submittingRef = useRef(false);
@@ -140,7 +141,13 @@ function OrderPage() {
       g.categories.some(c => menu.some(i => i.category === c))
     );
     setActiveGroup(firstGroup?.label ?? "");
+    setExpandedCats(new Set());
   };
+
+  // Collapse all sub-categories when switching groups
+  useEffect(() => {
+    setExpandedCats(new Set());
+  }, [activeGroup]);
 
   const addToCart = useCallback((item: MenuItem) => {
     setCart((prev) => {
@@ -403,7 +410,7 @@ function OrderPage() {
             onClick={() => handleSectionChange(section)}
             className={`py-3.5 font-sans text-xs tracking-widest uppercase transition-colors ${
               activeSection === section
-                ? "bg-forest-deep text-parchment-light"
+                ? "bg-ochre text-parchment-light"
                 : "bg-parchment-dark text-ink/50 hover:text-ink hover:bg-parchment"
             }`}
           >
@@ -456,19 +463,48 @@ function OrderPage() {
             </button>
           </div>
         ) : showSubHeaders ? (
-          // Multi-category group: render with sticky section headers
-          <div>
+          // Multi-category group: accordion dropdowns per sub-category
+          <div className="pt-px">
             {currentGroupDef!.categories.map((cat) => {
               const catItems = menu.filter((i) => i.category === cat);
               if (!catItems.length) return null;
+              const isExpanded = expandedCats.has(cat);
               return (
-                <div key={cat}>
-                  <div className="sticky top-[176px] z-10 -mx-0 px-4 py-2.5 bg-parchment-dark border-b border-forest-deep/10">
-                    <p className="font-sans text-[11px] tracking-widest uppercase text-ink/50">{cat}</p>
+                <div key={cat} className="border-b border-forest-deep/10">
+                  <button
+                    onClick={() =>
+                      setExpandedCats((prev) => {
+                        const next = new Set(prev);
+                        if (next.has(cat)) next.delete(cat);
+                        else next.add(cat);
+                        return next;
+                      })
+                    }
+                    aria-expanded={isExpanded}
+                    className="w-full flex items-center justify-between px-4 py-4 bg-parchment-dark text-left hover:bg-parchment transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="font-sans text-sm font-medium text-forest-deep">{cat}</span>
+                      <span className="font-sans text-[11px] text-ink/35 tracking-wide">
+                        {catItems.length}
+                      </span>
+                    </div>
+                    <span
+                      className={`text-ink/40 text-xs transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
+                      aria-hidden="true"
+                    >
+                      ▾
+                    </span>
+                  </button>
+                  <div
+                    className={`grid transition-[grid-template-rows] duration-200 ${isExpanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
+                  >
+                    <div className="overflow-hidden">
+                      <ul className="space-y-px" role="list">
+                        {catItems.map(renderMenuItem)}
+                      </ul>
+                    </div>
                   </div>
-                  <ul className="space-y-px" role="list">
-                    {catItems.map(renderMenuItem)}
-                  </ul>
                 </div>
               );
             })}
