@@ -320,6 +320,7 @@
   { "id": 270, "category": "Sunday Roast",     "name": "Stuffed Aubergine",                  "price": 1995, "description": "Vegetarian or vegan — with roast potatoes, mixed vegetables & rich pan gravy",                          "available": true },
   { "id": 271, "category": "Sunday Roast",     "name": "Kids Sunday Roast",                  "price": 1695, "description": "Yorkshire pudding, roast potatoes, mixed vegetables & rich pan gravy",                                "available": true },
   { "id": 272, "category": "Sunday Roast",     "name": "Homemade Cauliflower Cheese",        "price": 695,  "description": "",                                                                                                      "available": true },
+  { "id": 344, "category": "Sunday Roast",     "name": "Chips (ve, vg)",                     "price": 695,  "description": "",                                                                                                      "available": true },
 
   { "id": 273, "category": "Puddings",         "name": "Warm Sticky Toffee Pudding",         "price": 995,  "description": "Toffee sauce & vanilla ice cream",                                                                     "available": true },
   { "id": 274, "category": "Puddings",         "name": "Warm Chocolate Brownie",             "price": 950,  "description": "Chocolate fudge sauce & honeycomb ice cream",                                                          "available": true },
@@ -353,7 +354,7 @@
   { "id": 328, "category": "Specials",         "name": "Pizza alla Diavola",                 "price": 1795, "description": "Tomato sauce, basil, olives, chillies and salami",                                                       "available": true },
   { "id": 329, "category": "Specials",         "name": "Prosciutto e Funghi Pizza",          "price": 1795, "description": "Tomato sauce, mozzarella, thin slices of prosciutto and mushrooms",                                      "available": true },
   { "id": 330, "category": "Specials",         "name": "Pink Carved Duck Breast",            "price": 2995, "description": "Crushed baby potatoes, mixed vegetables and red wine jus",                                              "available": true },
-  { "id": 331, "category": "Specials",         "name": "Rib Eye Steak",                      "price": 2995, "description": "Portobello mushroom, roasted tomato, chips and rocket",                                                 "available": true },
+  { "id": 331, "category": "Specials",         "name": "Rib-Eye Steak",                      "price": 2995, "description": "Portobello mushroom, roasted tomato, chips and rocket",                                                 "available": true },
 
   { "id": 332, "category": "Gin",              "name": "Whitley Neill Raspberry (25ml)",     "price": 570,  "description": "Add Fever-Tree tonic for £3.10",                                                                       "available": true },
   { "id": 333, "category": "Gin",              "name": "Whitley Neill Raspberry (Double)",   "price": 970,  "description": "Add Fever-Tree tonic for £3.10",                                                                       "available": true },

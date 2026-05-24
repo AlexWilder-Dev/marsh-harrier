@@ -61,8 +61,8 @@ function RoomsHero() {
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={ROOM_IMAGES[0].src}
-          alt={ROOM_IMAGES[0].alt}
+          src="/images/marsh-harrier-pub-front.webp"
+          alt="The Marsh Harrier exterior — 40 Marsh Road, Cowley"
           className="absolute inset-0 w-full h-full object-cover object-center"
           fetchPriority="high"
         />
