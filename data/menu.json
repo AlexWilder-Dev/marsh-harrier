@@ -347,5 +347,11 @@
   { "id": 292, "category": "Mixers",           "name": "Cranberry Juice",                    "price": 100,  "description": "",                                                                                                      "available": true },
   { "id": 293, "category": "Mixers",           "name": "Red Bull",                           "price": 380,  "description": "",                                                                                                      "available": true },
   { "id": 294, "category": "Mixers",           "name": "Coke Bottle",                        "price": 380,  "description": "",                                                                                                      "available": true },
-  { "id": 295, "category": "Mixers",           "name": "Diet Coke Bottle",                   "price": 380,  "description": "",                                                                                                      "available": true }
+  { "id": 295, "category": "Mixers",           "name": "Diet Coke Bottle",                   "price": 380,  "description": "",                                                                                                      "available": true },
+
+  { "id": 327, "category": "Specials",         "name": "Spaghetti alla Puttanesca",          "price": 1695, "description": "Traditional Italian pasta sauce made with tomato, olives, capers, anchovies and garlic",                "available": true },
+  { "id": 328, "category": "Specials",         "name": "Pizza alla Diavola",                 "price": 1795, "description": "Tomato sauce, basil, olives, chillies and salami",                                                       "available": true },
+  { "id": 329, "category": "Specials",         "name": "Prosciutto e Funghi Pizza",          "price": 1795, "description": "Tomato sauce, mozzarella, thin slices of prosciutto and mushrooms",                                      "available": true },
+  { "id": 330, "category": "Specials",         "name": "Pink Carved Duck Breast",            "price": 2995, "description": "Crushed baby potatoes, mixed vegetables and red wine jus",                                              "available": true },
+  { "id": 331, "category": "Specials",         "name": "Rib Eye Steak",                      "price": 2995, "description": "Portobello mushroom, roasted tomato, chips and rocket",                                                 "available": true }
 ]

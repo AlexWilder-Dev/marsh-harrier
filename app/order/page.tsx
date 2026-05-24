@@ -47,6 +47,15 @@ function getOptionPrompt(item: MenuItem): OptionPromptDef | null {
   if (item.category === "Puddings" && item.name.startsWith("Sorbet (")) {
     return { legend: "Flavour", choices: ["Lemon", "Mango", "Raspberry"] };
   }
+  if (item.category === "Shots" && item.name === "Sours") {
+    return { legend: "Flavour", choices: ["Apple", "Cherry"] };
+  }
+  if (item.category === "Shots" && item.name === "Sambuca") {
+    return { legend: "Type", choices: ["Black", "White"] };
+  }
+  if (item.category === "Shots" && item.name === "Tequila") {
+    return { legend: "Type", choices: ["Gold", "Blanco"] };
+  }
   return null;
 }
 
@@ -63,6 +72,7 @@ const DRINK_GROUPS = [
 ];
 
 const FOOD_GROUPS = [
+  { label: "Specials",       categories: ["Specials"] },
   { label: "Starters",       categories: ["Starters"] },
   { label: "Mains",          categories: ["Mains"] },
   { label: "Pizza",          categories: ["Pizza"] },
@@ -72,6 +82,14 @@ const FOOD_GROUPS = [
   { label: "Children's",     categories: ["Children's"] },
   { label: "Puddings",       categories: ["Puddings"] },
 ];
+
+function isSteakItem(item: MenuItem): boolean {
+  return /sirloin|rib[\s-]?eye/i.test(item.name);
+}
+
+function isPizzaItem(item: MenuItem): boolean {
+  return item.category === "Pizza" || /pizza/i.test(item.name);
+}
 
 // Splits "House White (175ml)" → { base: "House White", size: "175ml" }
 function parseItemName(name: string): { base: string; size: string | null } {
@@ -259,14 +277,14 @@ function OrderPage() {
 
   const handleMenuAdd = useCallback(
     (item: MenuItem) => {
-      // Steak: show customisation modal before the first add
-      if (item.name.startsWith("8oz Sirloin Steak") && (cart[item.id]?.quantity ?? 0) === 0) {
+      // Steak (sirloin or rib eye): show doneness/sauce modal before the first add
+      if (isSteakItem(item) && (cart[item.id]?.quantity ?? 0) === 0) {
         setSteakPendingItem(item);
         setSteakDoneness("Medium");
         setSteakSauce("Peppercorn");
         return;
       }
-      // Items with a one-of choice (spritz mixer, J2O flavour, ice cream / sorbet flavour).
+      // Items with a one-of choice (spritz mixer, J2O flavour, ice cream / sorbet flavour, shot type).
       // Same pattern as steak: prompt on first add; subsequent adds inherit the choice
       // (cart lines collapse by item id, so a different flavour means removing and re-adding).
       const promptDef = getOptionPrompt(item);
@@ -275,8 +293,8 @@ function OrderPage() {
         return;
       }
       addToCart(item);
-      // Pizza: show topping prompt after adding
-      if (item.category === "Pizza") {
+      // Pizza: show topping prompt after adding (includes pizzas in the Specials category)
+      if (isPizzaItem(item)) {
         setPizzaToppingFor(item);
         return;
       }
@@ -1049,7 +1067,7 @@ function OrderPage() {
             <div className="flex items-start justify-between px-5 py-4 border-b border-forest-deep/10">
               <div>
                 <h2 className="font-serif font-light text-forest-deep text-xl">How would you like your steak?</h2>
-                <p className="font-sans text-ink/50 text-xs mt-0.5">8oz Sirloin</p>
+                <p className="font-sans text-ink/50 text-xs mt-0.5">{steakPendingItem.name}</p>
               </div>
               <button
                 onClick={() => setSteakPendingItem(null)}
