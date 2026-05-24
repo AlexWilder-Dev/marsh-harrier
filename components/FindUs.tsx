@@ -144,6 +144,7 @@ function ContactForm() {
             type="date"
             required
             min={new Date().toISOString().split("T")[0]}
+            suppressHydrationWarning
             className="w-full bg-parchment border border-ink/15 text-ink font-sans text-base px-4 py-3.5 focus:outline-none focus:border-ink/40 transition-colors [color-scheme:light]"
           />
         </div>

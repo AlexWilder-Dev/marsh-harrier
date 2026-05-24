@@ -101,9 +101,9 @@ export default function Nav() {
             <Image
               src="/images/Marsh-harrier-logo.webp"
               alt="The Marsh Harrier"
-              width={140}
-              height={48}
-              className={`h-10 w-auto transition-all duration-500 ${scrolled ? "brightness-0" : "brightness-0 invert"}`}
+              width={56}
+              height={72}
+              className="h-14 w-auto"
               priority
             />
           </a>

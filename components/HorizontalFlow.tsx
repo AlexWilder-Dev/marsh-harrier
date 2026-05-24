@@ -106,7 +106,7 @@ function GardenPanel() {
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/images/marsh-harrier-pub-outdoor-garden.webp"
+        src="/images/garden-new.webp"
         alt="The Marsh Harrier beer garden"
         className="absolute inset-0 w-full h-full object-cover object-center"
         loading="lazy"

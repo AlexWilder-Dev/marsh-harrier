@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import { motion, useInView } from "framer-motion";
 import Counter from "./Counter";
 
@@ -21,7 +21,8 @@ function getTodayName() {
 function HourRow({ row, index }: { row: typeof hours[0]; index: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "0px" });
-  const today = getTodayName() === row.day;
+  const [today, setToday] = useState(false);
+  useEffect(() => { setToday(getTodayName() === row.day); }, [row.day]);
 
   return (
     <motion.div
