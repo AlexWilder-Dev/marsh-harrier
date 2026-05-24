@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, type RefObject } from "react";
+import { useEffect, useRef, type RefObject } from "react";
 
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -10,6 +10,13 @@ export function useFocusTrap(
   active: boolean,
   onClose?: () => void
 ): void {
+  // Stash the latest onClose in a ref so a fresh inline callback on each render
+  // doesn't re-trigger the effect (which would steal focus from inputs as you type).
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
   useEffect(() => {
     if (!active || !ref.current) return;
 
@@ -23,7 +30,7 @@ export function useFocusTrap(
 
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        onClose?.();
+        onCloseRef.current?.();
         return;
       }
       if (e.key !== "Tab") return;
@@ -52,5 +59,5 @@ export function useFocusTrap(
       document.removeEventListener("keydown", handleKey);
       previousFocus?.focus();
     };
-  }, [active, ref, onClose]);
+  }, [active, ref]);
 }
