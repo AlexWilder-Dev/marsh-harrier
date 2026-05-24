@@ -32,8 +32,15 @@ const STEAK_SAUCE_PRICES: Record<string, number> = {
 
 // Items that require a single one-of choice (added to the name on confirm).
 function getOptionPrompt(item: MenuItem): OptionPromptDef | null {
-  if (item.name === "Aperol Spritz" || item.name === "Campari Spritz") {
+  if (
+    item.name === "Aperol Spritz" ||
+    item.name === "Campari Spritz" ||
+    item.name === "Limoncello Spritz"
+  ) {
     return { legend: "Mixer", choices: ["Soda", "Lemonade"] };
+  }
+  if (item.name === "Mineral Water") {
+    return { legend: "Type", choices: ["Still", "Sparkling"] };
   }
   if (item.name === "J2O") {
     return {
