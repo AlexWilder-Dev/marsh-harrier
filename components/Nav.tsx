@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { motion, useScroll, useMotionValueEvent } from "framer-motion";
+import Image from "next/image";
 import { useFocusTrap } from "@/lib/useFocusTrap";
 
 const ANCHOR_LINKS = [
@@ -13,9 +14,9 @@ const ANCHOR_LINKS = [
 ];
 
 const HORIZONTAL_PANELS: Record<string, number> = {
-  "#about": 0,
+  "#food": 0,
   "#garden": 1,
-  "#food": 2,
+  "#about": 2,
 };
 
 
@@ -95,13 +96,16 @@ export default function Nav() {
         transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
       >
         <div className="mx-auto px-5 md:px-8 lg:px-14 flex items-center justify-between h-16 md:h-20">
-          {/* Wordmark */}
-          <a
-            href="/"
-            aria-label="The Marsh Harrier — home"
-            className={`font-serif text-xl md:text-2xl leading-none tracking-tight focus-visible:outline-ochre ${scrolled ? "text-ink" : "text-parchment-light"}`}
-          >
-            The Marsh Harrier
+          {/* Logo */}
+          <a href="/" aria-label="The Marsh Harrier — home" className="focus-visible:outline-ochre">
+            <Image
+              src="/images/Marsh-harrier-logo.webp"
+              alt="The Marsh Harrier"
+              width={140}
+              height={48}
+              className={`h-10 w-auto transition-all duration-500 ${scrolled ? "brightness-0" : "brightness-0 invert"}`}
+              priority
+            />
           </a>
 
           {/* Desktop nav */}

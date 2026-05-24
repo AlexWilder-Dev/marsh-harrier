@@ -11,7 +11,7 @@ const hours = [
   { day: "Thursday",  openH: 12, openSuffix: ":00pm", closeH: 11, closeSuffix: ":00pm", food: "noon–3pm & 4–9pm" },
   { day: "Friday",    openH: 12, openSuffix: ":00pm", closeH: 11, closeSuffix: ":00pm", food: "noon–3pm & 4–9pm" },
   { day: "Saturday",  openH: 12, openSuffix: ":00pm", closeH: 11, closeSuffix: ":00pm", food: "noon–3pm & 4–9pm" },
-  { day: "Sunday",    openH: 12, openSuffix: ":00pm", closeH: 11, closeSuffix: ":00pm", food: "noon–4pm & 5–8pm", note: "Roasts from noon" },
+  { day: "Sunday",    openH: 12, openSuffix: ":00pm", closeH: 11, closeSuffix: ":00pm", food: "noon–4pm & 5–8pm", note: "Roasts from noon · Pizzas only 5–8pm" },
 ];
 
 function getTodayName() {

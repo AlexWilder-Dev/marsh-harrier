@@ -4,6 +4,7 @@ import HorizontalFlow from "@/components/HorizontalFlow";
 import PullQuote from "@/components/PullQuote";
 import AlesCellar from "@/components/AlesCellar";
 import OpeningHours from "@/components/OpeningHours";
+import InstagramFeed from "@/components/InstagramFeed";
 import FindUs from "@/components/FindUs";
 import Footer from "@/components/Footer";
 
@@ -17,6 +18,7 @@ export default function Home() {
         <PullQuote />
         <AlesCellar />
         <OpeningHours />
+        <InstagramFeed />
         <FindUs />
       </main>
       <Footer />

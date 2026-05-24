@@ -22,7 +22,7 @@ const ROOM_IMAGES = [
 ];
 
 const AMENITIES = [
-  "Private en-suite bathroom",
+  "Secure key collection",
   "Free WiFi",
   "Flat-screen TV",
   "Tea and coffee making facilities",
@@ -34,8 +34,8 @@ const AMENITIES = [
 
 const HIGHLIGHTS = [
   { label: "WiFi", value: "Included" },
-  { label: "Bedrooms", value: "1" },
-  { label: "Bathrooms", value: "1 en-suite" },
+  { label: "Bedrooms", value: "2" },
+  { label: "Occupancy", value: "Up to 4" },
   { label: "From", value: "On enquiry" },
 ];
 
@@ -138,9 +138,10 @@ function RoomsDescription() {
               <div className="rule-ochre w-10 opacity-40" />
             </div>
             <p className="font-sans text-ink/65 text-base leading-relaxed font-light mb-5">
-              A comfortable, well-appointed room above The Marsh Harrier, giving
-              you a home in the heart of Cowley. Ideal for visitors to Oxford
-              looking for something with more character than a chain hotel.
+              Two comfortable, well-appointed bedrooms above The Marsh Harrier,
+              sleeping up to four. A proper home in the heart of Cowley — ideal
+              for visitors to Oxford who want something with more character than
+              a chain hotel.
             </p>
             <p className="font-sans text-ink/65 text-base leading-relaxed font-light">
               Wake up to a proper breakfast, step downstairs for a perfect pint,
@@ -490,7 +491,7 @@ function EnquiryForm() {
             <option value="" disabled>
               Select
             </option>
-            {[1, 2].map((n) => (
+            {[1, 2, 3, 4].map((n) => (
               <option key={n} value={n}>
                 {n} guest{n > 1 ? "s" : ""}
               </option>

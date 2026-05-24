@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * HorizontalFlow — horizontal scroll section (About → Garden → Food)
+ * HorizontalFlow — horizontal scroll section (Food → Garden → About)
  *
  * Architecture:
  * - An IntersectionObserver watches the wrapper div. When it's fully in the
@@ -439,7 +439,7 @@ export default function HorizontalFlow() {
   }, []);
 
   return (
-    <section aria-label="About, Garden and Food sections">
+    <section aria-label="Food, Garden and About sections">
       <div
         ref={wrapperRef}
         data-horizontal-flow
@@ -453,9 +453,9 @@ export default function HorizontalFlow() {
           transition={{ duration: 0.55, ease: [0.32, 0, 0.67, 0] }}
           onAnimationComplete={() => { isAnimating.current = false; }}
         >
-          <AboutPanel />
-          <GardenPanel />
           <FoodPanel />
+          <GardenPanel />
+          <AboutPanel />
         </motion.div>
 
         <ProgressDots

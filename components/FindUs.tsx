@@ -93,17 +93,117 @@ function ContactForm() {
           />
         </div>
       </div>
+      {/* Mobile + Number of people */}
+      <div className="grid sm:grid-cols-2 gap-5">
+        <div>
+          <label htmlFor="contact-mobile" className="block font-sans text-[15px] tracking-widest uppercase text-ink/50 mb-2">
+            Mobile <span aria-label="required">*</span>
+          </label>
+          <input
+            id="contact-mobile"
+            name="mobile"
+            type="tel"
+            required
+            autoComplete="tel"
+            className="w-full bg-parchment border border-ink/15 text-ink font-sans text-base px-4 py-3.5 placeholder-ink/25 focus:outline-none focus:border-ink/40 transition-colors"
+            placeholder="07700 900000"
+          />
+        </div>
+        <div>
+          <label htmlFor="contact-people" className="block font-sans text-[15px] tracking-widest uppercase text-ink/50 mb-2">
+            No. of people <span aria-label="required">*</span>
+          </label>
+          <div className="relative">
+            <select
+              id="contact-people"
+              name="people"
+              required
+              defaultValue=""
+              className="w-full bg-parchment border border-ink/15 text-ink font-sans text-base px-4 py-3.5 pr-10 focus:outline-none focus:border-ink/40 transition-colors appearance-none"
+            >
+              <option value="" disabled>Select</option>
+              {Array.from({ length: 20 }, (_, i) => i + 1).map((n) => (
+                <option key={n} value={n}>{n} {n === 1 ? "person" : "people"}</option>
+              ))}
+              <option value="20+">20+ people</option>
+            </select>
+            <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-ink/30 text-xs" aria-hidden="true">▾</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Date + Time */}
+      <div className="grid sm:grid-cols-2 gap-5">
+        <div>
+          <label htmlFor="contact-date" className="block font-sans text-[15px] tracking-widest uppercase text-ink/50 mb-2">
+            Date <span aria-label="required">*</span>
+          </label>
+          <input
+            id="contact-date"
+            name="date"
+            type="date"
+            required
+            min={new Date().toISOString().split("T")[0]}
+            className="w-full bg-parchment border border-ink/15 text-ink font-sans text-base px-4 py-3.5 focus:outline-none focus:border-ink/40 transition-colors [color-scheme:light]"
+          />
+        </div>
+        <div>
+          <label htmlFor="contact-time" className="block font-sans text-[15px] tracking-widest uppercase text-ink/50 mb-2">
+            Time <span aria-label="required">*</span>
+          </label>
+          <div className="relative">
+            <select
+              id="contact-time"
+              name="time"
+              required
+              defaultValue=""
+              className="w-full bg-parchment border border-ink/15 text-ink font-sans text-base px-4 py-3.5 pr-10 focus:outline-none focus:border-ink/40 transition-colors appearance-none"
+            >
+              <option value="" disabled>Select</option>
+              {["12:00","12:30","13:00","13:30","14:00","14:30","15:00","15:30",
+                "16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30",
+                "20:00","20:30","21:00"].map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
+            <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-ink/30 text-xs" aria-hidden="true">▾</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Seating preference */}
+      <div>
+        <label htmlFor="contact-seating" className="block font-sans text-[15px] tracking-widest uppercase text-ink/50 mb-2">
+          Seating preference
+        </label>
+        <div className="relative">
+          <select
+            id="contact-seating"
+            name="seating"
+            defaultValue=""
+            className="w-full bg-parchment border border-ink/15 text-ink font-sans text-base px-4 py-3.5 pr-10 focus:outline-none focus:border-ink/40 transition-colors appearance-none"
+          >
+            <option value="">No preference</option>
+            <option value="Snug">Snug</option>
+            <option value="Outdoor">Outdoor</option>
+            <option value="Restaurant">Restaurant</option>
+            <option value="Top Deck">Top Deck</option>
+          </select>
+          <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-ink/30 text-xs" aria-hidden="true">▾</span>
+        </div>
+      </div>
+
+      {/* Message */}
       <div>
         <label htmlFor="contact-message" className="block font-sans text-[15px] tracking-widest uppercase text-ink/50 mb-2">
-          Message <span aria-label="required">*</span>
+          Message
         </label>
         <textarea
           id="contact-message"
           name="message"
-          rows={5}
-          required
+          rows={4}
           className="w-full bg-parchment border border-ink/15 text-ink font-sans text-base px-4 py-3.5 placeholder-ink/25 focus:outline-none focus:border-ink/40 transition-colors resize-none"
-          placeholder="Table booking, event hire enquiry, general question…"
+          placeholder="Anything else — dietary requirements, special occasions, event hire…"
         />
       </div>
 
@@ -190,8 +290,9 @@ export default function FindUs() {
                   <p className="font-sans text-[15px] text-ink tracking-widest uppercase mb-4">Getting Here</p>
                   <ul className="flex flex-col gap-3">
                     {[
-                      { mode: "Bus", note: "Oxford Tube and local services on Cowley Road" },
-                      { mode: "Cycle", note: "Parking available outside" },
+                      { mode: "Bus", note: "Multiple routes — see below" },
+                      { mode: "Cycle", note: "Bike parking available outside" },
+                      { mode: "Scooter", note: "Scooter parking on Marsh Road" },
                       { mode: "Car", note: "Street parking on Marsh Road" },
                     ].map((item) => (
                       <li key={item.mode} className="flex items-start gap-3">
@@ -203,6 +304,27 @@ export default function FindUs() {
                       </li>
                     ))}
                   </ul>
+                  <div className="mt-5 pt-4 border-t border-forest-deep/5">
+                    <p className="font-sans text-[11px] tracking-widest uppercase text-ink/35 mb-3">Bus routes</p>
+                    <ul className="flex flex-col gap-1.5">
+                      {[
+                        { route: "1",   desc: "Oxford ↔ Blackbird Leys" },
+                        { route: "5",   desc: "Oxford Rail Station ↔ Cowley ↔ Blackbird Leys" },
+                        { route: "5A",  desc: "Oxford City Centre ↔ Minchery Farm" },
+                        { route: "10",  desc: "Oxford ↔ John Radcliffe Hospital" },
+                        { route: "11",  desc: "Oxford ↔ Watlington" },
+                        { route: "100", desc: "Oxford City Centre ↔ Wood Farm ↔ JR Hospital" },
+                        { route: "N1",  desc: "Night bus Oxford ↔ Blackbird Leys" },
+                      ].map((b) => (
+                        <li key={b.route} className="flex items-baseline gap-3">
+                          <span className="font-sans text-[11px] font-semibold text-forest-deep bg-ochre/15 px-2 py-0.5 rounded-sm flex-shrink-0 min-w-[2.25rem] text-center tabular-nums">
+                            {b.route}
+                          </span>
+                          <span className="font-sans text-xs font-light text-ink/55">{b.desc}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
 
                 <div className="border-t border-forest-deep/10 pt-6">
