@@ -9,7 +9,17 @@ type OrderItem = {
   quantity: number;
   price: number;
   parentId?: number;
+  dealOf2Price?: number;
 };
+
+function itemLineTotal(item: OrderItem): number {
+  if (item.dealOf2Price && item.quantity >= 2) {
+    const pairs = Math.floor(item.quantity / 2);
+    const remainder = item.quantity % 2;
+    return pairs * item.dealOf2Price + remainder * item.price;
+  }
+  return item.price * item.quantity;
+}
 
 type Settings = {
   ordersPaused: boolean;
@@ -243,6 +253,14 @@ export default function AdminDashboard() {
           {/* Icon-style actions — always fit on one line */}
           <div className="flex items-center gap-1 flex-shrink-0">
             <a
+              href="/admin/menu"
+              title="Manage menu"
+              aria-label="Manage menu — edit descriptions and disable items"
+              className="w-10 h-10 flex items-center justify-center text-ink/50 hover:text-ink transition-colors text-base"
+            >
+              ☰
+            </a>
+            <a
               href="/admin/qr"
               title="QR Codes"
               aria-label="QR code generator"
@@ -456,7 +474,7 @@ export default function AdminDashboard() {
                     ) : (
                       tableOrders.map((order) => {
                         const orderSubtotal = order.items.reduce(
-                          (s, i) => s + i.price * i.quantity,
+                          (s, i) => s + itemLineTotal(i),
                           0
                         );
                         const orderServiceCharge = Math.round(orderSubtotal * 0.1);

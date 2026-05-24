@@ -12,6 +12,7 @@ type MenuItem = {
   price: number;
   description: string;
   available: boolean;
+  dealOf2Price?: number; // optional "2 for £X" deal price, in pence
 };
 
 type CartItem = MenuItem & { quantity: number };
@@ -21,11 +22,33 @@ type DisplayGroup =
   | { kind: "single"; item: CartItem }
   | { kind: "paired"; parent: CartItem; children: CartItem[] };
 
+type OptionPromptDef = { legend: string; choices: string[] };
+
 const STEAK_SAUCE_PRICES: Record<string, number> = {
   "Garlic Butter": 250,
   "Peppercorn": 300,
   "No sauce": 0,
 };
+
+// Items that require a single one-of choice (added to the name on confirm).
+function getOptionPrompt(item: MenuItem): OptionPromptDef | null {
+  if (item.name === "Aperol Spritz" || item.name === "Campari Spritz") {
+    return { legend: "Mixer", choices: ["Soda", "Lemonade"] };
+  }
+  if (item.name === "J2O") {
+    return {
+      legend: "Flavour",
+      choices: ["Apple & Raspberry", "Apple & Mango", "Orange & Passionfruit"],
+    };
+  }
+  if (item.category === "Puddings" && item.name.startsWith("Ice Cream (")) {
+    return { legend: "Flavour", choices: ["Vanilla", "Strawberry", "Honeycomb"] };
+  }
+  if (item.category === "Puddings" && item.name.startsWith("Sorbet (")) {
+    return { legend: "Flavour", choices: ["Lemon", "Mango", "Raspberry"] };
+  }
+  return null;
+}
 
 const MIXER_PROMPT_CATEGORIES = ["Gin", "Vodka", "Rum", "Whisky", "Bourbon", "Liqueurs"];
 
@@ -77,8 +100,18 @@ function formatPrice(pence: number) {
   return `£${(pence / 100).toFixed(2)}`;
 }
 
+// Applies "2 for £X" deal pricing when present (e.g. Jäger / Skittle / Tiki Bombs).
+function lineTotal(item: CartItem): number {
+  if (item.dealOf2Price && item.quantity >= 2) {
+    const pairs = Math.floor(item.quantity / 2);
+    const remainder = item.quantity % 2;
+    return pairs * item.dealOf2Price + remainder * item.price;
+  }
+  return item.price * item.quantity;
+}
+
 function cartTotal(cart: Cart) {
-  return Object.values(cart).reduce((sum, item) => sum + item.price * item.quantity, 0);
+  return Object.values(cart).reduce((sum, item) => sum + lineTotal(item), 0);
 }
 
 function cartCount(cart: Cart) {
@@ -145,16 +178,21 @@ function OrderPage() {
   const [steakPendingItem, setSteakPendingItem] = useState<MenuItem | null>(null);
   const [steakDoneness, setSteakDoneness] = useState("Medium");
   const [steakSauce, setSteakSauce] = useState("Peppercorn");
+  const [optionPromptFor, setOptionPromptFor] = useState<
+    { item: MenuItem; def: OptionPromptDef } | null
+  >(null);
   const cartSheetRef = useRef<HTMLDivElement>(null);
   const mixerSheetRef = useRef<HTMLDivElement>(null);
   const pizzaSheetRef = useRef<HTMLDivElement>(null);
   const steakSheetRef = useRef<HTMLDivElement>(null);
+  const optionSheetRef = useRef<HTMLDivElement>(null);
   const submittingRef = useRef(false);
 
   useFocusTrap(cartSheetRef, cartOpen, () => setCartOpen(false));
   useFocusTrap(mixerSheetRef, mixerPromptFor !== null, () => setMixerPromptFor(null));
   useFocusTrap(pizzaSheetRef, pizzaToppingFor !== null, () => setPizzaToppingFor(null));
   useFocusTrap(steakSheetRef, steakPendingItem !== null, () => setSteakPendingItem(null));
+  useFocusTrap(optionSheetRef, optionPromptFor !== null, () => setOptionPromptFor(null));
 
   useEffect(() => {
     fetch("/api/menu")
@@ -228,9 +266,17 @@ function OrderPage() {
         setSteakSauce("Peppercorn");
         return;
       }
+      // Items with a one-of choice (spritz mixer, J2O flavour, ice cream / sorbet flavour).
+      // Same pattern as steak: prompt on first add; subsequent adds inherit the choice
+      // (cart lines collapse by item id, so a different flavour means removing and re-adding).
+      const promptDef = getOptionPrompt(item);
+      if (promptDef && (cart[item.id]?.quantity ?? 0) === 0) {
+        setOptionPromptFor({ item, def: promptDef });
+        return;
+      }
       addToCart(item);
-      // Pizza: show topping prompt after adding (skip for Extra Topping lines themselves)
-      if (item.category === "Pizza" && !item.name.startsWith("Extra Topping")) {
+      // Pizza: show topping prompt after adding
+      if (item.category === "Pizza") {
         setPizzaToppingFor(item);
         return;
       }
@@ -239,6 +285,16 @@ function OrderPage() {
       }
     },
     [addToCart, cart]
+  );
+
+  const confirmOption = useCallback(
+    (choice: string) => {
+      if (!optionPromptFor) return;
+      const { item } = optionPromptFor;
+      addToCart({ ...item, name: `${item.name} — ${choice}` });
+      setOptionPromptFor(null);
+    },
+    [optionPromptFor, addToCart]
   );
 
   const confirmSteak = useCallback(() => {
@@ -295,9 +351,14 @@ function OrderPage() {
       if (!childToParent.has(p.childId)) childToParent.set(p.childId, p.parentId);
     }
 
-    const items = Object.values(cart).map(({ id, name, quantity, price }) => {
+    const items = Object.values(cart).map(({ id, name, quantity, price, dealOf2Price }) => {
       const parentId = childToParent.get(id);
-      return parentId ? { id, name, quantity, price, parentId } : { id, name, quantity, price };
+      const base = { id, name, quantity, price };
+      return {
+        ...base,
+        ...(parentId ? { parentId } : {}),
+        ...(dealOf2Price ? { dealOf2Price } : {}),
+      };
     });
 
     try {
@@ -736,11 +797,17 @@ function OrderPage() {
             <ul className="overflow-y-auto flex-1 divide-y divide-forest-deep/5">
               {displayGroups.map((group) => {
                 if (group.kind === "single") {
+                  const dealActive = !!group.item.dealOf2Price && group.item.quantity >= 2;
                   return (
                     <li key={group.item.id} className="flex items-center gap-4 px-5 py-4">
                       <div className="flex-1 min-w-0">
                         <p className="font-sans text-forest-deep font-medium text-sm">{group.item.name}</p>
-                        <p className="font-sans text-ink/50 text-xs">{formatPrice(group.item.price)} each</p>
+                        <p className="font-sans text-ink/50 text-xs">
+                          {formatPrice(group.item.price)} each
+                          {dealActive && (
+                            <span className="ml-1 text-ochre">· 2 for {formatPrice(group.item.dealOf2Price!)}</span>
+                          )}
+                        </p>
                       </div>
                       <ItemControls
                         item={group.item}
@@ -748,7 +815,7 @@ function OrderPage() {
                         onAdd={() => addToCart(group.item)}
                       />
                       <p className="font-sans text-ink font-medium text-sm w-14 text-right flex-shrink-0 tabular-nums">
-                        {formatPrice(group.item.price * group.item.quantity)}
+                        {formatPrice(lineTotal(group.item))}
                       </p>
                     </li>
                   );
@@ -772,7 +839,7 @@ function OrderPage() {
                           onAdd={() => addToCart(parent)}
                         />
                         <p className="font-sans text-ink font-medium text-sm w-14 text-right flex-shrink-0 tabular-nums">
-                          {formatPrice(parent.price * parent.quantity)}
+                          {formatPrice(lineTotal(parent))}
                         </p>
                       </div>
                       {children.map((child) => (
@@ -793,7 +860,7 @@ function OrderPage() {
                             onAdd={() => addToCart(child)}
                           />
                           <p className="font-sans text-ink/70 font-medium text-sm w-14 text-right flex-shrink-0 tabular-nums">
-                            {formatPrice(child.price * child.quantity)}
+                            {formatPrice(lineTotal(child))}
                           </p>
                         </div>
                       ))}
@@ -814,7 +881,7 @@ function OrderPage() {
               </div>
               <div className="flex items-center justify-between border-t border-forest-deep/10 pt-4 mb-4">
                 <p className="font-sans text-xs tracking-widest uppercase text-ink/50">Total</p>
-                <p className="font-serif text-forest-deep text-2xl tabular-nums">{formatPrice(total)}</p>
+                <p className="font-sans text-forest-deep text-base font-semibold tabular-nums">{formatPrice(total)}</p>
               </div>
               <p className="font-sans text-ink/40 text-xs leading-relaxed mb-5">
                 A service charge of 10% has been added to your bill.
@@ -1015,20 +1082,26 @@ function OrderPage() {
               <fieldset>
                 <legend className="font-sans text-[10px] tracking-widest uppercase text-ink/40 mb-3">Sauce</legend>
                 <div className="grid grid-cols-3 gap-2">
-                  {["Peppercorn", "Garlic Butter", "No sauce"].map((opt) => (
-                    <button
-                      key={opt}
-                      type="button"
-                      onClick={() => setSteakSauce(opt)}
-                      className={`py-2.5 px-2 font-sans text-xs text-center transition-colors border ${
-                        steakSauce === opt
-                          ? "bg-ochre border-ochre text-parchment-light"
-                          : "border-forest-deep/20 text-ink/60 hover:border-forest-deep/40 hover:text-ink"
-                      }`}
-                    >
-                      {opt}
-                    </button>
-                  ))}
+                  {(["Peppercorn", "Garlic Butter", "No sauce"] as const).map((opt) => {
+                    const extra = STEAK_SAUCE_PRICES[opt];
+                    return (
+                      <button
+                        key={opt}
+                        type="button"
+                        onClick={() => setSteakSauce(opt)}
+                        className={`py-2.5 px-2 font-sans text-xs text-center transition-colors border ${
+                          steakSauce === opt
+                            ? "bg-ochre border-ochre text-parchment-light"
+                            : "border-forest-deep/20 text-ink/60 hover:border-forest-deep/40 hover:text-ink"
+                        }`}
+                      >
+                        <span>{opt}</span>
+                        {extra > 0 && (
+                          <span className="block text-[10px] opacity-80">+{formatPrice(extra)}</span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               </fieldset>
             </div>
@@ -1122,6 +1195,52 @@ function OrderPage() {
               >
                 No mixer, thanks
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Generic option prompt (spritz mixer, J2O flavour, ice cream / sorbet flavour) */}
+      {optionPromptFor && (
+        <div
+          ref={optionSheetRef}
+          className="fixed inset-0 z-50 flex flex-col justify-end"
+          role="dialog"
+          aria-label={`Choose ${optionPromptFor.def.legend.toLowerCase()}`}
+          aria-modal="true"
+        >
+          <div className="absolute inset-0 bg-ink/40" onClick={() => setOptionPromptFor(null)} />
+          <div className="relative bg-parchment flex flex-col">
+            <div className="flex items-start justify-between px-5 py-4 border-b border-forest-deep/10">
+              <div>
+                <h2 className="font-serif font-light text-forest-deep text-xl">
+                  Choose your {optionPromptFor.def.legend.toLowerCase()}
+                </h2>
+                <p className="font-sans text-ink/50 text-xs mt-0.5">
+                  {optionPromptFor.item.name}
+                </p>
+              </div>
+              <button
+                onClick={() => setOptionPromptFor(null)}
+                aria-label="Cancel"
+                className="w-10 h-10 flex items-center justify-center text-ink/40 hover:text-ink transition-colors flex-shrink-0"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="px-5 py-5">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                {optionPromptFor.def.choices.map((choice) => (
+                  <button
+                    key={choice}
+                    type="button"
+                    onClick={() => confirmOption(choice)}
+                    className="py-3 px-3 font-sans text-sm text-center border border-forest-deep/20 text-forest-deep hover:bg-ochre hover:border-ochre hover:text-parchment-light transition-colors"
+                  >
+                    {choice}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>

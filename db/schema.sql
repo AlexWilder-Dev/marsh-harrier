@@ -34,3 +34,10 @@ CREATE TABLE IF NOT EXISTS settings (
   drink_delay_minutes INTEGER NOT NULL DEFAULT 0  -- 0 / 5 / 10 / 15 / 20
 );
 INSERT OR IGNORE INTO settings (id, orders_paused, drink_delay_minutes) VALUES (1, 0, 0);
+
+-- Per-menu-item overrides. NULL = inherit from data/menu.json.
+CREATE TABLE IF NOT EXISTS menu_overrides (
+  menu_id     INTEGER PRIMARY KEY,
+  available   INTEGER, -- 0 / 1 / NULL
+  description TEXT
+);

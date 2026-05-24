@@ -32,6 +32,11 @@ export async function initDb() {
         drink_delay_minutes INTEGER NOT NULL DEFAULT 0
       )`,
       `INSERT OR IGNORE INTO settings (id, orders_paused, drink_delay_minutes) VALUES (1, 0, 0)`,
+      `CREATE TABLE IF NOT EXISTS menu_overrides (
+        menu_id     INTEGER PRIMARY KEY,
+        available   INTEGER,
+        description TEXT
+      )`,
     ],
     "write"
   );
