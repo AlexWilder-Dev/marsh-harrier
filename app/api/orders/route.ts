@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { client } from "@/lib/db";
 import { isAuthenticated } from "@/lib/auth";
+import menuData from "@/data/menu.json";
+import { currentServiceWindow, pickabilityFor } from "@/lib/kitchen";
+
+type MenuRow = { id: number; category: string };
+const MENU_BY_ID = new Map<number, MenuRow>(
+  (menuData as MenuRow[]).map((m) => [m.id, { id: m.id, category: m.category }])
+);
 
 // GET /api/orders — staff use, requires auth
 // Query: ?status=pending|delivered|all
@@ -61,6 +68,25 @@ export async function POST(request: NextRequest) {
 
   if (phone && !/^[\d\s\+\-\(\)]{7,20}$/.test(phone)) {
     return NextResponse.json({ error: "Please enter a valid phone number." }, { status: 400 });
+  }
+
+  // Enforce the kitchen-window rules server-side so a hand-crafted POST
+  // can't bypass the greyed-out buttons. Items with unknown ids are
+  // accepted here (server-trusts shape only) — they'll fail elsewhere
+  // if they're truly invalid.
+  const window = currentServiceWindow();
+  for (const it of items as Array<{ id?: unknown }>) {
+    const id = typeof it?.id === "number" ? it.id : null;
+    if (id === null) continue;
+    const row = MENU_BY_ID.get(id);
+    if (!row) continue;
+    const verdict = pickabilityFor(row, window);
+    if (!verdict.pickable) {
+      return NextResponse.json(
+        { error: verdict.reason ?? "One of those items isn't available right now." },
+        { status: 400 }
+      );
+    }
   }
 
   // Honour the admin's "pause online orders" toggle.

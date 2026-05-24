@@ -1,6 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
+import {
+  type ServiceWindow,
+  currentServiceWindow,
+  pickabilityFor,
+} from "@/lib/kitchen";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { useFocusTrap } from "@/lib/useFocusTrap";
@@ -62,6 +67,9 @@ function getOptionPrompt(item: MenuItem): OptionPromptDef | null {
   }
   if (item.category === "Shots" && item.name === "Tequila") {
     return { legend: "Type", choices: ["Gold", "Blanco"] };
+  }
+  if (item.name === "Stuffed Aubergine") {
+    return { legend: "Style", choices: ["Vegetarian", "Vegan"] };
   }
   return null;
 }
@@ -182,6 +190,7 @@ function OrderPage() {
   const tableNumber = tableParam ? parseInt(tableParam, 10) : (isTakeaway ? 0 : null);
 
   const [menu, setMenu] = useState<MenuItem[]>([]);
+  const [serviceWindow, setServiceWindow] = useState<ServiceWindow>(currentServiceWindow);
   const [activeSection, setActiveSection] = useState<"food" | "drink">("drink");
   const [activeGroup, setActiveGroup] = useState<string>("");
   const [cart, setCart] = useState<Cart>({});
@@ -212,6 +221,13 @@ function OrderPage() {
   const steakSheetRef = useRef<HTMLDivElement>(null);
   const optionSheetRef = useRef<HTMLDivElement>(null);
   const submittingRef = useRef(false);
+
+  // Re-evaluate the service window every 30s so the UI flips when the kitchen
+  // crosses a boundary (e.g. Sunday 16:00, 17:00 or 20:00) without a refresh.
+  useEffect(() => {
+    const id = setInterval(() => setServiceWindow(currentServiceWindow()), 30_000);
+    return () => clearInterval(id);
+  }, []);
 
   useFocusTrap(cartSheetRef, cartOpen, () => setCartOpen(false));
   useFocusTrap(mixerSheetRef, mixerPromptFor !== null, () => setMixerPromptFor(null));
@@ -284,6 +300,9 @@ function OrderPage() {
 
   const handleMenuAdd = useCallback(
     (item: MenuItem) => {
+      // Respect the current kitchen window — defensive in case the UI's disabled
+      // state ever gets bypassed (e.g. stale state across a window boundary).
+      if (!pickabilityFor(item, serviceWindow).pickable) return;
       // Steak (sirloin or rib eye): show doneness/sauce modal before the first add
       if (isSteakItem(item) && (cart[item.id]?.quantity ?? 0) === 0) {
         setSteakPendingItem(item);
@@ -309,7 +328,7 @@ function OrderPage() {
         setMixerPromptFor(item);
       }
     },
-    [addToCart, cart]
+    [addToCart, cart, serviceWindow]
   );
 
   const confirmOption = useCallback(
@@ -509,8 +528,14 @@ function OrderPage() {
   // Single item row — used when a drink/food has no size variants
   const renderMenuItem = (item: MenuItem) => {
     const qty = cart[item.id]?.quantity ?? 0;
+    const { pickable, reason } = pickabilityFor(item, serviceWindow);
     return (
-      <li key={item.id} className={`bg-parchment-light flex items-start gap-4 p-4 border-l-2 ${qty > 0 ? "border-ochre" : "border-transparent"}`}>
+      <li
+        key={item.id}
+        className={`bg-parchment-light flex items-start gap-4 p-4 border-l-2 ${
+          qty > 0 ? "border-ochre" : "border-transparent"
+        } ${pickable ? "" : "opacity-60"}`}
+      >
         <div className="flex-1 min-w-0">
           <p className="font-sans text-forest-deep font-medium text-sm">{item.name}</p>
           {item.description && (
@@ -519,6 +544,9 @@ function OrderPage() {
             </p>
           )}
           <p className="font-sans text-ink text-sm font-medium mt-1.5">{formatPrice(item.price)}</p>
+          {!pickable && reason && (
+            <p className="font-sans text-ochre text-[11px] italic mt-1">{reason}</p>
+          )}
         </div>
         <div className="flex items-center gap-2 flex-shrink-0 mt-0.5">
           {qty > 0 ? (
@@ -539,8 +567,9 @@ function OrderPage() {
           )}
           <button
             onClick={() => handleMenuAdd(item)}
+            disabled={!pickable}
             aria-label={`Add ${item.name} to order`}
-            className="w-10 h-10 flex items-center justify-center bg-ochre text-parchment-light font-medium text-lg leading-none hover:bg-ochre-light transition-colors"
+            className="w-10 h-10 flex items-center justify-center bg-ochre text-parchment-light font-medium text-lg leading-none hover:bg-ochre-light transition-colors disabled:bg-ink/15 disabled:cursor-not-allowed disabled:hover:bg-ink/15"
           >
             +
           </button>
@@ -552,14 +581,19 @@ function OrderPage() {
   // Multi-size card — groups e.g. "House White (175ml / 250ml / Bottle)" into one row
   const renderVariantCard = (group: ItemGroup) => {
     const anyInCart = group.variants.some(v => (cart[v.id]?.quantity ?? 0) > 0);
+    // All variants in a group share a category, so the window restriction is identical for all of them.
+    const groupAvailability = pickabilityFor(group.variants[0], serviceWindow);
     return (
-    <li key={group.base} className={`bg-parchment-light border-l-2 ${anyInCart ? "border-ochre" : "border-transparent"}`}>
+    <li key={group.base} className={`bg-parchment-light border-l-2 ${anyInCart ? "border-ochre" : "border-transparent"} ${groupAvailability.pickable ? "" : "opacity-60"}`}>
       <div className="px-4 pt-4 pb-2">
         <p className="font-sans text-forest-deep font-medium text-sm">{group.base}</p>
         {group.description && (
           <p className="font-sans text-ink/50 text-xs font-light mt-0.5 leading-relaxed">
             {group.description}
           </p>
+        )}
+        {!groupAvailability.pickable && groupAvailability.reason && (
+          <p className="font-sans text-ochre text-[11px] italic mt-1">{groupAvailability.reason}</p>
         )}
       </div>
       {group.variants.map((variant, idx) => {
@@ -595,8 +629,9 @@ function OrderPage() {
               )}
               <button
                 onClick={() => handleMenuAdd(variant)}
+                disabled={!groupAvailability.pickable}
                 aria-label={`Add ${variant.name}`}
-                className="w-8 h-8 flex items-center justify-center bg-ochre text-parchment-light text-base hover:bg-ochre-light transition-colors"
+                className="w-8 h-8 flex items-center justify-center bg-ochre text-parchment-light text-base hover:bg-ochre-light transition-colors disabled:bg-ink/15 disabled:cursor-not-allowed disabled:hover:bg-ink/15"
               >
                 +
               </button>
