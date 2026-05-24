@@ -85,6 +85,7 @@ export default function AdminDashboard() {
   const [offline, setOffline] = useState(false);
   const [settings, setSettings] = useState<Settings>({ ordersPaused: false, drinkDelayMinutes: 0 });
   const [savingSetting, setSavingSetting] = useState<"pause" | "delay" | null>(null);
+  const [initState, setInitState] = useState<"idle" | "running" | "done" | "error">("idle");
 
   const fetchData = useCallback(async () => {
     try {
@@ -152,6 +153,27 @@ export default function AdminDashboard() {
       }
     } finally {
       setSavingSetting(null);
+    }
+  };
+
+  const runInit = async () => {
+    if (!confirm("Run database setup? Safe to run more than once.")) return;
+    setInitState("running");
+    try {
+      const res = await fetch("/api/init", { method: "POST" });
+      if (!res.ok) throw new Error();
+      setInitState("done");
+      // Re-fetch settings now that the table exists
+      const s = await fetch("/api/settings");
+      if (s.ok) {
+        const data = await s.json();
+        setSettings({
+          ordersPaused: Boolean(data.ordersPaused),
+          drinkDelayMinutes: Number(data.drinkDelayMinutes) || 0,
+        });
+      }
+    } catch {
+      setInitState("error");
     }
   };
 
@@ -337,6 +359,25 @@ export default function AdminDashboard() {
               </span>
             </div>
           </div>
+        </div>
+
+        <div className="mt-3 pt-3 border-t border-forest-deep/5 flex items-center justify-between gap-3">
+          <p className="font-sans text-[11px] text-ink/40 font-light">
+            First-time setup or after a deploy: run database setup so new features work.
+          </p>
+          <button
+            onClick={runInit}
+            disabled={initState === "running"}
+            className="font-sans text-[11px] tracking-widest uppercase px-3 py-1.5 border border-forest-deep/20 text-ink/60 hover:border-forest-deep/40 hover:text-forest-deep disabled:opacity-50 transition-colors flex-shrink-0"
+          >
+            {initState === "running"
+              ? "Setting up…"
+              : initState === "done"
+              ? "✓ Setup complete"
+              : initState === "error"
+              ? "Setup failed — retry"
+              : "Run database setup"}
+          </button>
         </div>
       </section>
 
