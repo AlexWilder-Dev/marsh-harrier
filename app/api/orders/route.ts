@@ -63,6 +63,22 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Please enter a valid phone number." }, { status: 400 });
   }
 
+  // Honour the admin's "pause online orders" toggle.
+  // Wrapped in try so existing deployments still accept orders before /api/init runs.
+  try {
+    const pausedResult = await client.execute(
+      "SELECT orders_paused FROM settings WHERE id = 1"
+    );
+    if (pausedResult.rows.length > 0 && Number(pausedResult.rows[0].orders_paused) === 1) {
+      return NextResponse.json(
+        { error: "We're a bit slammed right now — online ordering is paused. Please flag down a member of staff." },
+        { status: 503 }
+      );
+    }
+  } catch {
+    // settings table not yet initialised — treat as accepting orders
+  }
+
   // Auto-create table entry for dine-in and takeaway (table 0)
   await client.execute({
     sql: "INSERT OR IGNORE INTO tables (table_number) VALUES (?)",

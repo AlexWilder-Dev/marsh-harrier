@@ -19,10 +19,18 @@ CREATE TABLE IF NOT EXISTS tables (
 CREATE TABLE IF NOT EXISTS orders (
   id             INTEGER  PRIMARY KEY AUTOINCREMENT,
   table_number   INTEGER  NOT NULL,
-  items          TEXT     NOT NULL,       -- JSON array: [{ id, name, quantity, price }]
+  items          TEXT     NOT NULL,       -- JSON array: [{ id, name, quantity, price, parentId? }]
   status         TEXT     DEFAULT 'pending', -- 'pending' | 'delivered'
   created_at     DATETIME DEFAULT CURRENT_TIMESTAMP,
   delivered_at   DATETIME,
   customer_name  TEXT,                    -- takeaway orders only
   customer_phone TEXT                     -- takeaway orders only
 );
+
+-- Single-row settings table for admin-controlled flags.
+CREATE TABLE IF NOT EXISTS settings (
+  id                  INTEGER PRIMARY KEY CHECK (id = 1),
+  orders_paused       INTEGER NOT NULL DEFAULT 0, -- 0 = accepting, 1 = paused
+  drink_delay_minutes INTEGER NOT NULL DEFAULT 0  -- 0 / 5 / 10 / 15 / 20
+);
+INSERT OR IGNORE INTO settings (id, orders_paused, drink_delay_minutes) VALUES (1, 0, 0);

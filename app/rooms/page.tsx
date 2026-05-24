@@ -8,7 +8,6 @@ import Footer from "@/components/Footer";
 // ─── Data (replace with real content when client delivers) ───────────────────
 
 const ROOM_IMAGES = [
-  { src: "/images/marsh-harrier-pub-garden-2.JPG",             alt: "The Marsh Harrier garden" },
   { src: "/images/marsh-harrier-pub-room-bedroom.avif",      alt: "Guest bedroom" },
   { src: "/images/marsh-harrier-pub-room-living-space.avif", alt: "Living space" },
   { src: "/images/marsh-harrier-pub-room-kitchen.avif",      alt: "Kitchen" },
@@ -99,6 +98,14 @@ function RoomsHero() {
             Marsh Harrier.
           </em>
         </motion.h1>
+        <motion.p
+          className="font-serif italic text-ochre text-lg md:text-xl mt-6 max-w-2xl"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.85 }}
+        >
+          Book a room directly through our website and enjoy a free bottle of wine on arrival!
+        </motion.p>
       </div>
     </section>
   );

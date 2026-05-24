@@ -63,7 +63,7 @@ function ContactForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-      <div className="grid sm:grid-cols-2 gap-5">
+      <div className="grid lg:grid-cols-2 gap-5">
         <div>
           <label htmlFor="contact-name" className="block font-sans text-[15px] tracking-widest uppercase text-ink/50 mb-2">
             Name <span aria-label="required">*</span>
@@ -94,7 +94,7 @@ function ContactForm() {
         </div>
       </div>
       {/* Mobile + Number of people */}
-      <div className="grid sm:grid-cols-2 gap-5">
+      <div className="grid lg:grid-cols-2 gap-5">
         <div>
           <label htmlFor="contact-mobile" className="block font-sans text-[15px] tracking-widest uppercase text-ink/50 mb-2">
             Mobile <span aria-label="required">*</span>
@@ -133,7 +133,7 @@ function ContactForm() {
       </div>
 
       {/* Date + Time */}
-      <div className="grid sm:grid-cols-2 gap-5">
+      <div className="grid lg:grid-cols-2 gap-5">
         <div>
           <label htmlFor="contact-date" className="block font-sans text-[15px] tracking-widest uppercase text-ink/50 mb-2">
             Date <span aria-label="required">*</span>
@@ -248,7 +248,7 @@ export default function FindUs() {
               <h2 className="font-serif font-light text-display-xl text-forest-deep leading-[0.9] mb-2">
                 Come on in.
               </h2>
-              <p className="font-serif italic text-forest-deep/30 text-display-sm mb-12">
+              <p className="font-serif italic text-display-sm mb-12" style={{ color: "#4d4d4d" }}>
                 40 Marsh Road, OX4 2HH
               </p>
 
@@ -277,11 +277,11 @@ export default function FindUs() {
                     </li>
                     <li>
                       <a
-                        href="mailto:info@marshharrieroxford.co.uk"
+                        href="mailto:jimmymarshharrier@hotmail.com"
                         className="font-sans text-sm font-light text-ink/65 hover:text-forest-deep transition-colors break-all focus-visible:outline-ochre"
                       >
                         <span className="font-medium text-forest-deep">Email — </span>
-                        info@marshharrieroxford.co.uk
+                        jimmymarshharrier@hotmail.com
                       </a>
                     </li>
                   </ul>

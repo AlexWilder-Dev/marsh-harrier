@@ -11,7 +11,7 @@ const hours = [
   { day: "Thursday",  openH: 12, openSuffix: ":00pm", closeH: 11, closeSuffix: ":00pm", food: "noon–3pm & 4–9pm" },
   { day: "Friday",    openH: 12, openSuffix: ":00pm", closeH: 11, closeSuffix: ":00pm", food: "noon–3pm & 4–9pm" },
   { day: "Saturday",  openH: 12, openSuffix: ":00pm", closeH: 11, closeSuffix: ":00pm", food: "noon–3pm & 4–9pm" },
-  { day: "Sunday",    openH: 12, openSuffix: ":00pm", closeH: 11, closeSuffix: ":00pm", food: "noon–4pm & 5–8pm", note: "Roasts from noon · Pizzas only 5–8pm" },
+  { day: "Sunday",    openH: 12, openSuffix: ":00pm", closeH: 11, closeSuffix: ":00pm", food: "12pm–4pm roast & 5–8pm pizza", note: "Roasts 12pm–4pm · Pizzas only 5–8pm" },
 ];
 
 function getTodayName() {
@@ -118,10 +118,10 @@ export default function OpeningHours() {
         </motion.div>
 
         {/* Column headers */}
-        <div className="flex justify-between pb-3 border-b border-forest-deep/10 mb-1">
-          <span className="font-sans text-[11px] tracking-widest uppercase text-ink/30">Day</span>
+        <div className="flex justify-between pb-3 border-b border-forest-deep/20 mb-1">
+          <span className="font-sans text-sm font-bold tracking-widest uppercase text-forest-deep">Day</span>
           <div className="text-right">
-            <span className="font-sans text-[11px] tracking-widest uppercase text-ink/30">Bar · Kitchen</span>
+            <span className="font-sans text-sm font-bold tracking-widest uppercase text-forest-deep">Bar · Kitchen</span>
           </div>
         </div>
 

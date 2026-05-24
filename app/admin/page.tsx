@@ -8,7 +8,15 @@ type OrderItem = {
   name: string;
   quantity: number;
   price: number;
+  parentId?: number;
 };
+
+type Settings = {
+  ordersPaused: boolean;
+  drinkDelayMinutes: number;
+};
+
+const DRINK_DELAY_OPTIONS = [0, 5, 10, 15, 20] as const;
 
 type Order = {
   id: number;
@@ -75,6 +83,8 @@ export default function AdminDashboard() {
   const [deliveringOrder, setDeliveringOrder] = useState<number | null>(null);
   const [closingAll, setClosingAll] = useState(false);
   const [offline, setOffline] = useState(false);
+  const [settings, setSettings] = useState<Settings>({ ordersPaused: false, drinkDelayMinutes: 0 });
+  const [savingSetting, setSavingSetting] = useState<"pause" | "delay" | null>(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -107,6 +117,43 @@ export default function AdminDashboard() {
       document.removeEventListener("visibilitychange", onVisible);
     };
   }, [fetchData]);
+
+  useEffect(() => {
+    fetch("/api/settings")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data) {
+          setSettings({
+            ordersPaused: Boolean(data.ordersPaused),
+            drinkDelayMinutes: Number(data.drinkDelayMinutes) || 0,
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const updateSettings = async (
+    patch: Partial<Settings>,
+    kind: "pause" | "delay"
+  ) => {
+    setSavingSetting(kind);
+    try {
+      const res = await fetch("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(patch),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setSettings({
+          ordersPaused: Boolean(data.ordersPaused),
+          drinkDelayMinutes: Number(data.drinkDelayMinutes) || 0,
+        });
+      }
+    } finally {
+      setSavingSetting(null);
+    }
+  };
 
   const markDelivered = async (orderId: number) => {
     setDeliveringOrder(orderId);
@@ -216,6 +263,83 @@ export default function AdminDashboard() {
         </div>
       </header>
 
+      {/* Service controls */}
+      <section
+        aria-label="Service controls"
+        className="bg-parchment-light border-b border-forest-deep/10 px-4 md:px-6 py-4"
+      >
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex items-center justify-between md:justify-start gap-4">
+            <div>
+              <p className="font-sans text-[11px] tracking-widest uppercase text-ink/50 mb-1">
+                Online ordering
+              </p>
+              <p className="font-sans text-sm text-forest-deep">
+                {settings.ordersPaused
+                  ? "Paused — customers cannot place orders"
+                  : "Accepting orders"}
+              </p>
+            </div>
+            <button
+              onClick={() =>
+                updateSettings({ ordersPaused: !settings.ordersPaused }, "pause")
+              }
+              disabled={savingSetting !== null}
+              className={`font-sans text-[15px] tracking-widest uppercase px-4 py-2 transition-colors disabled:opacity-50 ${
+                settings.ordersPaused
+                  ? "bg-ochre text-parchment-light hover:bg-ochre-light"
+                  : "border border-red-400/50 text-red-700 hover:bg-red-50"
+              }`}
+            >
+              {savingSetting === "pause"
+                ? "…"
+                : settings.ordersPaused
+                ? "Resume"
+                : "Pause"}
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between md:justify-end gap-4">
+            <div className="md:text-right">
+              <p className="font-sans text-[11px] tracking-widest uppercase text-ink/50 mb-1">
+                Drink wait time
+              </p>
+              <p className="font-sans text-sm text-forest-deep">
+                {settings.drinkDelayMinutes > 0
+                  ? `Shown to customers as ~${settings.drinkDelayMinutes} min`
+                  : "No notice shown"}
+              </p>
+            </div>
+            <div className="relative">
+              <select
+                aria-label="Drink wait time in minutes"
+                value={settings.drinkDelayMinutes}
+                disabled={savingSetting !== null}
+                onChange={(e) =>
+                  updateSettings(
+                    { drinkDelayMinutes: Number(e.target.value) },
+                    "delay"
+                  )
+                }
+                className="appearance-none bg-parchment border border-forest-deep/20 text-forest-deep font-sans text-sm px-4 py-2 pr-9 focus:outline-none focus:border-ochre/60 transition-colors disabled:opacity-50"
+              >
+                {DRINK_DELAY_OPTIONS.map((m) => (
+                  <option key={m} value={m}>
+                    {m === 0 ? "No delay" : `${m} min`}
+                  </option>
+                ))}
+              </select>
+              <span
+                className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-ink/40 text-xs"
+                aria-hidden="true"
+              >
+                ▾
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Content */}
       <main className="p-4 md:p-6">
         {tables.length === 0 ? (
@@ -316,16 +440,39 @@ export default function AdminDashboard() {
                                 <p className="font-sans text-xs font-medium text-forest-deep tabular-nums">{formatPrice(orderTotal)}</p>
                               </div>
                             </div>
-                            <ul className="space-y-0.5 mb-3">
-                              {order.items.map((item, i) => (
-                                <li
-                                  key={i}
-                                  className="font-sans text-sm text-forest-deep"
-                                >
-                                  <span className="font-medium">{item.quantity}×</span>{" "}
-                                  {item.name}
-                                </li>
-                              ))}
+                            <ul className="space-y-1.5 mb-3">
+                              {(() => {
+                                const parentIds = new Set(order.items.map((it) => it.id));
+                                const isTopLevel = (it: OrderItem) =>
+                                  it.parentId === undefined || !parentIds.has(it.parentId);
+                                return order.items.filter(isTopLevel).map((item, i) => {
+                                  const children = order.items.filter(
+                                    (c) => c.parentId === item.id
+                                  );
+                                  return (
+                                    <li key={i} className="font-sans text-forest-deep">
+                                      <p className="text-sm">
+                                        <span className="font-medium">
+                                          {item.quantity}×
+                                        </span>{" "}
+                                        {item.name}
+                                      </p>
+                                      {children.length > 0 && (
+                                        <ul className="mt-0.5 ml-4 space-y-0.5">
+                                          {children.map((c, ci) => (
+                                            <li
+                                              key={ci}
+                                              className="font-sans text-xs text-ink/55 font-light"
+                                            >
+                                              + {c.quantity}× {c.name}
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      )}
+                                    </li>
+                                  );
+                                });
+                              })()}
                             </ul>
                             <button
                               onClick={() => markDelivered(order.id)}

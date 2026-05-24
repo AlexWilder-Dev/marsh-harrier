@@ -26,6 +26,12 @@ export async function initDb() {
         customer_name TEXT,
         customer_phone TEXT
       )`,
+      `CREATE TABLE IF NOT EXISTS settings (
+        id INTEGER PRIMARY KEY CHECK (id = 1),
+        orders_paused INTEGER NOT NULL DEFAULT 0,
+        drink_delay_minutes INTEGER NOT NULL DEFAULT 0
+      )`,
+      `INSERT OR IGNORE INTO settings (id, orders_paused, drink_delay_minutes) VALUES (1, 0, 0)`,
     ],
     "write"
   );

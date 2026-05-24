@@ -16,10 +16,16 @@ type MenuItem = {
 
 type CartItem = MenuItem & { quantity: number };
 type Cart = Record<number, CartItem>;
-type Pairing = { spiritId: number; mixerId: number };
+type Pairing = { parentId: number; childId: number };
 type DisplayGroup =
   | { kind: "single"; item: CartItem }
-  | { kind: "paired"; spirit: CartItem; mixers: CartItem[] };
+  | { kind: "paired"; parent: CartItem; children: CartItem[] };
+
+const STEAK_SAUCE_PRICES: Record<string, number> = {
+  "Garlic Butter": 250,
+  "Peppercorn": 300,
+  "No sauce": 0,
+};
 
 const MIXER_PROMPT_CATEGORIES = ["Gin", "Vodka", "Rum", "Whisky", "Bourbon", "Liqueurs"];
 
@@ -127,6 +133,8 @@ function OrderPage() {
   const [loading, setLoading] = useState(true);
   const [menuError, setMenuError] = useState(false);
   const [menuRetry, setMenuRetry] = useState(0);
+  const [ordersPaused, setOrdersPaused] = useState(false);
+  const [drinkDelayMinutes, setDrinkDelayMinutes] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -165,6 +173,24 @@ function OrderPage() {
       .catch(() => setMenuError(true))
       .finally(() => setLoading(false));
   }, [menuRetry]);
+
+  // Poll admin settings so pause/delay updates reach customers within ~30s
+  useEffect(() => {
+    let cancelled = false;
+    const load = () => {
+      fetch("/api/settings")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
+          if (cancelled || !data) return;
+          setOrdersPaused(Boolean(data.ordersPaused));
+          setDrinkDelayMinutes(Number(data.drinkDelayMinutes) || 0);
+        })
+        .catch(() => {});
+    };
+    load();
+    const timer = setInterval(load, 30_000);
+    return () => { cancelled = true; clearInterval(timer); };
+  }, []);
 
   const handleSectionChange = (section: "food" | "drink") => {
     setActiveSection(section);
@@ -217,8 +243,13 @@ function OrderPage() {
 
   const confirmSteak = useCallback(() => {
     if (!steakPendingItem) return;
+    const sauceCost = STEAK_SAUCE_PRICES[steakSauce] ?? 0;
     const suffix = steakSauce === "No sauce" ? steakDoneness : `${steakDoneness}, ${steakSauce}`;
-    addToCart({ ...steakPendingItem, name: `${steakPendingItem.name} — ${suffix}` });
+    addToCart({
+      ...steakPendingItem,
+      name: `${steakPendingItem.name} — ${suffix}`,
+      price: steakPendingItem.price + sauceCost,
+    });
     setSteakPendingItem(null);
   }, [steakPendingItem, steakDoneness, steakSauce, addToCart]);
 
@@ -236,7 +267,7 @@ function OrderPage() {
   }, []);
 
   const removeLastPairingFor = useCallback(
-    (field: "spiritId" | "mixerId", id: number, qty: number) => {
+    (field: "parentId" | "childId", id: number, qty: number) => {
       setPairings((prev) => {
         if (qty <= 1) return prev.filter((p) => p[field] !== id);
         const idx = prev.map((p) => p[field]).lastIndexOf(id);
@@ -258,12 +289,16 @@ function OrderPage() {
     setSubmitting(true);
     setError(null);
 
-    const items = Object.values(cart).map(({ id, name, quantity, price }) => ({
-      id,
-      name,
-      quantity,
-      price,
-    }));
+    // Per-child parent map — first pairing wins if a child line is attached to multiple parents.
+    const childToParent = new Map<number, number>();
+    for (const p of pairings) {
+      if (!childToParent.has(p.childId)) childToParent.set(p.childId, p.parentId);
+    }
+
+    const items = Object.values(cart).map(({ id, name, quantity, price }) => {
+      const parentId = childToParent.get(id);
+      return parentId ? { id, name, quantity, price, parentId } : { id, name, quantity, price };
+    });
 
     try {
       const res = await fetch("/api/orders", {
@@ -354,7 +389,7 @@ function OrderPage() {
 
   // Mixers for prompt sheet
   const mixers = menu.filter((i) => i.category === "Mixers");
-  const pizzaToppings = menu.filter((i) => i.category === "Pizza" && i.name.startsWith("Extra Topping"));
+  const pizzaToppings = menu.filter((i) => i.category === "Pizza Toppings");
   const nl = (m: MenuItem) => m.name.toLowerCase();
   const mixerGroups = [
     { label: "Tonic",       items: mixers.filter((m) => nl(m).includes("tonic")) },
@@ -365,20 +400,20 @@ function OrderPage() {
     { label: "Bottles",     items: mixers.filter((m) => nl(m).includes("bottle")) },
   ];
 
-  // Cart display groups
-  const pairedMixerIds = new Set(pairings.map((p) => p.mixerId));
-  const spiritToMixers = new Map<number, number[]>();
+  // Cart display groups — any item with children (mixers, pizza toppings) renders nested
+  const pairedChildIds = new Set(pairings.map((p) => p.childId));
+  const parentToChildren = new Map<number, number[]>();
   for (const p of pairings) {
-    if (!spiritToMixers.has(p.spiritId)) spiritToMixers.set(p.spiritId, []);
-    spiritToMixers.get(p.spiritId)!.push(p.mixerId);
+    if (!parentToChildren.has(p.parentId)) parentToChildren.set(p.parentId, []);
+    parentToChildren.get(p.parentId)!.push(p.childId);
   }
   const displayGroups = Object.values(cart).reduce<DisplayGroup[]>((acc, item) => {
-    if (pairedMixerIds.has(item.id)) return acc;
-    const mixerIds = spiritToMixers.get(item.id);
-    if (mixerIds && mixerIds.length > 0) {
-      const uniqueIds = [...new Set(mixerIds)];
-      const mixerItems = uniqueIds.map((id) => cart[id]).filter(Boolean) as CartItem[];
-      acc.push({ kind: "paired", spirit: item, mixers: mixerItems });
+    if (pairedChildIds.has(item.id)) return acc;
+    const childIds = parentToChildren.get(item.id);
+    if (childIds && childIds.length > 0) {
+      const uniqueIds = [...new Set(childIds)];
+      const childItems = uniqueIds.map((id) => cart[id]).filter(Boolean) as CartItem[];
+      acc.push({ kind: "paired", parent: item, children: childItems });
     } else {
       acc.push({ kind: "single", item });
     }
@@ -561,6 +596,25 @@ function OrderPage() {
         </div>
       </nav>
 
+      {/* Service notices */}
+      {ordersPaused && (
+        <div className="bg-red-50 border-b border-red-200 px-5 py-4 text-center">
+          <p className="font-sans text-sm font-medium text-red-800">
+            We&apos;re a bit slammed right now.
+          </p>
+          <p className="font-sans text-xs text-red-700/80 font-light mt-1 leading-relaxed">
+            Online ordering is paused — please flag down a member of staff.
+          </p>
+        </div>
+      )}
+      {!ordersPaused && drinkDelayMinutes > 0 && activeSection === "drink" && (
+        <div className="bg-ochre/10 border-b border-ochre/30 px-5 py-2.5 text-center">
+          <p className="font-sans text-xs text-ink/70 font-light">
+            <span className="font-medium text-forest-deep">Heads up:</span> drinks have a ~{drinkDelayMinutes}&nbsp;min wait right now.
+          </p>
+        </div>
+      )}
+
       {/* Menu items */}
       <main className="pb-44">
         {loading ? (
@@ -700,46 +754,46 @@ function OrderPage() {
                   );
                 }
 
-                const { spirit, mixers: pairedMixers } = group;
+                const { parent, children } = group;
                 return (
-                  <li key={spirit.id} className="px-5 py-3">
+                  <li key={parent.id} className="px-5 py-3">
                     <div className="border border-forest-deep/10">
                       <div className="flex items-center gap-4 px-4 py-3">
                         <div className="flex-1 min-w-0">
-                          <p className="font-sans text-forest-deep font-medium text-sm">{spirit.name}</p>
-                          <p className="font-sans text-ink/50 text-xs">{formatPrice(spirit.price)} each</p>
+                          <p className="font-sans text-forest-deep font-medium text-sm">{parent.name}</p>
+                          <p className="font-sans text-ink/50 text-xs">{formatPrice(parent.price)} each</p>
                         </div>
                         <ItemControls
-                          item={spirit}
+                          item={parent}
                           onRemove={() => {
-                            removeFromCart(spirit.id);
-                            removeLastPairingFor("spiritId", spirit.id, spirit.quantity);
+                            removeFromCart(parent.id);
+                            removeLastPairingFor("parentId", parent.id, parent.quantity);
                           }}
-                          onAdd={() => addToCart(spirit)}
+                          onAdd={() => addToCart(parent)}
                         />
                         <p className="font-sans text-ink font-medium text-sm w-14 text-right flex-shrink-0 tabular-nums">
-                          {formatPrice(spirit.price * spirit.quantity)}
+                          {formatPrice(parent.price * parent.quantity)}
                         </p>
                       </div>
-                      {pairedMixers.map((mixer) => (
+                      {children.map((child) => (
                         <div
-                          key={mixer.id}
+                          key={child.id}
                           className="flex items-center gap-4 px-4 py-3 bg-parchment-dark/60 border-t border-forest-deep/5"
                         >
                           <div className="flex-1 min-w-0">
-                            <p className="font-sans text-ink/70 text-xs font-medium">+ {mixer.name}</p>
-                            <p className="font-sans text-ink/40 text-xs">{formatPrice(mixer.price)} each</p>
+                            <p className="font-sans text-ink/70 text-xs font-medium">+ {child.name}</p>
+                            <p className="font-sans text-ink/40 text-xs">{formatPrice(child.price)} each</p>
                           </div>
                           <ItemControls
-                            item={mixer}
+                            item={child}
                             onRemove={() => {
-                              removeFromCart(mixer.id);
-                              removeLastPairingFor("mixerId", mixer.id, mixer.quantity);
+                              removeFromCart(child.id);
+                              removeLastPairingFor("childId", child.id, child.quantity);
                             }}
-                            onAdd={() => addToCart(mixer)}
+                            onAdd={() => addToCart(child)}
                           />
                           <p className="font-sans text-ink/70 font-medium text-sm w-14 text-right flex-shrink-0 tabular-nums">
-                            {formatPrice(mixer.price * mixer.quantity)}
+                            {formatPrice(child.price * child.quantity)}
                           </p>
                         </div>
                       ))}
@@ -807,10 +861,14 @@ function OrderPage() {
 
               <button
                 onClick={submitOrder}
-                disabled={submitting}
+                disabled={submitting || ordersPaused}
                 className="w-full font-sans text-xs tracking-widest uppercase px-6 py-4 bg-ochre text-parchment-light hover:bg-ochre-light disabled:opacity-60 transition-colors"
               >
-                {submitting ? "Placing order…" : "Place Order"}
+                {ordersPaused
+                  ? "Ordering paused"
+                  : submitting
+                  ? "Placing order…"
+                  : "Place Order"}
               </button>
             </div>
           </div>
@@ -843,29 +901,57 @@ function OrderPage() {
                 ✕
               </button>
             </div>
-            <ul className="divide-y divide-forest-deep/5 flex-1">
-              {pizzaToppings.map((topping) => (
-                <li key={topping.id} className="flex items-center gap-4 px-5 py-4">
-                  <div className="flex-1 min-w-0">
-                    <p className="font-sans text-forest-deep text-sm font-medium">{topping.name}</p>
-                    {topping.description && (
-                      <p className="font-sans text-ink/50 text-xs font-light mt-0.5 leading-relaxed">
-                        {topping.description}
-                      </p>
-                    )}
-                  </div>
-                  <p className="font-sans text-ink/60 text-sm tabular-nums flex-shrink-0">
-                    {formatPrice(topping.price)}
-                  </p>
-                  <button
-                    onClick={() => { addToCart(topping); }}
-                    aria-label={`Add ${topping.name}`}
-                    className="w-9 h-9 flex items-center justify-center bg-ochre text-parchment-light text-lg hover:bg-ochre-light transition-colors flex-shrink-0"
-                  >
-                    +
-                  </button>
-                </li>
-              ))}
+            <ul className="divide-y divide-forest-deep/5 flex-1 overflow-y-auto">
+              {pizzaToppings.map((topping) => {
+                const qty = cart[topping.id]?.quantity ?? 0;
+                return (
+                  <li key={topping.id} className="flex items-center gap-4 px-5 py-4">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-sans text-forest-deep text-sm font-medium">{topping.name}</p>
+                      {topping.description && (
+                        <p className="font-sans text-ink/50 text-xs font-light mt-0.5 leading-relaxed">
+                          {topping.description}
+                        </p>
+                      )}
+                    </div>
+                    <p className="font-sans text-ink/60 text-sm tabular-nums flex-shrink-0">
+                      {formatPrice(topping.price)}
+                    </p>
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      {qty > 0 ? (
+                        <>
+                          <button
+                            onClick={() => {
+                              removeFromCart(topping.id);
+                              removeLastPairingFor("childId", topping.id, qty);
+                            }}
+                            aria-label={`Remove one ${topping.name}`}
+                            className="w-8 h-8 flex items-center justify-center border border-forest-deep/20 text-forest-deep text-base hover:bg-forest-deep/5 transition-colors"
+                          >
+                            −
+                          </button>
+                          <span className="font-sans text-forest-deep font-medium text-xs w-4 text-center tabular-nums">
+                            {qty}
+                          </span>
+                        </>
+                      ) : null}
+                      <button
+                        onClick={() => {
+                          addToCart(topping);
+                          setPairings((prev) => [
+                            ...prev,
+                            { parentId: pizzaToppingFor.id, childId: topping.id },
+                          ]);
+                        }}
+                        aria-label={`Add ${topping.name}`}
+                        className="w-9 h-9 flex items-center justify-center bg-ochre text-parchment-light text-lg hover:bg-ochre-light transition-colors"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
             <div
               className="px-5 pt-4 border-t border-forest-deep/10 bg-parchment"
@@ -873,9 +959,9 @@ function OrderPage() {
             >
               <button
                 onClick={() => setPizzaToppingFor(null)}
-                className="w-full font-sans text-xs tracking-widest uppercase px-6 py-4 border border-forest-deep/20 text-ink/60 hover:text-ink hover:border-forest-deep/40 transition-colors"
+                className="w-full font-sans text-xs tracking-widest uppercase px-6 py-4 bg-ochre text-parchment-light hover:bg-ochre-light transition-colors"
               >
-                No extra toppings, thanks
+                Done
               </button>
             </div>
           </div>
@@ -1010,7 +1096,7 @@ function OrderPage() {
                               addToCart(mixer);
                               setPairings((prev) => [
                                 ...prev,
-                                { spiritId: mixerPromptFor.id, mixerId: mixer.id },
+                                { parentId: mixerPromptFor.id, childId: mixer.id },
                               ]);
                               setMixerPromptFor(null);
                             }}
