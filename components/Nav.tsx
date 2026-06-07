@@ -95,15 +95,15 @@ export default function Nav() {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
       >
-        <div className="mx-auto px-5 md:px-8 lg:px-14 flex items-center justify-between h-16 md:h-20">
+        <div className="mx-auto px-5 md:px-8 lg:px-14 flex items-center justify-between h-20 md:h-24">
           {/* Logo */}
           <a href="/" aria-label="The Marsh Harrier — home" className="focus-visible:outline-ochre">
             <Image
               src="/images/Marsh-harrier-logo.webp"
               alt="The Marsh Harrier"
-              width={56}
-              height={72}
-              className="h-14 w-auto"
+              width={80}
+              height={104}
+              className="h-20 w-auto"
               priority
             />
           </a>
