@@ -1,0 +1,36 @@
+[
+  {
+    "id": "quiz-night",
+    "title": "Quiz Night",
+    "date": "2026-06-11",
+    "time": "19:30",
+    "endTime": "22:00",
+    "description": "Test your knowledge over a pint. Teams of up to 6. £2 per person, jackpot rolls over each week.",
+    "recurring": "weekly"
+  },
+  {
+    "id": "sunday-roast",
+    "title": "Sunday Roast Service",
+    "date": "2026-06-14",
+    "time": "12:00",
+    "endTime": "16:00",
+    "description": "Three meat roast, locally-sourced beef, pork and chicken with all the trimmings. Booking recommended.",
+    "recurring": "weekly"
+  },
+  {
+    "id": "live-music-jazz",
+    "title": "Live Jazz Night",
+    "date": "2026-06-20",
+    "time": "20:00",
+    "endTime": "23:00",
+    "description": "A trio of local jazz musicians. Free entry, table service from the bar."
+  },
+  {
+    "id": "summer-bbq",
+    "title": "Summer BBQ in the Garden",
+    "date": "2026-07-11",
+    "time": "13:00",
+    "endTime": "20:00",
+    "description": "Smoked brisket, burgers and the regular bar menu. Booking optional."
+  }
+]

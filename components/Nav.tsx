@@ -131,6 +131,16 @@ export default function Nav() {
               Rooms
             </a>
             <a
+              href="/events"
+              className={`nav-link font-sans text-xs tracking-widest uppercase transition-colors duration-200 ${
+                scrolled
+                  ? pathname === "/events" ? "text-ink font-medium" : "text-ink/70 hover:text-ink"
+                  : pathname === "/events" ? "text-parchment-light" : "text-parchment-light/60 hover:text-parchment-light"
+              }`}
+            >
+              Events
+            </a>
+            <a
               href={anchorHref("#food")}
               onClick={(e) => handleAnchorClick(e, "#food")}
               className={`font-sans text-xs tracking-widest uppercase px-4 py-2.5 border transition-colors duration-300 focus-visible:outline-ochre cursor-pointer ${
@@ -213,6 +223,18 @@ export default function Nav() {
             transition={{ delay: ANCHOR_LINKS.length * 0.07, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           >
             Rooms
+          </motion.a>
+          <motion.a
+            href="/events"
+            onClick={() => setMenuOpen(false)}
+            className={`font-serif text-3xl sm:text-4xl transition-colors cursor-pointer ${
+              pathname === "/events" ? "text-ink font-medium" : "text-parchment hover:text-ink"
+            }`}
+            initial={{ x: -24, opacity: 0 }}
+            animate={menuOpen ? { x: 0, opacity: 1 } : { x: -24, opacity: 0 }}
+            transition={{ delay: (ANCHOR_LINKS.length + 1) * 0.07, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          >
+            Events
           </motion.a>
           <motion.div
             className="mt-2 flex gap-3"

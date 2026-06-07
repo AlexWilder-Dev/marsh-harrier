@@ -6,6 +6,7 @@ const nav = [
   { label: "Ales & Cellar", href: "/#ales" },
   { label: "Find Us", href: "/#find-us" },
   { label: "Rooms", href: "/rooms" },
+  { label: "Events", href: "/events" },
 ];
 
 const menus = [
