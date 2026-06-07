@@ -36,7 +36,14 @@ type Order = {
   created_at: string;
   customer_name?: string;
   customer_phone?: string;
+  discount_percent?: number;
+  discount_reason?: string | null;
 };
+
+const DISCOUNT_PRESETS: Array<{ label: string; percent: number; reason: string }> = [
+  { label: "Student 10%", percent: 10, reason: "Student" },
+  { label: "NHS 10%", percent: 10, reason: "NHS" },
+];
 
 type Table = {
   id: number;
@@ -91,6 +98,8 @@ export default function AdminDashboard() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [closingTable, setClosingTable] = useState<number | null>(null);
   const [deliveringOrder, setDeliveringOrder] = useState<number | null>(null);
+  const [discountingOrder, setDiscountingOrder] = useState<number | null>(null);
+  const [discountPickerFor, setDiscountPickerFor] = useState<number | null>(null);
   const [closingAll, setClosingAll] = useState(false);
   const [offline, setOffline] = useState(false);
   const [settings, setSettings] = useState<Settings>({ ordersPaused: false, drinkDelayMinutes: 0 });
@@ -195,6 +204,37 @@ export default function AdminDashboard() {
     } finally {
       setDeliveringOrder(null);
     }
+  };
+
+  const applyDiscount = async (
+    orderId: number,
+    percent: number,
+    reason: string | null
+  ) => {
+    setDiscountingOrder(orderId);
+    try {
+      await fetch(`/api/orders/${orderId}/discount`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ percent, reason }),
+      });
+      setDiscountPickerFor(null);
+      await fetchData();
+    } finally {
+      setDiscountingOrder(null);
+    }
+  };
+
+  const promptCustomDiscount = (orderId: number) => {
+    const raw = window.prompt("Discount percent (1–100)?");
+    if (raw === null) return;
+    const percent = Number(raw);
+    if (!Number.isFinite(percent) || percent < 1 || percent > 100) {
+      alert("Enter a number between 1 and 100.");
+      return;
+    }
+    const reason = window.prompt("Reason (optional, e.g. 'Locals night')") ?? "";
+    applyDiscount(orderId, Math.round(percent), reason.trim() || null);
   };
 
   const closeTable = async (tableNumber: number) => {
@@ -473,12 +513,16 @@ export default function AdminDashboard() {
                       </p>
                     ) : (
                       tableOrders.map((order) => {
-                        const orderSubtotal = order.items.reduce(
+                        const grossSubtotal = order.items.reduce(
                           (s, i) => s + itemLineTotal(i),
                           0
                         );
+                        const discountPct = Number(order.discount_percent ?? 0);
+                        const discountAmount = Math.round((grossSubtotal * discountPct) / 100);
+                        const orderSubtotal = grossSubtotal - discountAmount;
                         const orderServiceCharge = Math.round(orderSubtotal * 0.1);
                         const orderTotal = orderSubtotal + orderServiceCharge;
+                        const pickerOpen = discountPickerFor === order.id;
                         return (
                           <div key={order.id} className="px-4 py-3">
                             {order.customer_name && (
@@ -494,7 +538,19 @@ export default function AdminDashboard() {
                                 Order #{order.id} · {formatTime(order.created_at)}
                               </p>
                               <div className="text-right">
-                                <p className="font-sans text-xs text-ink/50 tabular-nums">{formatPrice(orderSubtotal)}</p>
+                                {discountPct > 0 ? (
+                                  <>
+                                    <p className="font-sans text-[11px] text-ink/40 tabular-nums line-through">
+                                      {formatPrice(grossSubtotal)}
+                                    </p>
+                                    <p className="font-sans text-[11px] text-ochre tabular-nums">
+                                      −{formatPrice(discountAmount)} ({discountPct}%)
+                                    </p>
+                                    <p className="font-sans text-xs text-ink/50 tabular-nums">{formatPrice(orderSubtotal)}</p>
+                                  </>
+                                ) : (
+                                  <p className="font-sans text-xs text-ink/50 tabular-nums">{formatPrice(orderSubtotal)}</p>
+                                )}
                                 <p className="font-sans text-[11px] text-ink/35 tabular-nums">+{formatPrice(orderServiceCharge)} service</p>
                                 <p className="font-sans text-xs font-medium text-forest-deep tabular-nums">{formatPrice(orderTotal)}</p>
                               </div>
@@ -533,6 +589,58 @@ export default function AdminDashboard() {
                                 });
                               })()}
                             </ul>
+                            <div className="mb-2">
+                              {discountPct > 0 ? (
+                                <div className="flex items-center justify-between gap-2 px-2 py-1.5 bg-ochre/10 border border-ochre/30">
+                                  <p className="font-sans text-[11px] text-ink/70">
+                                    {discountPct}% discount
+                                    {order.discount_reason && (
+                                      <span className="text-ink/45"> · {order.discount_reason}</span>
+                                    )}
+                                  </p>
+                                  <button
+                                    onClick={() => applyDiscount(order.id, 0, null)}
+                                    disabled={discountingOrder === order.id}
+                                    className="font-sans text-[10px] tracking-widest uppercase text-ink/55 hover:text-ink disabled:opacity-50 transition-colors"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              ) : pickerOpen ? (
+                                <div className="flex flex-wrap gap-1.5">
+                                  {DISCOUNT_PRESETS.map((p) => (
+                                    <button
+                                      key={p.label}
+                                      onClick={() => applyDiscount(order.id, p.percent, p.reason)}
+                                      disabled={discountingOrder === order.id}
+                                      className="font-sans text-[10px] tracking-widest uppercase px-2.5 py-1.5 border border-forest-deep/20 text-forest-deep hover:bg-forest-deep/5 disabled:opacity-50 transition-colors"
+                                    >
+                                      {p.label}
+                                    </button>
+                                  ))}
+                                  <button
+                                    onClick={() => promptCustomDiscount(order.id)}
+                                    disabled={discountingOrder === order.id}
+                                    className="font-sans text-[10px] tracking-widest uppercase px-2.5 py-1.5 border border-forest-deep/20 text-forest-deep hover:bg-forest-deep/5 disabled:opacity-50 transition-colors"
+                                  >
+                                    Custom
+                                  </button>
+                                  <button
+                                    onClick={() => setDiscountPickerFor(null)}
+                                    className="font-sans text-[10px] tracking-widest uppercase px-2.5 py-1.5 text-ink/45 hover:text-ink transition-colors"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              ) : (
+                                <button
+                                  onClick={() => setDiscountPickerFor(order.id)}
+                                  className="font-sans text-[10px] tracking-widest uppercase text-ink/50 hover:text-forest-deep transition-colors"
+                                >
+                                  + Apply discount
+                                </button>
+                              )}
+                            </div>
                             <button
                               onClick={() => markDelivered(order.id)}
                               disabled={deliveringOrder === order.id}

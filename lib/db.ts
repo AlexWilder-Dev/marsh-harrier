@@ -24,7 +24,9 @@ export async function initDb() {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         delivered_at DATETIME,
         customer_name TEXT,
-        customer_phone TEXT
+        customer_phone TEXT,
+        discount_percent INTEGER NOT NULL DEFAULT 0,
+        discount_reason TEXT
       )`,
       `CREATE TABLE IF NOT EXISTS settings (
         id INTEGER PRIMARY KEY CHECK (id = 1),
@@ -40,6 +42,21 @@ export async function initDb() {
     ],
     "write"
   );
+
+  // Idempotent migrations for columns added after launch. ALTER TABLE will
+  // throw "duplicate column" once the column exists; swallow that case only.
+  const migrations = [
+    `ALTER TABLE orders ADD COLUMN discount_percent INTEGER NOT NULL DEFAULT 0`,
+    `ALTER TABLE orders ADD COLUMN discount_reason TEXT`,
+  ];
+  for (const sql of migrations) {
+    try {
+      await client.execute(sql);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "";
+      if (!/duplicate column/i.test(msg)) throw e;
+    }
+  }
 
   // Pre-populate tables 1–20 on first run
   const result = await client.execute("SELECT COUNT(*) as count FROM tables");

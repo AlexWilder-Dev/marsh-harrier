@@ -142,6 +142,21 @@ export default function OpeningHours() {
         >
           Hours may vary on bank holidays. Call ahead to confirm.
         </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.5, duration: 0.8 }}
+          className="mt-10 pt-6 border-t border-forest-deep/15 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
+        >
+          <p className="font-sans text-[11px] tracking-widest uppercase text-forest-deep/70">
+            Students &amp; NHS
+          </p>
+          <p className="font-serif italic text-forest-deep/70 text-sm">
+            10% off your bill — just show ID at the bar.
+          </p>
+        </motion.div>
       </div>
     </section>
   );

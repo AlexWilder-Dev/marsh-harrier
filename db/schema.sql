@@ -16,6 +16,9 @@ CREATE TABLE IF NOT EXISTS tables (
 -- Tables 1–20 are pre-seeded by /api/init on first run.
 -- Table 0 is reserved for takeaway orders and is auto-created on first takeaway order.
 
+-- discount_percent / discount_reason are admin-applied at the till for
+-- student / NHS / discretionary discounts. Applied to the subtotal before
+-- service charge.
 CREATE TABLE IF NOT EXISTS orders (
   id             INTEGER  PRIMARY KEY AUTOINCREMENT,
   table_number   INTEGER  NOT NULL,
@@ -23,8 +26,10 @@ CREATE TABLE IF NOT EXISTS orders (
   status         TEXT     DEFAULT 'pending', -- 'pending' | 'delivered'
   created_at     DATETIME DEFAULT CURRENT_TIMESTAMP,
   delivered_at   DATETIME,
-  customer_name  TEXT,                    -- takeaway orders only
-  customer_phone TEXT                     -- takeaway orders only
+  customer_name    TEXT,                  -- takeaway orders only
+  customer_phone   TEXT,                  -- takeaway orders only
+  discount_percent INTEGER NOT NULL DEFAULT 0, -- 0–100; applied to subtotal before service charge
+  discount_reason  TEXT                   -- e.g. "Student", "NHS", or custom note
 );
 
 -- Single-row settings table for admin-controlled flags.
