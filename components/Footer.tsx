@@ -152,6 +152,7 @@ export default function Footer() {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <p className="font-sans text-xs text-ink/35 font-light">
               © {new Date().getFullYear()} The Marsh Harrier. All rights reserved.
+              <span className="ml-2 text-ink/30">VAT 277 4098 66</span>
             </p>
 
             <div className="flex items-center gap-5">

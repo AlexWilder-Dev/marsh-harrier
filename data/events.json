@@ -1,36 +1,36 @@
 [
   {
-    "id": "quiz-night",
-    "title": "Quiz Night",
-    "date": "2026-06-11",
-    "time": "19:30",
-    "endTime": "22:00",
-    "description": "Test your knowledge over a pint. Teams of up to 6. £2 per person, jackpot rolls over each week.",
+    "id": "music-quiz",
+    "title": "Music Quiz",
+    "date": "2026-06-01",
+    "time": "20:30",
+    "description": "First Monday of every month — guess the song, name the artist, win a round. Teams of up to 6.",
+    "recurring": "monthly-nth-weekday"
+  },
+  {
+    "id": "sunday-quiz",
+    "title": "Sunday Quiz",
+    "date": "2026-06-07",
+    "time": "20:30",
+    "description": "The weekly general-knowledge quiz. Teams of up to 6, jackpot rolls over each week.",
     "recurring": "weekly"
   },
   {
-    "id": "sunday-roast",
-    "title": "Sunday Roast Service",
-    "date": "2026-06-14",
-    "time": "12:00",
-    "endTime": "16:00",
-    "description": "Three meat roast, locally-sourced beef, pork and chicken with all the trimmings. Booking recommended.",
-    "recurring": "weekly"
-  },
-  {
-    "id": "live-music-jazz",
-    "title": "Live Jazz Night",
-    "date": "2026-06-20",
-    "time": "20:00",
-    "endTime": "23:00",
-    "description": "A trio of local jazz musicians. Free entry, table service from the bar."
-  },
-  {
-    "id": "summer-bbq",
-    "title": "Summer BBQ in the Garden",
-    "date": "2026-07-11",
-    "time": "13:00",
+    "id": "live-music-thursday",
+    "title": "Live Music",
+    "date": "2026-06-04",
+    "time": "18:00",
     "endTime": "20:00",
-    "description": "Smoked brisket, burgers and the regular bar menu. Booking optional."
+    "description": "Live music every Thursday evening. Free entry, table service from the bar.",
+    "recurring": "weekly"
+  },
+  {
+    "id": "saturday-bbq",
+    "title": "Garden BBQ",
+    "date": "2026-06-06",
+    "time": "18:00",
+    "endTime": "20:00",
+    "description": "Saturday evenings in the garden — smoked meats and the regular bar menu.",
+    "recurring": "weekly"
   }
 ]
