@@ -4,7 +4,7 @@ import { sha256Hex } from "@/lib/hash";
 
 const SESSION_COOKIE = "mh_admin";
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (pathname.startsWith("/admin/login")) return NextResponse.next();
