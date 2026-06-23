@@ -16,6 +16,7 @@
 /data/ordering.sqlite
 /data/ordering.sqlite-wal
 /data/ordering.sqlite-shm
+/data/ordering.db
 
 # Source assets (originals — deployed versions live in public/media/)
 *.pdf
