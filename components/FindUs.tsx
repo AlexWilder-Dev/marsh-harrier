@@ -294,7 +294,7 @@ export default function FindUs() {
                       { mode: "Bus", note: "Multiple routes — see below" },
                       { mode: "Cycle", note: "Bike parking available outside" },
                       { mode: "Scooter", note: "Scooter parking on Marsh Road" },
-                      { mode: "Car", note: "Street parking on Marsh Road" },
+                      { mode: "Car", note: "Street parking on Marsh Road, plus Cowley Marsh Park a 2-min walk away" },
                     ].map((item) => (
                       <li key={item.mode} className="flex items-start gap-3">
                         <span className="w-1 h-1 rounded-full bg-ochre flex-shrink-0 mt-2" aria-hidden="true" />

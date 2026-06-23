@@ -85,7 +85,7 @@ export default function EventsPage() {
     return m;
   }, [allInstances]);
 
-  const upcoming = useMemo(() => allInstances.slice(0, 8), [allInstances]);
+  const upcoming = useMemo(() => allInstances.slice(0, 4), [allInstances]);
 
   const todayYmd = ymdOf(today);
   const anchorYmd = ymdOf(monthAnchor);
