@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "https://marshharriercowley.co.uk/images/marsh-harrier-pub-bar.jpg",
+        url: "https://marshharriercowley.co.uk/images/marsh-harrier-pub-front.webp",
         width: 1200,
         height: 630,
         alt: "The Marsh Harrier bar — warm timber and golden light",
@@ -64,7 +64,7 @@ export const metadata: Metadata = {
     title: "The Marsh Harrier — A Beer Fan's Haven, Cowley Oxford",
     description:
       "A proper community local in Cowley, Oxford. Master Cellarman status, one of the best Sunday roasts in Oxford.",
-    images: ["https://marshharriercowley.co.uk/images/marsh-harrier-pub-bar.jpg"],
+    images: ["https://marshharriercowley.co.uk/images/marsh-harrier-pub-front.webp"],
   },
   robots: {
     index: true,
@@ -92,8 +92,8 @@ const jsonLd = {
   },
   geo: {
     "@type": "GeoCoordinates",
-    latitude: 51.742,
-    longitude: -1.228,
+    latitude: 51.738473,
+    longitude: -1.217557,
   },
   openingHoursSpecification: [
     { "@type": "OpeningHoursSpecification", dayOfWeek: ["Monday"], opens: "17:00", closes: "23:00" },
@@ -101,7 +101,7 @@ const jsonLd = {
   ],
   servesCuisine: ["British", "Traditional pub food"],
   priceRange: "££",
-  image: "https://marshharriercowley.co.uk/images/marsh-harrier-pub-bar.jpg",
+  image: "https://marshharriercowley.co.uk/images/marsh-harrier-pub-front.webp",
   telephone: "01865718225",
   sameAs: [
     "https://www.facebook.com/marshharriercowley",
