@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { sanityClient } from '@/lib/sanity'
+import { getSanityClient } from '@/lib/sanity'
 
 export const revalidate = 300
 
@@ -16,7 +16,7 @@ const QUERY = `*[_type == "openingHours"] | order(order asc) {
 
 export async function GET() {
   try {
-    const hours = await sanityClient.fetch(QUERY)
+    const hours = await getSanityClient().fetch(QUERY)
     return NextResponse.json(hours)
   } catch (err) {
     console.error('Failed to fetch opening hours from Sanity:', err)
