@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 
 type OrderItem = {
@@ -93,6 +93,7 @@ function staleLevel(minutes: number): "ok" | "amber" | "red" {
 
 export default function AdminDashboard() {
   const router = useRouter();
+  const railRef = useRef<HTMLDivElement>(null);
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
@@ -105,6 +106,27 @@ export default function AdminDashboard() {
   const [settings, setSettings] = useState<Settings>({ ordersPaused: false, drinkDelayMinutes: 0 });
   const [savingSetting, setSavingSetting] = useState<"pause" | "delay" | null>(null);
   const [initState, setInitState] = useState<"idle" | "running" | "done" | "error">("idle");
+
+  // The dashboard has rendered vertically for some browsers where the CSS
+  // inline axis is flipped (e.g. an inherited/injected writing-mode). Pin the
+  // order rail to a normal horizontal axis with !important so nothing — stale
+  // CSS, an extension, or a writing-mode — can override it. Re-runs after each
+  // data refresh so newly rendered cards are covered too.
+  useEffect(() => {
+    const el = railRef.current;
+    if (!el) return;
+    el.style.setProperty("writing-mode", "horizontal-tb", "important");
+    el.style.setProperty("direction", "ltr", "important");
+    el.style.setProperty("display", "flex", "important");
+    el.style.setProperty("flex-direction", "row", "important");
+    el.style.setProperty("flex-wrap", "nowrap", "important");
+    el.style.setProperty("overflow-x", "auto", "important");
+    for (const child of Array.from(el.children)) {
+      const c = child as HTMLElement;
+      c.style.setProperty("writing-mode", "horizontal-tb", "important");
+      c.style.setProperty("flex", "0 0 20rem", "important");
+    }
+  });
 
   const fetchData = useCallback(async () => {
     try {
@@ -471,8 +493,17 @@ export default function AdminDashboard() {
           </div>
         ) : (
           <div
+            ref={railRef}
             className="overflow-x-auto pb-4"
-            style={{ whiteSpace: "nowrap", overflowX: "auto" }}
+            style={{
+              writingMode: "horizontal-tb",
+              direction: "ltr",
+              display: "flex",
+              flexDirection: "row",
+              flexWrap: "nowrap",
+              gap: "1rem",
+              overflowX: "auto",
+            }}
           >
             {tables.map((table) => {
               const mins = minutesOpen(table.opened_at);
@@ -482,19 +513,14 @@ export default function AdminDashboard() {
               );
 
               return (
-                <div
-                  key={table.table_number}
-                  style={{
-                    display: "inline-block",
-                    verticalAlign: "top",
-                    width: "20rem",
-                    whiteSpace: "normal",
-                    marginRight: "1rem",
-                  }}
-                >
                 <article
-                  // TEMP: blue border confirms THIS deploy is live. Remove once verified.
-                  style={{ border: "3px solid blue" }}
+                  key={table.table_number}
+                  // TEMP: green border confirms THIS deploy is live. Remove once verified.
+                  style={{
+                    writingMode: "horizontal-tb",
+                    flex: "0 0 20rem",
+                    border: "3px solid green",
+                  }}
                   className={`bg-parchment-light flex flex-col ${
                     level === "red"
                       ? "ring-2 ring-red-500"
@@ -686,7 +712,6 @@ export default function AdminDashboard() {
                     )}
                   </div>
                 </article>
-                </div>
               );
             })}
           </div>
