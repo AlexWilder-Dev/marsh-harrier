@@ -16,6 +16,15 @@ type OverrideRow = {
   menu_id: number;
   available: number | null;
   description: string | null;
+  name: string | null;
+  price: number | null;
+};
+
+type OverridePatch = {
+  available?: boolean | null;
+  description?: string | null;
+  name?: string | null;
+  price?: number | null;
 };
 
 function formatPrice(pence: number) {
@@ -71,10 +80,7 @@ export default function AdminMenuPage() {
     return Array.from(map.entries());
   }, [filtered]);
 
-  const saveOverride = async (
-    menuId: number,
-    patch: { available?: boolean | null; description?: string | null }
-  ) => {
+  const saveOverride = async (menuId: number, patch: OverridePatch) => {
     setSavingId(menuId);
     try {
       const res = await fetch("/api/menu/overrides", {
@@ -86,13 +92,21 @@ export default function AdminMenuPage() {
       const updated = await res.json();
       setOverrides((prev) => {
         const next = new Map(prev);
-        if (updated.available === null && updated.description === null) {
+        if (
+          updated.available === null &&
+          updated.description === null &&
+          updated.name === null &&
+          updated.price === null
+        ) {
           next.delete(menuId);
         } else {
           next.set(menuId, {
             menu_id: menuId,
-            available: updated.available === null ? null : (updated.available ? 1 : 0),
+            available:
+              updated.available === null ? null : updated.available ? 1 : 0,
             description: updated.description,
+            name: updated.name ?? null,
+            price: updated.price ?? null,
           });
         }
         return next;
@@ -112,6 +126,16 @@ export default function AdminMenuPage() {
     const o = overrides.get(it.id);
     if (o && o.description !== null) return o.description;
     return it.description;
+  };
+  const resolvedName = (it: MenuItem) => {
+    const o = overrides.get(it.id);
+    if (o && o.name !== null && o.name !== undefined) return o.name;
+    return it.name;
+  };
+  const resolvedPrice = (it: MenuItem) => {
+    const o = overrides.get(it.id);
+    if (o && o.price !== null && o.price !== undefined) return Number(o.price);
+    return it.price;
   };
 
   if (loading) {
@@ -202,19 +226,38 @@ export default function AdminMenuPage() {
                 <ul className="divide-y divide-forest-deep/5 border-t border-forest-deep/10">
                   {items.map((it) => {
                     const available = resolvedAvailable(it);
+                    const name = resolvedName(it);
+                    const price = resolvedPrice(it);
                     const description = resolvedDescription(it);
                     const hasOverride = overrides.has(it.id);
                     const isSaving = savingId === it.id;
                     return (
                       <li key={it.id} className="px-4 py-4">
-                        <div className="flex items-start justify-between gap-3 mb-2">
-                          <div className="min-w-0 flex-1">
-                            <p className="font-sans text-sm font-medium text-forest-deep">
-                              {it.name}
-                              <span className="ml-2 font-sans text-xs text-ink/40 tabular-nums">
-                                {formatPrice(it.price)}
-                              </span>
-                            </p>
+                        <div className="flex items-start gap-3 mb-2">
+                          <div className="min-w-0 flex-1 space-y-2">
+                            <NameEditor
+                              initial={name}
+                              onSave={(text) =>
+                                saveOverride(it.id, {
+                                  name: text === it.name ? null : text,
+                                })
+                              }
+                            />
+                            <div className="flex items-center gap-3 flex-wrap">
+                              <PriceEditor
+                                pence={price}
+                                onSave={(pence) =>
+                                  saveOverride(it.id, {
+                                    price: pence === it.price ? null : pence,
+                                  })
+                                }
+                              />
+                              {price !== it.price && (
+                                <span className="font-sans text-[10px] tracking-wide text-ink/40">
+                                  default {formatPrice(it.price)}
+                                </span>
+                              )}
+                            </div>
                           </div>
                           <button
                             onClick={() =>
@@ -253,6 +296,8 @@ export default function AdminMenuPage() {
                                 saveOverride(it.id, {
                                   available: null,
                                   description: null,
+                                  name: null,
+                                  price: null,
                                 })
                               }
                               disabled={isSaving}
@@ -271,6 +316,92 @@ export default function AdminMenuPage() {
           );
         })}
       </main>
+    </div>
+  );
+}
+
+function NameEditor({
+  initial,
+  onSave,
+}: {
+  initial: string;
+  onSave: (text: string) => void;
+}) {
+  const [value, setValue] = useState(initial);
+  const [editing, setEditing] = useState(false);
+
+  useEffect(() => {
+    if (!editing) setValue(initial);
+  }, [initial, editing]);
+
+  return (
+    <input
+      type="text"
+      value={value}
+      onFocus={() => setEditing(true)}
+      onBlur={() => {
+        setEditing(false);
+        const trimmed = value.trim();
+        if (!trimmed) {
+          setValue(initial);
+          return;
+        }
+        if (trimmed !== initial) onSave(trimmed);
+      }}
+      onChange={(e) => setValue(e.target.value)}
+      aria-label="Item name"
+      className="w-full bg-parchment border border-forest-deep/15 text-forest-deep font-sans text-sm font-medium px-3 py-2 focus:outline-none focus:border-ochre/60 transition-colors"
+    />
+  );
+}
+
+function PriceEditor({
+  pence,
+  onSave,
+}: {
+  pence: number;
+  onSave: (pence: number) => void;
+}) {
+  const toPounds = (p: number) => (p / 100).toFixed(2);
+  const [value, setValue] = useState(toPounds(pence));
+  const [editing, setEditing] = useState(false);
+
+  useEffect(() => {
+    if (!editing) setValue(toPounds(pence));
+  }, [pence, editing]);
+
+  const commit = () => {
+    setEditing(false);
+    const pounds = parseFloat(value);
+    const nextPence = Math.round(pounds * 100);
+    if (!Number.isFinite(nextPence) || nextPence < 0) {
+      setValue(toPounds(pence));
+      return;
+    }
+    if (nextPence !== pence) onSave(nextPence);
+    else setValue(toPounds(pence));
+  };
+
+  return (
+    <div className="relative w-28">
+      <span
+        className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 font-sans text-sm text-ink/50"
+        aria-hidden="true"
+      >
+        £
+      </span>
+      <input
+        type="number"
+        inputMode="decimal"
+        step="0.01"
+        min="0"
+        value={value}
+        onFocus={() => setEditing(true)}
+        onBlur={commit}
+        onChange={(e) => setValue(e.target.value)}
+        aria-label="Price in pounds"
+        className="w-full bg-parchment border border-forest-deep/15 text-forest-deep font-sans text-sm tabular-nums pl-7 pr-2 py-2 focus:outline-none focus:border-ochre/60 transition-colors"
+      />
     </div>
   );
 }

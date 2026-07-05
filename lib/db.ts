@@ -37,7 +37,12 @@ export async function initDb() {
       `CREATE TABLE IF NOT EXISTS menu_overrides (
         menu_id     INTEGER PRIMARY KEY,
         available   INTEGER,
-        description TEXT
+        description TEXT,
+        name        TEXT,
+        price       INTEGER
+      )`,
+      `CREATE TABLE IF NOT EXISTS room_bookings (
+        date TEXT PRIMARY KEY
       )`,
     ],
     "write"
@@ -48,6 +53,8 @@ export async function initDb() {
   const migrations = [
     `ALTER TABLE orders ADD COLUMN discount_percent INTEGER NOT NULL DEFAULT 0`,
     `ALTER TABLE orders ADD COLUMN discount_reason TEXT`,
+    `ALTER TABLE menu_overrides ADD COLUMN name TEXT`,
+    `ALTER TABLE menu_overrides ADD COLUMN price INTEGER`,
   ];
   for (const sql of migrations) {
     try {

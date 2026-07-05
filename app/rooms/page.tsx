@@ -1,9 +1,19 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
+import {
+  MONTHS,
+  WEEKDAYS,
+  buildMonthGrid,
+  datesInRange,
+  longDate,
+  startOfMonth,
+  todayLocal,
+  ymd,
+} from "@/lib/calendar";
 
 // ─── Data (replace with real content when client delivers) ───────────────────
 
@@ -304,6 +314,214 @@ function RoomsGallery() {
 
 type FormState = "idle" | "submitting" | "success" | "error";
 
+// Calendar range picker for the enquiry form. Booked nights (from
+// /api/bookings) and past dates are blocked out; the chosen check-in/check-out
+// feed hidden inputs so the existing Formspree submission is unchanged.
+function BookingCalendar() {
+  const today = useMemo(() => todayLocal(), []);
+  const [monthAnchor, setMonthAnchor] = useState(() => startOfMonth(todayLocal()));
+  const [booked, setBooked] = useState<Set<string>>(new Set());
+  const [checkIn, setCheckIn] = useState<string | null>(null);
+  const [checkOut, setCheckOut] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/bookings")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((dates: string[]) => {
+        if (!cancelled) setBooked(new Set(dates));
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const monthGrid = useMemo(() => buildMonthGrid(monthAnchor), [monthAnchor]);
+  const todayYmd = ymd(today);
+  const monthLabel = `${MONTHS[monthAnchor.getMonth()]} ${monthAnchor.getFullYear()}`;
+  const atCurrentMonth =
+    monthAnchor.getFullYear() === today.getFullYear() &&
+    monthAnchor.getMonth() === today.getMonth();
+
+  // Occupied nights for a stay are [checkIn, checkOut) — the check-out day
+  // itself is not slept in, so a booking can end the morning of a booked night.
+  const rangeHasBooked = (start: string, end: string) =>
+    datesInRange(start, end, true).some((d) => booked.has(d));
+
+  const nights =
+    checkIn && checkOut ? datesInRange(checkIn, checkOut, true).length : 0;
+
+  const pick = (date: string) => {
+    setNotice(null);
+    // Fresh selection: no check-in yet, or a completed range → start over.
+    if (!checkIn || checkOut) {
+      setCheckIn(date);
+      setCheckOut(null);
+      return;
+    }
+    // Second click on/before the check-in → treat as a new check-in.
+    if (date <= checkIn) {
+      setCheckIn(date);
+      setCheckOut(null);
+      return;
+    }
+    if (rangeHasBooked(checkIn, date)) {
+      setNotice(
+        "Those dates include a night that's already booked. Please pick a range that doesn't overlap a booked night."
+      );
+      return;
+    }
+    setCheckOut(date);
+  };
+
+  const clear = () => {
+    setCheckIn(null);
+    setCheckOut(null);
+    setNotice(null);
+  };
+
+  return (
+    <div className="bg-parchment border border-ink/15">
+      {/* Hidden inputs — read by the form's FormData on submit */}
+      <input type="hidden" name="checkin" value={checkIn ?? ""} />
+      <input type="hidden" name="checkout" value={checkOut ?? ""} />
+
+      {/* Month header */}
+      <div className="flex items-center justify-between px-4 pt-4 pb-3">
+        <p className="font-serif font-light text-ink text-lg">{monthLabel}</p>
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() =>
+              setMonthAnchor((a) => new Date(a.getFullYear(), a.getMonth() - 1, 1))
+            }
+            disabled={atCurrentMonth}
+            aria-label="Previous month"
+            className="w-9 h-9 flex items-center justify-center border border-ink/15 text-ink/70 hover:bg-ink/5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          >
+            ‹
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              setMonthAnchor((a) => new Date(a.getFullYear(), a.getMonth() + 1, 1))
+            }
+            aria-label="Next month"
+            className="w-9 h-9 flex items-center justify-center border border-ink/15 text-ink/70 hover:bg-ink/5 transition-colors"
+          >
+            ›
+          </button>
+        </div>
+      </div>
+
+      {/* Grid */}
+      <div className="grid grid-cols-7 gap-px bg-ink/10 border-y border-ink/10">
+        {WEEKDAYS.map((w) => (
+          <div
+            key={w}
+            className="bg-parchment py-2 text-center font-sans text-[10px] tracking-widest uppercase text-ink/45"
+          >
+            {w}
+          </div>
+        ))}
+        {monthGrid.map((d) => {
+          const cellYmd = ymd(d);
+          const inMonth = d.getMonth() === monthAnchor.getMonth();
+          const isPast = cellYmd < todayYmd;
+          const isBooked = booked.has(cellYmd);
+          const isCheckIn = cellYmd === checkIn;
+          const isCheckOut = cellYmd === checkOut;
+          const inRange =
+            checkIn !== null &&
+            checkOut !== null &&
+            cellYmd >= checkIn &&
+            cellYmd <= checkOut;
+          const disabled = isPast || isBooked;
+
+          if (disabled) {
+            return (
+              <div
+                key={cellYmd}
+                aria-label={isBooked ? `${cellYmd}, booked` : undefined}
+                className={`min-h-[44px] flex items-center justify-center font-sans text-xs tabular-nums ${
+                  isBooked
+                    ? "bg-red-100 text-red-400 line-through"
+                    : "bg-parchment text-ink/25"
+                } ${inMonth ? "" : "opacity-40"}`}
+              >
+                {d.getDate()}
+              </div>
+            );
+          }
+
+          const selected = isCheckIn || isCheckOut;
+          return (
+            <button
+              key={cellYmd}
+              type="button"
+              onClick={() => pick(cellYmd)}
+              aria-label={`${cellYmd}${
+                isCheckIn ? ", check-in" : isCheckOut ? ", check-out" : ""
+              }`}
+              aria-pressed={selected}
+              className={`min-h-[44px] flex items-center justify-center font-sans text-xs tabular-nums transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/40 focus-visible:ring-inset ${
+                selected
+                  ? "bg-forest-deep text-parchment-light font-medium"
+                  : inRange
+                  ? "bg-forest-deep/15 text-forest-deep"
+                  : "bg-parchment text-ink/70 hover:bg-forest-deep/10"
+              } ${inMonth ? "" : "opacity-40"}`}
+            >
+              {d.getDate()}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Selection summary */}
+      <div className="px-4 py-3">
+        {checkIn ? (
+          <div className="flex items-start justify-between gap-3">
+            <div className="font-sans text-sm text-ink/80 leading-relaxed">
+              <span className="font-medium text-ink">{longDate(checkIn)}</span>
+              {checkOut ? (
+                <>
+                  {" → "}
+                  <span className="font-medium text-ink">{longDate(checkOut)}</span>
+                  <span className="text-ink/50">
+                    {" "}
+                    · {nights} night{nights !== 1 ? "s" : ""}
+                  </span>
+                </>
+              ) : (
+                <span className="text-ink/50"> · now pick your check-out date</span>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={clear}
+              className="font-sans text-[11px] tracking-widest uppercase text-ink/50 hover:text-ink transition-colors flex-shrink-0"
+            >
+              Clear
+            </button>
+          </div>
+        ) : (
+          <p className="font-sans text-sm text-ink/50">
+            Pick your check-in date, then your check-out date.
+          </p>
+        )}
+        {notice && (
+          <p className="font-sans text-xs text-red-600 mt-2 leading-relaxed">
+            {notice}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function EnquiryForm() {
   const [state, setState] = useState<FormState>("idle");
   const [errorMsg, setErrorMsg] = useState("");
@@ -318,8 +536,13 @@ function EnquiryForm() {
 
     // Validate dates
     const todayStr = new Date().toISOString().split("T")[0];
-    const checkInStr = data.get("checkin") as string;
-    const checkOutStr = data.get("checkout") as string;
+    const checkInStr = (data.get("checkin") as string) || "";
+    const checkOutStr = (data.get("checkout") as string) || "";
+    if (!checkInStr || !checkOutStr) {
+      setErrorMsg("Please choose your check-in and check-out dates on the calendar.");
+      setState("error");
+      return;
+    }
     const checkIn = new Date(checkInStr);
     const checkOut = new Date(checkOutStr);
     if (checkInStr < todayStr) {
@@ -362,8 +585,6 @@ function EnquiryForm() {
       setState("error");
     }
   };
-
-  const today = new Date().toISOString().split("T")[0];
 
   if (state === "success") {
     return (
@@ -443,40 +664,12 @@ function EnquiryForm() {
         />
       </div>
 
-      {/* Check-in + Check-out */}
-      <div className="grid sm:grid-cols-2 gap-6">
-        <div>
-          <label
-            htmlFor="checkin"
-            className="block font-sans text-[15px] tracking-widest uppercase text-ink/50 mb-2"
-          >
-            Check-in <span aria-label="required">*</span>
-          </label>
-          <input
-            id="checkin"
-            name="checkin"
-            type="date"
-            required
-            min={today}
-            className="w-full bg-parchment border border-ink/15 text-ink font-sans text-base px-4 py-3.5 focus:outline-none focus:border-ink/40 transition-colors [color-scheme:light]"
-          />
-        </div>
-        <div>
-          <label
-            htmlFor="checkout"
-            className="block font-sans text-[15px] tracking-widest uppercase text-ink/50 mb-2"
-          >
-            Check-out <span aria-label="required">*</span>
-          </label>
-          <input
-            id="checkout"
-            name="checkout"
-            type="date"
-            required
-            min={today}
-            className="w-full bg-parchment border border-ink/15 text-ink font-sans text-base px-4 py-3.5 focus:outline-none focus:border-ink/40 transition-colors [color-scheme:light]"
-          />
-        </div>
+      {/* Check-in + Check-out — calendar range picker */}
+      <div>
+        <span className="block font-sans text-[15px] tracking-widest uppercase text-ink/50 mb-2">
+          Your dates <span aria-label="required">*</span>
+        </span>
+        <BookingCalendar />
       </div>
 
       {/* Guests */}

@@ -295,10 +295,18 @@ export default function AdminDashboard() {
             <a
               href="/admin/menu"
               title="Manage menu"
-              aria-label="Manage menu — edit descriptions and disable items"
+              aria-label="Manage menu — edit names, prices, descriptions and availability"
               className="w-10 h-10 flex items-center justify-center text-ink/50 hover:text-ink transition-colors text-base"
             >
               ☰
+            </a>
+            <a
+              href="/admin/rooms"
+              title="Room bookings"
+              aria-label="Room bookings — mark nights as booked"
+              className="w-10 h-10 flex items-center justify-center text-ink/50 hover:text-ink transition-colors text-base"
+            >
+              ⌂
             </a>
             <a
               href="/admin/qr"
