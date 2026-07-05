@@ -470,7 +470,7 @@ export default function AdminDashboard() {
             </p>
           </div>
         ) : (
-          <div className="flex gap-4 overflow-x-auto items-start pb-4 snap-x">
+          <div className="flex flex-row flex-nowrap gap-4 overflow-x-auto items-start pb-4 snap-x">
             {tables.map((table) => {
               const mins = minutesOpen(table.opened_at);
               const level = staleLevel(mins);
