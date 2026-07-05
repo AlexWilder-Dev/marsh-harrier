@@ -20,6 +20,28 @@ const securityHeaders = [
   },
 ];
 
+// Sanity Studio needs a much looser policy: its own CDN scripts, workers,
+// websockets, and third-party asset previews all fall outside the public
+// site's locked-down CSP above.
+const studioSecurityHeaders = [
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  {
+    key: "Content-Security-Policy",
+    value: [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://core.sanity-cdn.com https://*.sanity.io",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "font-src 'self' https://fonts.gstatic.com data:",
+      "worker-src 'self' blob:",
+      "img-src 'self' data: blob: https: http:",
+      "media-src 'self' data: blob: https:",
+      "connect-src 'self' https://api.sanity.io https://*.sanity.io wss://*.sanity.io https://core.sanity-cdn.com",
+      "frame-src https:",
+    ].join("; "),
+  },
+];
+
 const nextConfig: NextConfig = {
   outputFileTracingRoot: __dirname,
   images: {
@@ -39,6 +61,10 @@ const nextConfig: NextConfig = {
       {
         source: "/(.*)",
         headers: securityHeaders,
+      },
+      {
+        source: "/studio/:path*",
+        headers: studioSecurityHeaders,
       },
     ];
   },
