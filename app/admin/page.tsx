@@ -471,15 +471,8 @@ export default function AdminDashboard() {
           </div>
         ) : (
           <div
-            className="gap-4 overflow-x-auto items-start pb-4 snap-x"
-            // Inline styles force the horizontal row regardless of any CSS
-            // class-ordering conflicts or the global `body { overflow-x: hidden }`.
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              flexWrap: "nowrap",
-              overflowX: "auto",
-            }}
+            className="overflow-x-auto pb-4"
+            style={{ whiteSpace: "nowrap", overflowX: "auto" }}
           >
             {tables.map((table) => {
               const mins = minutesOpen(table.opened_at);
@@ -489,11 +482,20 @@ export default function AdminDashboard() {
               );
 
               return (
-                <article
+                <div
                   key={table.table_number}
-                  // TEMP: red border confirms this deploy is live. Remove once verified.
-                  style={{ flex: "0 0 20rem", border: "3px solid red" }}
-                  className={`bg-parchment-light flex flex-col w-80 flex-shrink-0 snap-start ${
+                  style={{
+                    display: "inline-block",
+                    verticalAlign: "top",
+                    width: "20rem",
+                    whiteSpace: "normal",
+                    marginRight: "1rem",
+                  }}
+                >
+                <article
+                  // TEMP: blue border confirms THIS deploy is live. Remove once verified.
+                  style={{ border: "3px solid blue" }}
+                  className={`bg-parchment-light flex flex-col ${
                     level === "red"
                       ? "ring-2 ring-red-500"
                       : level === "amber"
@@ -684,6 +686,7 @@ export default function AdminDashboard() {
                     )}
                   </div>
                 </article>
+                </div>
               );
             })}
           </div>
