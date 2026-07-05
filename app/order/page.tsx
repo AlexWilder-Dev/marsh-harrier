@@ -378,6 +378,27 @@ function OrderPage() {
     []
   );
 
+  // Remove a single topping from a specific pizza — decrements the shared cart
+  // line and drops just one pairing for that parent, so toppings on other pizzas
+  // are untouched.
+  const removePizzaTopping = useCallback(
+    (parentId: number, toppingId: number) => {
+      removeFromCart(toppingId);
+      setPairings((prev) => {
+        let idx = -1;
+        for (let i = prev.length - 1; i >= 0; i--) {
+          if (prev[i].parentId === parentId && prev[i].childId === toppingId) {
+            idx = i;
+            break;
+          }
+        }
+        if (idx === -1) return prev;
+        return [...prev.slice(0, idx), ...prev.slice(idx + 1)];
+      });
+    },
+    [removeFromCart]
+  );
+
   const submitOrder = async () => {
     if (submittingRef.current) return;
     if (tableNumber === null || isNaN(tableNumber) || cartCount(cart) === 0) return;
@@ -1037,7 +1058,11 @@ function OrderPage() {
             </div>
             <ul className="divide-y divide-forest-deep/5 flex-1 overflow-y-auto">
               {pizzaToppings.map((topping) => {
-                const qty = cart[topping.id]?.quantity ?? 0;
+                // Scope the count to the pizza being customised — a topping added
+                // to a previous pizza must not appear pre-selected here.
+                const qty = pairings.filter(
+                  (p) => p.parentId === pizzaToppingFor.id && p.childId === topping.id
+                ).length;
                 return (
                   <li key={topping.id} className="flex items-center gap-4 px-5 py-4">
                     <div className="flex-1 min-w-0">
@@ -1055,10 +1080,7 @@ function OrderPage() {
                       {qty > 0 ? (
                         <>
                           <button
-                            onClick={() => {
-                              removeFromCart(topping.id);
-                              removeLastPairingFor("childId", topping.id, qty);
-                            }}
+                            onClick={() => removePizzaTopping(pizzaToppingFor.id, topping.id)}
                             aria-label={`Remove one ${topping.name}`}
                             className="w-8 h-8 flex items-center justify-center border border-forest-deep/20 text-forest-deep text-base hover:bg-forest-deep/5 transition-colors"
                           >

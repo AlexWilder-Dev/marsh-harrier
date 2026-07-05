@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import { expandEvents, parseYmdSafe, ymdOf, type EventInstance } from "@/lib/events";
@@ -59,8 +59,21 @@ export default function EventsPage() {
     return new Date(t.getFullYear(), t.getMonth(), t.getDate());
   }, []);
   const [monthAnchor, setMonthAnchor] = useState<Date>(startOfMonth(today));
+  const [selectedYmd, setSelectedYmd] = useState<string | null>(null);
+  const listHeadingRef = useRef<HTMLHeadingElement>(null);
 
   const monthGrid = useMemo(() => buildMonthGrid(monthAnchor), [monthAnchor]);
+
+  // On mobile the list sits below the calendar, so pull focus to it (which also
+  // scrolls it into view) whenever a date is picked.
+  useEffect(() => {
+    if (!selectedYmd) return;
+    if (typeof window === "undefined") return;
+    if (window.matchMedia("(max-width: 1023px)").matches && listHeadingRef.current) {
+      listHeadingRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      listHeadingRef.current.focus({ preventScroll: true });
+    }
+  }, [selectedYmd]);
 
   // Expand events for the visible grid window AND for the upcoming-list window
   // (next 12 weeks from today) — whichever is wider.
@@ -86,6 +99,15 @@ export default function EventsPage() {
   }, [allInstances]);
 
   const upcoming = useMemo(() => allInstances.slice(0, 4), [allInstances]);
+
+  // When a date is selected, the side panel filters to that day's events;
+  // otherwise it shows the next few upcoming events.
+  const listEvents = selectedYmd
+    ? eventsByDate.get(selectedYmd) ?? []
+    : upcoming;
+
+  const toggleDate = (ymd: string) =>
+    setSelectedYmd((cur) => (cur === ymd ? null : ymd));
 
   const todayYmd = ymdOf(today);
   const anchorYmd = ymdOf(monthAnchor);
@@ -163,13 +185,24 @@ export default function EventsPage() {
               const inMonth = d.getMonth() === monthAnchor.getMonth();
               const isToday = cellYmd === todayYmd;
               const isPast = cellYmd < todayYmd;
+              const isSelected = cellYmd === selectedYmd;
               const dayEvents = eventsByDate.get(cellYmd) ?? [];
               return (
-                <div
+                <button
                   key={cellYmd}
-                  className={`bg-parchment-light min-h-[80px] md:min-h-[96px] p-2 flex flex-col gap-1 ${
+                  type="button"
+                  onClick={() => toggleDate(cellYmd)}
+                  aria-pressed={isSelected}
+                  aria-label={`${formatLongDate(cellYmd)}${
+                    dayEvents.length
+                      ? `, ${dayEvents.length} event${dayEvents.length !== 1 ? "s" : ""}`
+                      : ", no events"
+                  }`}
+                  className={`text-left bg-parchment-light min-h-[80px] md:min-h-[96px] p-2 flex flex-col gap-1 transition-colors hover:bg-ochre/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-ochre focus-visible:ring-inset ${
                     inMonth ? "" : "opacity-40"
-                  } ${isPast && !isToday ? "opacity-50" : ""}`}
+                  } ${isPast && !isToday ? "opacity-50" : ""} ${
+                    isSelected ? "ring-2 ring-ochre ring-inset bg-ochre/10" : ""
+                  }`}
                 >
                   <span
                     className={`font-sans text-xs tabular-nums ${
@@ -181,33 +214,48 @@ export default function EventsPage() {
                     {d.getDate()}
                   </span>
                   {dayEvents.map((e) => (
-                    <a
+                    <span
                       key={`${e.id}-${e.occurrenceDate}`}
-                      href={`#event-${e.id}-${e.occurrenceDate}`}
-                      className="block text-[10px] md:text-[11px] leading-tight font-sans font-medium text-forest-deep bg-ochre/15 hover:bg-ochre/30 px-1.5 py-1 transition-colors truncate"
+                      className="block text-[10px] md:text-[11px] leading-tight font-sans font-medium text-forest-deep bg-ochre/15 px-1.5 py-1 truncate"
                       title={e.title}
                     >
                       {e.title}
-                    </a>
+                    </span>
                   ))}
-                </div>
+                </button>
               );
             })}
           </div>
         </section>
 
-        {/* Upcoming list */}
-        <section aria-label="Upcoming events">
-          <h2 className="font-serif font-light text-forest-deep text-2xl md:text-3xl mb-6">
-            Coming up
-          </h2>
-          {upcoming.length === 0 ? (
+        {/* Upcoming / selected-date list */}
+        <section aria-label={selectedYmd ? "Events on selected date" : "Upcoming events"}>
+          <div className="flex items-baseline justify-between gap-4 mb-6">
+            <h2
+              ref={listHeadingRef}
+              tabIndex={-1}
+              className="font-serif font-light text-forest-deep text-2xl md:text-3xl outline-none"
+            >
+              {selectedYmd ? formatLongDate(selectedYmd) : "Coming up"}
+            </h2>
+            {selectedYmd && (
+              <button
+                onClick={() => setSelectedYmd(null)}
+                className="font-sans text-[11px] tracking-widest uppercase text-ochre hover:text-forest-deep transition-colors whitespace-nowrap"
+              >
+                Show all
+              </button>
+            )}
+          </div>
+          {listEvents.length === 0 ? (
             <p className="font-sans text-ink/50 text-sm italic">
-              Nothing on the books just yet — check back soon.
+              {selectedYmd
+                ? "Nothing on this date — pick another day or view all upcoming events."
+                : "Nothing on the books just yet — check back soon."}
             </p>
           ) : (
             <ol className="space-y-5">
-              {upcoming.map((e) => (
+              {listEvents.map((e) => (
                 <li
                   key={`${e.id}-${e.occurrenceDate}`}
                   id={`event-${e.id}-${e.occurrenceDate}`}

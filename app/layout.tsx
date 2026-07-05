@@ -42,6 +42,11 @@ export const metadata: Metadata = {
   creator: "The Marsh Harrier",
   metadataBase: new URL("https://marshharriercowley.co.uk"),
   alternates: { canonical: "/" },
+  icons: {
+    icon: [{ url: "/images/Marsh-harrier-logo.webp", type: "image/webp" }],
+    shortcut: [{ url: "/images/Marsh-harrier-logo.webp", type: "image/webp" }],
+    apple: [{ url: "/images/Marsh-harrier-logo.webp" }],
+  },
   openGraph: {
     title: "The Marsh Harrier — A Beer Fan's Haven",
     description:

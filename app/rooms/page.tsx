@@ -582,6 +582,11 @@ function RoomsEnquiry() {
               Fill in the form and we&apos;ll come back to you within 24 hours
               to confirm availability and answer any questions.
             </p>
+            <p className="font-sans text-ink/80 text-base leading-relaxed font-light mb-6 border-l-2 border-ink/30 pl-4">
+              Payment is made by bank transfer. Once we&apos;ve confirmed your
+              dates, we&apos;ll email you the transfer details — payment must be
+              made to secure your booking.
+            </p>
             <p className="font-sans text-ink/65 text-base leading-relaxed font-light">
               Prefer to call? Find us at{" "}
               <strong className="font-medium text-ink">
