@@ -470,7 +470,17 @@ export default function AdminDashboard() {
             </p>
           </div>
         ) : (
-          <div className="flex flex-row flex-nowrap gap-4 overflow-x-auto items-start pb-4 snap-x">
+          <div
+            className="gap-4 overflow-x-auto items-start pb-4 snap-x"
+            // Inline styles force the horizontal row regardless of any CSS
+            // class-ordering conflicts or the global `body { overflow-x: hidden }`.
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              flexWrap: "nowrap",
+              overflowX: "auto",
+            }}
+          >
             {tables.map((table) => {
               const mins = minutesOpen(table.opened_at);
               const level = staleLevel(mins);
@@ -481,6 +491,8 @@ export default function AdminDashboard() {
               return (
                 <article
                   key={table.table_number}
+                  // TEMP: red border confirms this deploy is live. Remove once verified.
+                  style={{ flex: "0 0 20rem", border: "3px solid red" }}
                   className={`bg-parchment-light flex flex-col w-80 flex-shrink-0 snap-start ${
                     level === "red"
                       ? "ring-2 ring-red-500"
