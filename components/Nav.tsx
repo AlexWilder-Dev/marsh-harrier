@@ -23,7 +23,7 @@ const HORIZONTAL_PANELS: Record<string, number> = {
 function scrollToSection(href: string) {
   // Panel links — delegate entirely to HorizontalFlow's API so it handles
   // its own lock state. Works whether the section is active or not.
-  if (href in HORIZONTAL_PANELS && window.innerWidth >= 1100) {
+  if (href in HORIZONTAL_PANELS) {
     window.__horizontalFlow?.navigate(HORIZONTAL_PANELS[href]);
     return;
   }

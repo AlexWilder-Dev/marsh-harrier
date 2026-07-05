@@ -341,10 +341,8 @@ export default function HorizontalFlow() {
   useEffect(() => {
     window.__horizontalFlow = {
       navigate: (index: number) => {
-        if (isActive.current) {
-          setPanelIndex(index);
-          return;
-        }
+        setPanelIndex(index);
+        if (isActive.current) return;
         pendingPanel.current = index;
         const lenis = window.__lenis;
         if (lenis) lenis.start();
