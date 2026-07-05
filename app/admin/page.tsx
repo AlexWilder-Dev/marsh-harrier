@@ -470,7 +470,7 @@ export default function AdminDashboard() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          <div className="flex gap-4 overflow-x-auto items-start pb-4 snap-x">
             {tables.map((table) => {
               const mins = minutesOpen(table.opened_at);
               const level = staleLevel(mins);
@@ -481,7 +481,7 @@ export default function AdminDashboard() {
               return (
                 <article
                   key={table.table_number}
-                  className={`bg-parchment-light flex flex-col ${
+                  className={`bg-parchment-light flex flex-col w-80 flex-shrink-0 snap-start ${
                     level === "red"
                       ? "ring-2 ring-red-500"
                       : level === "amber"
