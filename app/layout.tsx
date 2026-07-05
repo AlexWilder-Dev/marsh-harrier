@@ -109,9 +109,10 @@ const jsonLd = {
   image: "https://marshharriercowley.co.uk/images/marsh-harrier-pub-front.webp",
   telephone: "01865718225",
   sameAs: [
-    "https://www.facebook.com/marshharriercowley",
-    "https://www.instagram.com/marshharriercowley",
-    "https://www.youtube.com/@marshharriercowley",
+    "https://www.facebook.com/marshharrieroxford/",
+    "https://www.instagram.com/themarshharrier/",
+    "https://www.youtube.com/@TheMarshHarrier",
+    "https://www.tiktok.com/@themarshharrier",
   ],
 };
 
