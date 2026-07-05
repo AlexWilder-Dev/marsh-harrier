@@ -693,13 +693,6 @@ function OrderPage() {
         )}
       </header>
 
-      {/* Discount notice */}
-      <div className="bg-forest-deep/95 px-5 py-2 text-center">
-        <p className="font-sans text-parchment-light/85 text-[11px] tracking-widest uppercase">
-          Students &amp; NHS — show ID at the bar for 10% off
-        </p>
-      </div>
-
       {/* Food / Drink toggle — sliding pill */}
       <div className="sticky top-[72px] z-20 border-b border-forest-deep/15 overflow-hidden">
         <div className="relative grid grid-cols-2 bg-parchment-dark">

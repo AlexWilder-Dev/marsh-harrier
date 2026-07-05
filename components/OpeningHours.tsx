@@ -2,34 +2,13 @@
 
 import { useRef, useState, useEffect } from "react";
 import { motion, useInView } from "framer-motion";
-import Counter from "./Counter";
-
-interface HourData {
-  day: string;
-  order: number;
-  openHour: number;
-  openSuffix: string;
-  closeHour: number;
-  closeSuffix: string;
-  kitchenHours: string;
-  note?: string;
-}
-
-const FALLBACK_HOURS: HourData[] = [
-  { day: "Monday",    order: 0, openHour: 5,  openSuffix: ":00pm", closeHour: 11, closeSuffix: ":00pm", kitchenHours: "6–9pm" },
-  { day: "Tuesday",   order: 1, openHour: 12, openSuffix: ":00pm", closeHour: 11, closeSuffix: ":00pm", kitchenHours: "noon–3pm & 6–9pm" },
-  { day: "Wednesday", order: 2, openHour: 12, openSuffix: ":00pm", closeHour: 11, closeSuffix: ":00pm", kitchenHours: "noon–3pm & 6–9pm" },
-  { day: "Thursday",  order: 3, openHour: 12, openSuffix: ":00pm", closeHour: 11, closeSuffix: ":00pm", kitchenHours: "noon–3pm & 4–9pm" },
-  { day: "Friday",    order: 4, openHour: 12, openSuffix: ":00pm", closeHour: 11, closeSuffix: ":00pm", kitchenHours: "noon–3pm & 4–9pm" },
-  { day: "Saturday",  order: 5, openHour: 12, openSuffix: ":00pm", closeHour: 11, closeSuffix: ":00pm", kitchenHours: "noon–3pm & 4–9pm" },
-  { day: "Sunday",    order: 6, openHour: 12, openSuffix: ":00pm", closeHour: 11, closeSuffix: ":00pm", kitchenHours: "12pm–4pm roast & 5–8pm pizza", note: "Roasts 12pm–4pm · Pizzas only 5–8pm" },
-];
+import { DEFAULT_OPENING_HOURS, type OpeningHour } from "@/lib/openingHours";
 
 function getTodayName() {
   return ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][new Date().getDay()];
 }
 
-function HourRow({ row, index }: { row: HourData; index: number }) {
+function HourRow({ row, index }: { row: OpeningHour; index: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "0px" });
   const [today, setToday] = useState(false);
@@ -65,25 +44,19 @@ function HourRow({ row, index }: { row: HourData; index: number }) {
           className={`font-sans text-base tabular-nums ${
             today ? "text-forest-deep" : "text-ink/55 font-light"
           }`}
-          aria-label={`Bar opens ${row.openHour}${row.openSuffix}, closes ${row.closeHour}${row.closeSuffix}`}
+          aria-label={`Bar ${row.bar || "closed"}`}
         >
-          {isInView ? (
-            <>
-              <Counter to={row.openHour} suffix={row.openSuffix} duration={1200} />
-              {" — "}
-              <Counter to={row.closeHour} suffix={row.closeSuffix} duration={1400} />
-            </>
-          ) : (
-            <span className="text-ink/20">–</span>
-          )}
+          {row.bar || "Closed"}
         </p>
-        <p
-          className={`font-sans text-xs mt-0.5 ${
-            today ? "text-ochre/80" : "text-ink/35 font-light"
-          }`}
-        >
-          Kitchen: {row.kitchenHours}
-        </p>
+        {row.kitchen && (
+          <p
+            className={`font-sans text-xs mt-0.5 ${
+              today ? "text-ochre/80" : "text-ink/35 font-light"
+            }`}
+          >
+            Kitchen: {row.kitchen}
+          </p>
+        )}
         {row.note && (
           <p className="font-sans text-ink text-[13px] tracking-wide uppercase mt-0.5">
             {row.note}
@@ -95,7 +68,7 @@ function HourRow({ row, index }: { row: HourData; index: number }) {
 }
 
 export default function OpeningHours() {
-  const [hours, setHours] = useState<HourData[]>(FALLBACK_HOURS);
+  const [hours, setHours] = useState<OpeningHour[]>(DEFAULT_OPENING_HOURS);
 
   useEffect(() => {
     fetch("/api/opening-hours")
@@ -162,21 +135,6 @@ export default function OpeningHours() {
         >
           Hours may vary on bank holidays. Call ahead to confirm.
         </motion.p>
-
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.5, duration: 0.8 }}
-          className="mt-10 pt-6 border-t border-forest-deep/15 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
-        >
-          <p className="font-sans text-[11px] tracking-widest uppercase text-forest-deep/70">
-            Students &amp; NHS
-          </p>
-          <p className="font-serif italic text-forest-deep/70 text-sm">
-            10% off your bill — just show ID at the bar.
-          </p>
-        </motion.div>
       </div>
     </section>
   );

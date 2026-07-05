@@ -597,10 +597,18 @@ function EnquiryForm() {
 
     const formspreeId = process.env.NEXT_PUBLIC_FORMSPREE_ID;
     if (!formspreeId) {
+      // Not configured. In development, simulate success so the flow can be
+      // exercised locally. In production a missing ID would mean enquiries are
+      // silently lost — surface a clear error instead of a fake "success".
       if (process.env.NODE_ENV !== "production") {
         console.log("Enquiry (Formspree not configured):", Object.fromEntries(data));
+        setState("success");
+        return;
       }
-      setState("success");
+      setErrorMsg(
+        "Sorry — our online booking form isn't available right now. Please call us on 01865 718225 to make your enquiry."
+      );
+      setState("error");
       return;
     }
 

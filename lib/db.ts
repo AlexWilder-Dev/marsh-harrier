@@ -1,4 +1,5 @@
 import { createClient } from "@libsql/client";
+import { DEFAULT_OPENING_HOURS } from "@/lib/openingHours";
 
 const url = process.env.TURSO_DATABASE_URL ?? "file:./data/ordering.db";
 const authToken = process.env.TURSO_AUTH_TOKEN;
@@ -50,6 +51,13 @@ export async function initDb() {
         date  TEXT PRIMARY KEY,
         price INTEGER NOT NULL
       )`,
+      `CREATE TABLE IF NOT EXISTS opening_hours (
+        day_order INTEGER PRIMARY KEY,
+        day       TEXT NOT NULL,
+        bar       TEXT NOT NULL DEFAULT '',
+        kitchen   TEXT NOT NULL DEFAULT '',
+        note      TEXT
+      )`,
     ],
     "write"
   );
@@ -82,6 +90,19 @@ export async function initDb() {
       Array.from({ length: 20 }, (_, i) => ({
         sql: "INSERT OR IGNORE INTO tables (table_number) VALUES (?)",
         args: [i + 1],
+      })),
+      "write"
+    );
+  }
+
+  // Seed the weekly opening hours on first run so the admin editor and public
+  // display have a sensible starting point.
+  const hoursCount = await client.execute("SELECT COUNT(*) as count FROM opening_hours");
+  if (Number(hoursCount.rows[0].count) === 0) {
+    await client.batch(
+      DEFAULT_OPENING_HOURS.map((h) => ({
+        sql: "INSERT OR IGNORE INTO opening_hours (day_order, day, bar, kitchen, note) VALUES (?, ?, ?, ?, ?)",
+        args: [h.order, h.day, h.bar, h.kitchen, h.note ?? null],
       })),
       "write"
     );

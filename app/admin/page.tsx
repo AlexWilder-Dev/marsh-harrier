@@ -303,10 +303,18 @@ export default function AdminDashboard() {
             <a
               href="/admin/rooms"
               title="Room bookings"
-              aria-label="Room bookings — mark nights as booked"
+              aria-label="Room bookings — mark nights as booked and set prices"
               className="w-10 h-10 flex items-center justify-center text-ink/50 hover:text-ink transition-colors text-base"
             >
               ⌂
+            </a>
+            <a
+              href="/admin/hours"
+              title="Opening hours"
+              aria-label="Opening hours — edit the weekly schedule"
+              className="w-10 h-10 flex items-center justify-center text-ink/50 hover:text-ink transition-colors text-base"
+            >
+              🕗
             </a>
             <a
               href="/admin/qr"
