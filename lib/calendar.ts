@@ -71,3 +71,26 @@ export function longDate(ymdStr: string): string {
   const d = parseYmd(ymdStr);
   return `${WEEKDAYS[(d.getDay() + 6) % 7]} ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
 }
+
+// Weekend = Saturday & Sunday; Monday–Friday are weekday rate.
+export function isWeekendYmd(ymdStr: string): boolean {
+  const dow = parseYmd(ymdStr).getDay(); // Sun=0 … Sat=6
+  return dow === 0 || dow === 6;
+}
+
+export function formatGBP(pence: number): string {
+  return `£${(pence / 100).toFixed(2)}`;
+}
+
+// Resolve the nightly rate for a date: a per-night override wins, otherwise the
+// weekend or weekday base rate. All values are pence; 0 means "no rate set".
+export function nightlyPrice(
+  ymdStr: string,
+  overrides: Record<string, number>,
+  weekdayPrice: number,
+  weekendPrice: number
+): number {
+  const override = overrides[ymdStr];
+  if (override !== undefined && override !== null) return override;
+  return isWeekendYmd(ymdStr) ? weekendPrice : weekdayPrice;
+}

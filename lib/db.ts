@@ -31,7 +31,9 @@ export async function initDb() {
       `CREATE TABLE IF NOT EXISTS settings (
         id INTEGER PRIMARY KEY CHECK (id = 1),
         orders_paused INTEGER NOT NULL DEFAULT 0,
-        drink_delay_minutes INTEGER NOT NULL DEFAULT 0
+        drink_delay_minutes INTEGER NOT NULL DEFAULT 0,
+        room_weekday_price INTEGER NOT NULL DEFAULT 0,
+        room_weekend_price INTEGER NOT NULL DEFAULT 0
       )`,
       `INSERT OR IGNORE INTO settings (id, orders_paused, drink_delay_minutes) VALUES (1, 0, 0)`,
       `CREATE TABLE IF NOT EXISTS menu_overrides (
@@ -44,6 +46,10 @@ export async function initDb() {
       `CREATE TABLE IF NOT EXISTS room_bookings (
         date TEXT PRIMARY KEY
       )`,
+      `CREATE TABLE IF NOT EXISTS room_prices (
+        date  TEXT PRIMARY KEY,
+        price INTEGER NOT NULL
+      )`,
     ],
     "write"
   );
@@ -55,6 +61,8 @@ export async function initDb() {
     `ALTER TABLE orders ADD COLUMN discount_reason TEXT`,
     `ALTER TABLE menu_overrides ADD COLUMN name TEXT`,
     `ALTER TABLE menu_overrides ADD COLUMN price INTEGER`,
+    `ALTER TABLE settings ADD COLUMN room_weekday_price INTEGER NOT NULL DEFAULT 0`,
+    `ALTER TABLE settings ADD COLUMN room_weekend_price INTEGER NOT NULL DEFAULT 0`,
   ];
   for (const sql of migrations) {
     try {

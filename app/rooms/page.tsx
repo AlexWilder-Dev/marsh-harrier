@@ -9,7 +9,9 @@ import {
   WEEKDAYS,
   buildMonthGrid,
   datesInRange,
+  formatGBP,
   longDate,
+  nightlyPrice,
   startOfMonth,
   todayLocal,
   ymd,
@@ -321,16 +323,29 @@ function BookingCalendar() {
   const today = useMemo(() => todayLocal(), []);
   const [monthAnchor, setMonthAnchor] = useState(() => startOfMonth(todayLocal()));
   const [booked, setBooked] = useState<Set<string>>(new Set());
+  const [prices, setPrices] = useState<Record<string, number>>({});
+  const [weekdayPrice, setWeekdayPrice] = useState(0);
+  const [weekendPrice, setWeekendPrice] = useState(0);
   const [checkIn, setCheckIn] = useState<string | null>(null);
   const [checkOut, setCheckOut] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/bookings")
-      .then((r) => (r.ok ? r.json() : []))
-      .then((dates: string[]) => {
-        if (!cancelled) setBooked(new Set(dates));
+    Promise.all([
+      fetch("/api/bookings").then((r) =>
+        r.ok ? r.json() : { booked: [], prices: {} }
+      ),
+      fetch("/api/settings").then((r) => (r.ok ? r.json() : null)),
+    ])
+      .then(([b, s]) => {
+        if (cancelled) return;
+        setBooked(new Set(b.booked ?? []));
+        setPrices(b.prices ?? {});
+        if (s) {
+          setWeekdayPrice(Number(s.roomWeekdayPrice) || 0);
+          setWeekendPrice(Number(s.roomWeekendPrice) || 0);
+        }
       })
       .catch(() => {});
     return () => {
@@ -345,13 +360,18 @@ function BookingCalendar() {
     monthAnchor.getFullYear() === today.getFullYear() &&
     monthAnchor.getMonth() === today.getMonth();
 
+  const priceFor = (date: string) =>
+    nightlyPrice(date, prices, weekdayPrice, weekendPrice);
+
   // Occupied nights for a stay are [checkIn, checkOut) — the check-out day
   // itself is not slept in, so a booking can end the morning of a booked night.
   const rangeHasBooked = (start: string, end: string) =>
     datesInRange(start, end, true).some((d) => booked.has(d));
 
-  const nights =
-    checkIn && checkOut ? datesInRange(checkIn, checkOut, true).length : 0;
+  const stayNights =
+    checkIn && checkOut ? datesInRange(checkIn, checkOut, true) : [];
+  const nights = stayNights.length;
+  const stayTotal = stayNights.reduce((sum, d) => sum + priceFor(d), 0);
 
   const pick = (date: string) => {
     setNotice(null);
@@ -445,7 +465,7 @@ function BookingCalendar() {
               <div
                 key={cellYmd}
                 aria-label={isBooked ? `${cellYmd}, booked` : undefined}
-                className={`min-h-[44px] flex items-center justify-center font-sans text-xs tabular-nums ${
+                className={`min-h-[54px] flex items-center justify-center font-sans text-xs tabular-nums ${
                   isBooked
                     ? "bg-red-100 text-red-400 line-through"
                     : "bg-parchment text-ink/25"
@@ -457,16 +477,17 @@ function BookingCalendar() {
           }
 
           const selected = isCheckIn || isCheckOut;
+          const price = priceFor(cellYmd);
           return (
             <button
               key={cellYmd}
               type="button"
               onClick={() => pick(cellYmd)}
-              aria-label={`${cellYmd}${
+              aria-label={`${cellYmd}${price > 0 ? `, ${formatGBP(price)}` : ""}${
                 isCheckIn ? ", check-in" : isCheckOut ? ", check-out" : ""
               }`}
               aria-pressed={selected}
-              className={`min-h-[44px] flex items-center justify-center font-sans text-xs tabular-nums transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/40 focus-visible:ring-inset ${
+              className={`min-h-[54px] flex flex-col items-center justify-center gap-0.5 font-sans tabular-nums transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/40 focus-visible:ring-inset ${
                 selected
                   ? "bg-forest-deep text-parchment-light font-medium"
                   : inRange
@@ -474,7 +495,16 @@ function BookingCalendar() {
                   : "bg-parchment text-ink/70 hover:bg-forest-deep/10"
               } ${inMonth ? "" : "opacity-40"}`}
             >
-              {d.getDate()}
+              <span className="text-xs">{d.getDate()}</span>
+              {price > 0 && (
+                <span
+                  className={`text-[9px] leading-none ${
+                    selected ? "text-parchment-light/80" : "text-ink/45"
+                  }`}
+                >
+                  {formatGBP(price)}
+                </span>
+              )}
             </button>
           );
         })}
@@ -493,6 +523,15 @@ function BookingCalendar() {
                   <span className="text-ink/50">
                     {" "}
                     · {nights} night{nights !== 1 ? "s" : ""}
+                    {stayTotal > 0 && (
+                      <>
+                        {" · "}
+                        <span className="font-medium text-ink">
+                          {formatGBP(stayTotal)}
+                        </span>{" "}
+                        total
+                      </>
+                    )}
                   </span>
                 </>
               ) : (
