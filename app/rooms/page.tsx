@@ -595,39 +595,36 @@ function EnquiryForm() {
       return;
     }
 
-    const formspreeId = process.env.NEXT_PUBLIC_FORMSPREE_ID;
-    if (!formspreeId) {
-      // Not configured. In development, simulate success so the flow can be
-      // exercised locally. In production a missing ID would mean enquiries are
-      // silently lost — surface a clear error instead of a fake "success".
-      if (process.env.NODE_ENV !== "production") {
-        console.log("Enquiry (Formspree not configured):", Object.fromEntries(data));
-        setState("success");
-        return;
-      }
-      setErrorMsg(
-        "Sorry — our online booking form isn't available right now. Please call us on 01865 718225 to make your enquiry."
-      );
-      setState("error");
-      return;
-    }
-
+    // Post to our own server route, which forwards to Formspree. This avoids
+    // depending on a build-time NEXT_PUBLIC_ env var being present in the
+    // browser bundle — the server reads the Formspree ID at runtime.
+    const payload = Object.fromEntries(data.entries());
     try {
-      const res = await fetch(`https://formspree.io/f/${formspreeId}`, {
+      const res = await fetch("/api/enquiry", {
         method: "POST",
-        body: data,
-        headers: { Accept: "application/json" },
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       });
 
       if (res.ok) {
         setState("success");
         form.reset();
-      } else {
-        throw new Error("Formspree error");
+        return;
       }
+
+      if (res.status === 503) {
+        setErrorMsg(
+          "Sorry — our online booking form isn't available right now. Please call us on 01865 718225 to make your enquiry."
+        );
+      } else {
+        setErrorMsg(
+          "Sorry, we couldn't send your enquiry. Please try again, or call us on 01865 718225."
+        );
+      }
+      setState("error");
     } catch {
       setErrorMsg(
-        "Sorry, we couldn't send your message. Please try again or call us directly."
+        "Could not connect. Please check your connection and try again, or call us on 01865 718225."
       );
       setState("error");
     }
