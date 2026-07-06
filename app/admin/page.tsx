@@ -275,6 +275,9 @@ export default function AdminDashboard() {
   const tables = data?.tables ?? [];
   const orders = data?.orders ?? [];
   const openCount = tables.length;
+  const tableByNumber = new Map(tables.map((t) => [t.table_number, t]));
+  // One flat, chronological flow of every pending order across all tables.
+  const sortedOrders = [...orders].sort((a, b) => a.id - b.id);
 
   return (
     <div className="min-h-screen bg-parchment-dark">
@@ -456,7 +459,7 @@ export default function AdminDashboard() {
       </section>
 
       {/* Content */}
-      <main className="p-4 md:p-6">
+      <main className="p-4 md:p-6 space-y-5">
         {tables.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <div className="w-16 h-16 rounded-full border border-forest-deep/20 flex items-center justify-center mb-6">
@@ -470,65 +473,60 @@ export default function AdminDashboard() {
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
-            {tables.map((table) => {
-              const mins = minutesOpen(table.opened_at);
-              const level = staleLevel(mins);
-              const tableOrders = orders.filter(
-                (o) => o.table_number === table.table_number
-              );
-
-              return (
-                <article
-                  key={table.table_number}
-                  className={`bg-parchment-light ${
-                    level === "red"
-                      ? "ring-2 ring-red-500"
-                      : level === "amber"
-                      ? "ring-2 ring-amber-500"
-                      : ""
-                  }`}
-                >
-                  {/* Table header */}
-                  <div className="flex items-start justify-between px-4 pt-4 pb-3 border-b border-forest-deep/8">
-                    <div>
-                      <p className="font-serif font-light text-forest-deep text-3xl leading-none">
-                        {table.table_number === 0 ? "Takeaway" : table.table_number}
-                      </p>
-                      <p
-                        className={`font-sans text-xs mt-1 ${
-                          level === "red"
-                            ? "text-red-600"
-                            : level === "amber"
-                            ? "text-amber-600"
-                            : "text-ink/40"
-                        }`}
-                      >
-                        Open {formatDuration(mins)}
-                        {level !== "ok" && (
-                          <span className="ml-1">
-                            {level === "red" ? "⚠ Long time open" : "· Getting long"}
-                          </span>
-                        )}
-                      </p>
-                    </div>
+          <>
+            {/* Open tables — close / duration (covers tables with no pending orders) */}
+            <div className="flex flex-wrap gap-2">
+              {tables.map((table) => {
+                const mins = minutesOpen(table.opened_at);
+                const level = staleLevel(mins);
+                return (
+                  <div
+                    key={table.table_number}
+                    className={`flex items-center gap-2 pl-3 pr-1.5 py-1.5 bg-parchment-light border ${
+                      level === "red"
+                        ? "border-red-400"
+                        : level === "amber"
+                        ? "border-amber-400"
+                        : "border-forest-deep/15"
+                    }`}
+                  >
+                    <span className="font-sans text-sm font-medium text-forest-deep">
+                      {table.table_number === 0 ? "Takeaway" : `Table ${table.table_number}`}
+                    </span>
+                    <span
+                      className={`font-sans text-xs ${
+                        level === "red"
+                          ? "text-red-600"
+                          : level === "amber"
+                          ? "text-amber-600"
+                          : "text-ink/40"
+                      }`}
+                    >
+                      {formatDuration(mins)}
+                    </span>
                     <button
                       onClick={() => closeTable(table.table_number)}
                       disabled={closingTable === table.table_number}
-                      className="font-sans text-[15px] tracking-widest uppercase px-3 py-1.5 border border-forest-deep/20 text-forest-deep/60 hover:border-forest-deep/40 hover:text-forest-deep disabled:opacity-50 transition-colors"
+                      className="font-sans text-[10px] tracking-widest uppercase px-2 py-1 text-ink/50 hover:text-ink disabled:opacity-50 transition-colors"
                     >
-                      {closingTable === table.table_number ? "…" : "Close table"}
+                      {closingTable === table.table_number ? "…" : "Close"}
                     </button>
                   </div>
+                );
+              })}
+            </div>
 
-                  {/* Orders — laid out left-to-right, wrapping to new rows */}
-                  <div className="flex flex-wrap items-start gap-3 p-3">
-                    {tableOrders.length === 0 ? (
-                      <p className="font-sans text-ink/30 text-xs px-1 py-1">
-                        No pending orders
-                      </p>
-                    ) : (
-                      tableOrders.map((order) => {
+            {/* Orders — one flat flow: left-to-right, then wrap */}
+            {sortedOrders.length === 0 ? (
+              <p className="font-sans text-ink/40 text-sm py-10 text-center">
+                No pending orders right now.
+              </p>
+            ) : (
+              <div className="flex flex-wrap items-start gap-3">
+                {sortedOrders.map((order) => {
+                  const table = tableByNumber.get(order.table_number);
+                  const mins = table ? minutesOpen(table.opened_at) : 0;
+                  const level = staleLevel(mins);
                         const grossSubtotal = order.items.reduce(
                           (s, i) => s + itemLineTotal(i),
                           0
@@ -542,8 +540,30 @@ export default function AdminDashboard() {
                         return (
                           <div
                             key={order.id}
-                            className="w-full sm:w-[320px] flex-shrink-0 border border-forest-deep/10 px-4 py-3"
+                            className={`w-full sm:w-[320px] flex-shrink-0 bg-parchment-light p-4 ${
+                              level === "red"
+                                ? "ring-2 ring-red-500"
+                                : level === "amber"
+                                ? "ring-2 ring-amber-500"
+                                : "border border-forest-deep/12"
+                            }`}
                           >
+                            <div className="flex items-baseline justify-between mb-2 pb-2 border-b border-forest-deep/8">
+                              <span className="font-serif font-light text-forest-deep text-2xl leading-none">
+                                {order.table_number === 0
+                                  ? "Takeaway"
+                                  : `Table ${order.table_number}`}
+                              </span>
+                              {level !== "ok" && (
+                                <span
+                                  className={`font-sans text-[10px] tracking-widest uppercase ${
+                                    level === "red" ? "text-red-600" : "text-amber-600"
+                                  }`}
+                                >
+                                  {level === "red" ? "⚠ Long open" : "Getting long"}
+                                </span>
+                              )}
+                            </div>
                             {order.customer_name && (
                               <div className="mb-2">
                                 <p className="font-sans text-sm font-medium text-forest-deep">{order.customer_name}</p>
@@ -671,14 +691,11 @@ export default function AdminDashboard() {
                             </button>
                           </div>
                         );
-                      })
-                    )}
+                      })}
                   </div>
-                </article>
-              );
-            })}
-          </div>
-        )}
+                )}
+              </>
+            )}
       </main>
     </div>
   );
