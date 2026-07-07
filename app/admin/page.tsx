@@ -9,6 +9,10 @@ type OrderItem = {
   quantity: number;
   price: number;
   parentId?: number;
+  // Newer orders carry a unique line id (uid) and parentUid so two lines with
+  // the same menu id (e.g. two identical pizzas) nest their toppings correctly.
+  uid?: string;
+  parentUid?: string;
   dealOf2Price?: number;
 };
 
@@ -474,48 +478,6 @@ export default function AdminDashboard() {
           </div>
         ) : (
           <>
-            {/* Open tables — close / duration (covers tables with no pending orders) */}
-            <div className="flex flex-wrap gap-2">
-              {tables.map((table) => {
-                const mins = minutesOpen(table.opened_at);
-                const level = staleLevel(mins);
-                return (
-                  <div
-                    key={table.table_number}
-                    className={`flex items-center gap-2 pl-3 pr-1.5 py-1.5 bg-parchment-light border ${
-                      level === "red"
-                        ? "border-red-400"
-                        : level === "amber"
-                        ? "border-amber-400"
-                        : "border-forest-deep/15"
-                    }`}
-                  >
-                    <span className="font-sans text-sm font-medium text-forest-deep">
-                      {table.table_number === 0 ? "Takeaway" : `Table ${table.table_number}`}
-                    </span>
-                    <span
-                      className={`font-sans text-xs ${
-                        level === "red"
-                          ? "text-red-600"
-                          : level === "amber"
-                          ? "text-amber-600"
-                          : "text-ink/40"
-                      }`}
-                    >
-                      {formatDuration(mins)}
-                    </span>
-                    <button
-                      onClick={() => closeTable(table.table_number)}
-                      disabled={closingTable === table.table_number}
-                      className="font-sans text-[10px] tracking-widest uppercase px-2 py-1 text-ink/50 hover:text-ink disabled:opacity-50 transition-colors"
-                    >
-                      {closingTable === table.table_number ? "…" : "Close"}
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-
             {/* Orders — one flat flow: left-to-right, then wrap */}
             {sortedOrders.length === 0 ? (
               <p className="font-sans text-ink/40 text-sm py-10 text-center">
@@ -548,21 +510,37 @@ export default function AdminDashboard() {
                                 : "border border-forest-deep/12"
                             }`}
                           >
-                            <div className="flex items-baseline justify-between mb-2 pb-2 border-b border-forest-deep/8">
-                              <span className="font-serif font-light text-forest-deep text-2xl leading-none">
-                                {order.table_number === 0
-                                  ? "Takeaway"
-                                  : `Table ${order.table_number}`}
-                              </span>
-                              {level !== "ok" && (
-                                <span
-                                  className={`font-sans text-[10px] tracking-widest uppercase ${
-                                    level === "red" ? "text-red-600" : "text-amber-600"
+                            <div className="flex items-start justify-between gap-3 mb-2 pb-2 border-b border-forest-deep/8">
+                              <div>
+                                <p className="font-serif font-light text-forest-deep text-2xl leading-none">
+                                  {order.table_number === 0
+                                    ? "Takeaway"
+                                    : `Table ${order.table_number}`}
+                                </p>
+                                <p
+                                  className={`font-sans text-xs mt-1 ${
+                                    level === "red"
+                                      ? "text-red-600"
+                                      : level === "amber"
+                                      ? "text-amber-600"
+                                      : "text-ink/40"
                                   }`}
                                 >
-                                  {level === "red" ? "⚠ Long open" : "Getting long"}
-                                </span>
-                              )}
+                                  Open {formatDuration(mins)}
+                                  {level !== "ok" && (
+                                    <span className="ml-1">
+                                      {level === "red" ? "⚠ Long time open" : "· Getting long"}
+                                    </span>
+                                  )}
+                                </p>
+                              </div>
+                              <button
+                                onClick={() => closeTable(order.table_number)}
+                                disabled={closingTable === order.table_number}
+                                className="font-sans text-[10px] tracking-widest uppercase px-2.5 py-1.5 border border-forest-deep/20 text-forest-deep/60 hover:border-forest-deep/40 hover:text-forest-deep disabled:opacity-50 transition-colors flex-shrink-0"
+                              >
+                                {closingTable === order.table_number ? "…" : "Close table"}
+                              </button>
                             </div>
                             {order.customer_name && (
                               <div className="mb-2">
@@ -596,12 +574,19 @@ export default function AdminDashboard() {
                             </div>
                             <ul className="space-y-1.5 mb-3">
                               {(() => {
+                                // Prefer uid/parentUid nesting (newer orders);
+                                // fall back to id/parentId for older orders.
+                                const hasUid = order.items.some((it) => it.uid);
                                 const parentIds = new Set(order.items.map((it) => it.id));
                                 const isTopLevel = (it: OrderItem) =>
-                                  it.parentId === undefined || !parentIds.has(it.parentId);
+                                  hasUid
+                                    ? !it.parentUid
+                                    : it.parentId === undefined || !parentIds.has(it.parentId);
                                 return order.items.filter(isTopLevel).map((item, i) => {
-                                  const children = order.items.filter(
-                                    (c) => c.parentId === item.id
+                                  const children = order.items.filter((c) =>
+                                    hasUid
+                                      ? c.parentUid !== undefined && c.parentUid === item.uid
+                                      : c.parentId === item.id
                                   );
                                   return (
                                     <li key={i} className="font-sans text-forest-deep">

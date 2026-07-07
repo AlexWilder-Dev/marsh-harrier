@@ -20,12 +20,23 @@ type MenuItem = {
   dealOf2Price?: number; // optional "2 for £X" deal price, in pence
 };
 
-type CartItem = MenuItem & { quantity: number };
-type Cart = Record<number, CartItem>;
-type Pairing = { parentId: number; childId: number };
+// Each cart line has a unique `key`. Simple items merge under `m<id>`; items
+// that carry per-instance choices get a unique key so two of the same base
+// item can differ: pizzas (`p<n>`) and spirits (`s<n>`) are unique per add,
+// steaks/one-of-choice items fold their choice into the key (`m<id>|<choice>`).
+// Child lines (pizza toppings / drink mixers) are keyed `<parentKey>|t<id>` or
+// `<parentKey>|x<id>`, so a line's parent is derivable straight from its key.
+type CartItem = MenuItem & { quantity: number; key: string };
+type Cart = Record<string, CartItem>;
 type DisplayGroup =
   | { kind: "single"; item: CartItem }
   | { kind: "paired"; parent: CartItem; children: CartItem[] };
+
+const CHILD_KEY = /\|[tx]\d+$/;
+const isChildKey = (key: string) => CHILD_KEY.test(key);
+const parentKeyOf = (key: string) => key.slice(0, key.lastIndexOf("|"));
+const toppingKeyFor = (parentKey: string, toppingId: number) => `${parentKey}|t${toppingId}`;
+const mixerKeyFor = (parentKey: string, mixerId: number) => `${parentKey}|x${mixerId}`;
 
 type OptionPromptDef = { legend: string; choices: string[] };
 
@@ -194,9 +205,8 @@ function OrderPage() {
   const [activeSection, setActiveSection] = useState<"food" | "drink">("drink");
   const [activeGroup, setActiveGroup] = useState<string>("");
   const [cart, setCart] = useState<Cart>({});
-  const [pairings, setPairings] = useState<Pairing[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
-  const [mixerPromptFor, setMixerPromptFor] = useState<MenuItem | null>(null);
+  const [mixerPromptFor, setMixerPromptFor] = useState<{ item: MenuItem; key: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [menuError, setMenuError] = useState(false);
   const [menuRetry, setMenuRetry] = useState(0);
@@ -208,7 +218,7 @@ function OrderPage() {
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [expandedCats, setExpandedCats] = useState<Set<string>>(new Set());
-  const [pizzaToppingFor, setPizzaToppingFor] = useState<MenuItem | null>(null);
+  const [pizzaToppingFor, setPizzaToppingFor] = useState<{ item: MenuItem; key: string } | null>(null);
   const [steakPendingItem, setSteakPendingItem] = useState<MenuItem | null>(null);
   const [steakDoneness, setSteakDoneness] = useState("Medium");
   const [steakSauce, setSteakSauce] = useState("Peppercorn");
@@ -221,6 +231,8 @@ function OrderPage() {
   const steakSheetRef = useRef<HTMLDivElement>(null);
   const optionSheetRef = useRef<HTMLDivElement>(null);
   const submittingRef = useRef(false);
+  const instanceRef = useRef(0);
+  const newInstanceKey = (prefix: string) => `${prefix}${++instanceRef.current}`;
 
   // Re-evaluate the service window every 30s so the UI flips when the kitchen
   // crosses a boundary (e.g. Sunday 16:00, 17:00 or 20:00) without a refresh.
@@ -286,14 +298,14 @@ function OrderPage() {
     setExpandedCats(new Set());
   }, [activeGroup]);
 
-  const addToCart = useCallback((item: MenuItem) => {
+  const addToCart = useCallback((item: MenuItem, key: string) => {
     setCart((prev) => {
-      const existing = prev[item.id];
+      const existing = prev[key];
       return {
         ...prev,
-        [item.id]: existing
+        [key]: existing
           ? { ...existing, quantity: existing.quantity + 1 }
-          : { ...item, quantity: 1 },
+          : { ...item, key, quantity: 1 },
       };
     });
   }, []);
@@ -303,39 +315,45 @@ function OrderPage() {
       // Respect the current kitchen window — defensive in case the UI's disabled
       // state ever gets bypassed (e.g. stale state across a window boundary).
       if (!pickabilityFor(item, serviceWindow).pickable) return;
-      // Steak (sirloin or rib eye): show doneness/sauce modal before the first add
-      if (isSteakItem(item) && (cart[item.id]?.quantity ?? 0) === 0) {
+      // Steak (sirloin or rib eye): prompt for doneness/sauce on EVERY add so a
+      // second steak can differ from the first (confirmSteak keys by choice).
+      if (isSteakItem(item)) {
         setSteakPendingItem(item);
         setSteakDoneness("Medium");
         setSteakSauce("Peppercorn");
         return;
       }
-      // Items with a one-of choice (spritz mixer, J2O flavour, ice cream / sorbet flavour, shot type).
-      // Same pattern as steak: prompt on first add; subsequent adds inherit the choice
-      // (cart lines collapse by item id, so a different flavour means removing and re-adding).
+      // One-of-choice items (spritz mixer, J2O flavour, ice cream / sorbet
+      // flavour, shot type). Prompt every add; the choice becomes part of the key.
       const promptDef = getOptionPrompt(item);
-      if (promptDef && (cart[item.id]?.quantity ?? 0) === 0) {
+      if (promptDef) {
         setOptionPromptFor({ item, def: promptDef });
         return;
       }
-      addToCart(item);
-      // Pizza: show topping prompt after adding (includes pizzas in the Specials category)
+      // Pizza: a fresh instance per add so each pizza carries its own toppings.
       if (isPizzaItem(item)) {
-        setPizzaToppingFor(item);
+        const key = newInstanceKey("p");
+        addToCart(item, key);
+        setPizzaToppingFor({ item, key });
         return;
       }
+      // Spirits: a fresh instance per add so each gets its own mixer.
       if (MIXER_PROMPT_CATEGORIES.includes(item.category)) {
-        setMixerPromptFor(item);
+        const key = newInstanceKey("s");
+        addToCart(item, key);
+        setMixerPromptFor({ item, key });
+        return;
       }
+      addToCart(item, `m${item.id}`);
     },
-    [addToCart, cart, serviceWindow]
+    [addToCart, serviceWindow]
   );
 
   const confirmOption = useCallback(
     (choice: string) => {
       if (!optionPromptFor) return;
       const { item } = optionPromptFor;
-      addToCart({ ...item, name: `${item.name} — ${choice}` });
+      addToCart({ ...item, name: `${item.name} — ${choice}` }, `m${item.id}|${choice}`);
       setOptionPromptFor(null);
     },
     [optionPromptFor, addToCart]
@@ -345,59 +363,64 @@ function OrderPage() {
     if (!steakPendingItem) return;
     const sauceCost = STEAK_SAUCE_PRICES[steakSauce] ?? 0;
     const suffix = steakSauce === "No sauce" ? steakDoneness : `${steakDoneness}, ${steakSauce}`;
-    addToCart({
-      ...steakPendingItem,
-      name: `${steakPendingItem.name} — ${suffix}`,
-      price: steakPendingItem.price + sauceCost,
-    });
+    addToCart(
+      {
+        ...steakPendingItem,
+        name: `${steakPendingItem.name} — ${suffix}`,
+        price: steakPendingItem.price + sauceCost,
+      },
+      `m${steakPendingItem.id}|${suffix}`
+    );
     setSteakPendingItem(null);
   }, [steakPendingItem, steakDoneness, steakSauce, addToCart]);
 
-  const removeFromCart = useCallback((itemId: number) => {
+  // Remove one from a specific cart line. Deleting a parent line (pizza/spirit)
+  // cascades to its child lines (toppings/mixers).
+  const removeLine = useCallback((key: string) => {
     setCart((prev) => {
-      const existing = prev[itemId];
+      const existing = prev[key];
       if (!existing) return prev;
-      if (existing.quantity <= 1) {
-        const next = { ...prev };
-        delete next[itemId];
+      const next = { ...prev };
+      if (existing.quantity > 1) {
+        next[key] = { ...existing, quantity: existing.quantity - 1 };
         return next;
       }
-      return { ...prev, [itemId]: { ...existing, quantity: existing.quantity - 1 } };
+      delete next[key];
+      if (!isChildKey(key)) {
+        for (const k of Object.keys(next)) {
+          if (isChildKey(k) && parentKeyOf(k) === key) delete next[k];
+        }
+      }
+      return next;
     });
   }, []);
 
-  const removeLastPairingFor = useCallback(
-    (field: "parentId" | "childId", id: number, qty: number) => {
-      setPairings((prev) => {
-        if (qty <= 1) return prev.filter((p) => p[field] !== id);
-        const idx = prev.map((p) => p[field]).lastIndexOf(id);
-        if (idx === -1) return prev;
-        return [...prev.slice(0, idx), ...prev.slice(idx + 1)];
-      });
-    },
-    []
-  );
+  // Total quantity of a menu item across all its (non-child) lines.
+  const qtyOf = (id: number) =>
+    Object.values(cart).reduce(
+      (sum, l) => sum + (l.id === id && !isChildKey(l.key) ? l.quantity : 0),
+      0
+    );
 
-  // Remove a single topping from a specific pizza — decrements the shared cart
-  // line and drops just one pairing for that parent, so toppings on other pizzas
-  // are untouched.
-  const removePizzaTopping = useCallback(
-    (parentId: number, toppingId: number) => {
-      removeFromCart(toppingId);
-      setPairings((prev) => {
-        let idx = -1;
-        for (let i = prev.length - 1; i >= 0; i--) {
-          if (prev[i].parentId === parentId && prev[i].childId === toppingId) {
-            idx = i;
-            break;
-          }
-        }
-        if (idx === -1) return prev;
-        return [...prev.slice(0, idx), ...prev.slice(idx + 1)];
-      });
-    },
-    [removeFromCart]
-  );
+  // Menu-list "−": remove one of the most recently added instance of a menu item.
+  const removeOneOfId = useCallback((id: number) => {
+    setCart((prev) => {
+      const keys = Object.keys(prev).filter((k) => prev[k].id === id && !isChildKey(k));
+      if (keys.length === 0) return prev;
+      const key = keys[keys.length - 1];
+      const line = prev[key];
+      const next = { ...prev };
+      if (line.quantity > 1) {
+        next[key] = { ...line, quantity: line.quantity - 1 };
+        return next;
+      }
+      delete next[key];
+      for (const k of Object.keys(next)) {
+        if (isChildKey(k) && parentKeyOf(k) === key) delete next[k];
+      }
+      return next;
+    });
+  }, []);
 
   const submitOrder = async () => {
     if (submittingRef.current) return;
@@ -410,21 +433,18 @@ function OrderPage() {
     setSubmitting(true);
     setError(null);
 
-    // Per-child parent map — first pairing wins if a child line is attached to multiple parents.
-    const childToParent = new Map<number, number>();
-    for (const p of pairings) {
-      if (!childToParent.has(p.childId)) childToParent.set(p.childId, p.parentId);
-    }
-
-    const items = Object.values(cart).map(({ id, name, quantity, price, dealOf2Price }) => {
-      const parentId = childToParent.get(id);
-      const base = { id, name, quantity, price };
-      return {
-        ...base,
-        ...(parentId ? { parentId } : {}),
-        ...(dealOf2Price ? { dealOf2Price } : {}),
-      };
-    });
+    // Each line carries a unique `uid` (its cart key); children reference their
+    // parent's uid so the admin can nest toppings/mixers under the right item —
+    // even when two lines share the same menu id (e.g. two identical pizzas).
+    const items = Object.values(cart).map(({ id, key, name, quantity, price, dealOf2Price }) => ({
+      id,
+      uid: key,
+      name,
+      quantity,
+      price,
+      ...(isChildKey(key) ? { parentUid: parentKeyOf(key) } : {}),
+      ...(dealOf2Price ? { dealOf2Price } : {}),
+    }));
 
     try {
       const res = await fetch("/api/orders", {
@@ -445,7 +465,6 @@ function OrderPage() {
 
       setSubmitted(true);
       setCart({});
-      setPairings([]);
       setCartOpen(false);
     } catch {
       setError("Could not connect. Please check your connection and try again.");
@@ -526,20 +545,20 @@ function OrderPage() {
     { label: "Bottles",     items: mixers.filter((m) => nl(m).includes("bottle")) },
   ];
 
-  // Cart display groups — any item with children (mixers, pizza toppings) renders nested
-  const pairedChildIds = new Set(pairings.map((p) => p.childId));
-  const parentToChildren = new Map<number, number[]>();
-  for (const p of pairings) {
-    if (!parentToChildren.has(p.parentId)) parentToChildren.set(p.parentId, []);
-    parentToChildren.get(p.parentId)!.push(p.childId);
+  // Cart display groups — child lines (toppings/mixers) render nested under
+  // their parent, derived from the key structure.
+  const childrenByParent = new Map<string, CartItem[]>();
+  for (const line of Object.values(cart)) {
+    if (!isChildKey(line.key)) continue;
+    const pk = parentKeyOf(line.key);
+    if (!childrenByParent.has(pk)) childrenByParent.set(pk, []);
+    childrenByParent.get(pk)!.push(line);
   }
   const displayGroups = Object.values(cart).reduce<DisplayGroup[]>((acc, item) => {
-    if (pairedChildIds.has(item.id)) return acc;
-    const childIds = parentToChildren.get(item.id);
-    if (childIds && childIds.length > 0) {
-      const uniqueIds = [...new Set(childIds)];
-      const childItems = uniqueIds.map((id) => cart[id]).filter(Boolean) as CartItem[];
-      acc.push({ kind: "paired", parent: item, children: childItems });
+    if (isChildKey(item.key)) return acc;
+    const children = childrenByParent.get(item.key);
+    if (children && children.length > 0) {
+      acc.push({ kind: "paired", parent: item, children });
     } else {
       acc.push({ kind: "single", item });
     }
@@ -548,7 +567,7 @@ function OrderPage() {
 
   // Single item row — used when a drink/food has no size variants
   const renderMenuItem = (item: MenuItem) => {
-    const qty = cart[item.id]?.quantity ?? 0;
+    const qty = qtyOf(item.id);
     const { pickable, reason } = pickabilityFor(item, serviceWindow);
     return (
       <li
@@ -573,7 +592,7 @@ function OrderPage() {
           {qty > 0 ? (
             <>
               <button
-                onClick={() => removeFromCart(item.id)}
+                onClick={() => removeOneOfId(item.id)}
                 aria-label={`Remove one ${item.name}`}
                 className="w-10 h-10 flex items-center justify-center border border-forest-deep/20 text-forest-deep font-medium text-lg leading-none hover:bg-forest-deep/5 transition-colors"
               >
@@ -601,7 +620,7 @@ function OrderPage() {
 
   // Multi-size card — groups e.g. "House White (175ml / 250ml / Bottle)" into one row
   const renderVariantCard = (group: ItemGroup) => {
-    const anyInCart = group.variants.some(v => (cart[v.id]?.quantity ?? 0) > 0);
+    const anyInCart = group.variants.some(v => qtyOf(v.id) > 0);
     // All variants in a group share a category, so the window restriction is identical for all of them.
     const groupAvailability = pickabilityFor(group.variants[0], serviceWindow);
     return (
@@ -619,7 +638,7 @@ function OrderPage() {
       </div>
       {group.variants.map((variant, idx) => {
         const { size } = parseItemName(variant.name);
-        const qty = cart[variant.id]?.quantity ?? 0;
+        const qty = qtyOf(variant.id);
         const isLast = idx === group.variants.length - 1;
         return (
           <div
@@ -635,7 +654,7 @@ function OrderPage() {
               {qty > 0 ? (
                 <>
                   <button
-                    onClick={() => removeFromCart(variant.id)}
+                    onClick={() => removeOneOfId(variant.id)}
                     aria-label={`Remove one ${variant.name}`}
                     className="w-8 h-8 flex items-center justify-center border border-forest-deep/20 text-forest-deep text-base hover:bg-forest-deep/5 transition-colors"
                   >
@@ -880,7 +899,7 @@ function OrderPage() {
                 if (group.kind === "single") {
                   const dealActive = !!group.item.dealOf2Price && group.item.quantity >= 2;
                   return (
-                    <li key={group.item.id} className="flex items-center gap-4 px-5 py-4">
+                    <li key={group.item.key} className="flex items-center gap-4 px-5 py-4">
                       <div className="flex-1 min-w-0">
                         <p className="font-sans text-forest-deep font-medium text-sm">{group.item.name}</p>
                         <p className="font-sans text-ink/50 text-xs">
@@ -892,8 +911,8 @@ function OrderPage() {
                       </div>
                       <ItemControls
                         item={group.item}
-                        onRemove={() => removeFromCart(group.item.id)}
-                        onAdd={() => addToCart(group.item)}
+                        onRemove={() => removeLine(group.item.key)}
+                        onAdd={() => addToCart(group.item, group.item.key)}
                       />
                       <p className="font-sans text-ink font-medium text-sm w-14 text-right flex-shrink-0 tabular-nums">
                         {formatPrice(lineTotal(group.item))}
@@ -904,7 +923,7 @@ function OrderPage() {
 
                 const { parent, children } = group;
                 return (
-                  <li key={parent.id} className="px-5 py-3">
+                  <li key={parent.key} className="px-5 py-3">
                     <div className="border border-forest-deep/10">
                       <div className="flex items-center gap-4 px-4 py-3">
                         <div className="flex-1 min-w-0">
@@ -913,11 +932,8 @@ function OrderPage() {
                         </div>
                         <ItemControls
                           item={parent}
-                          onRemove={() => {
-                            removeFromCart(parent.id);
-                            removeLastPairingFor("parentId", parent.id, parent.quantity);
-                          }}
-                          onAdd={() => addToCart(parent)}
+                          onRemove={() => removeLine(parent.key)}
+                          onAdd={() => addToCart(parent, parent.key)}
                         />
                         <p className="font-sans text-ink font-medium text-sm w-14 text-right flex-shrink-0 tabular-nums">
                           {formatPrice(lineTotal(parent))}
@@ -925,7 +941,7 @@ function OrderPage() {
                       </div>
                       {children.map((child) => (
                         <div
-                          key={child.id}
+                          key={child.key}
                           className="flex items-center gap-4 px-4 py-3 bg-parchment-dark/60 border-t border-forest-deep/5"
                         >
                           <div className="flex-1 min-w-0">
@@ -934,11 +950,8 @@ function OrderPage() {
                           </div>
                           <ItemControls
                             item={child}
-                            onRemove={() => {
-                              removeFromCart(child.id);
-                              removeLastPairingFor("childId", child.id, child.quantity);
-                            }}
-                            onAdd={() => addToCart(child)}
+                            onRemove={() => removeLine(child.key)}
+                            onAdd={() => addToCart(child, child.key)}
                           />
                           <p className="font-sans text-ink/70 font-medium text-sm w-14 text-right flex-shrink-0 tabular-nums">
                             {formatPrice(lineTotal(child))}
@@ -1038,7 +1051,7 @@ function OrderPage() {
               <div>
                 <h2 className="font-serif font-light text-forest-deep text-xl">Add extra toppings?</h2>
                 <p className="font-sans text-ink/50 text-xs mt-0.5">
-                  You&apos;ve added {pizzaToppingFor.name}
+                  You&apos;ve added {pizzaToppingFor.item.name}
                 </p>
               </div>
               <button
@@ -1051,11 +1064,10 @@ function OrderPage() {
             </div>
             <ul className="divide-y divide-forest-deep/5 flex-1 overflow-y-auto">
               {pizzaToppings.map((topping) => {
-                // Scope the count to the pizza being customised — a topping added
-                // to a previous pizza must not appear pre-selected here.
-                const qty = pairings.filter(
-                  (p) => p.parentId === pizzaToppingFor.id && p.childId === topping.id
-                ).length;
+                // Scoped to THIS pizza instance via its key — a topping on a
+                // different pizza never shows here.
+                const childKey = toppingKeyFor(pizzaToppingFor.key, topping.id);
+                const qty = cart[childKey]?.quantity ?? 0;
                 return (
                   <li key={topping.id} className="flex items-center gap-4 px-5 py-4">
                     <div className="flex-1 min-w-0">
@@ -1073,7 +1085,7 @@ function OrderPage() {
                       {qty > 0 ? (
                         <>
                           <button
-                            onClick={() => removePizzaTopping(pizzaToppingFor.id, topping.id)}
+                            onClick={() => removeLine(childKey)}
                             aria-label={`Remove one ${topping.name}`}
                             className="w-8 h-8 flex items-center justify-center border border-forest-deep/20 text-forest-deep text-base hover:bg-forest-deep/5 transition-colors"
                           >
@@ -1085,13 +1097,7 @@ function OrderPage() {
                         </>
                       ) : null}
                       <button
-                        onClick={() => {
-                          addToCart(topping);
-                          setPairings((prev) => [
-                            ...prev,
-                            { parentId: pizzaToppingFor.id, childId: topping.id },
-                          ]);
-                        }}
+                        onClick={() => addToCart(topping, childKey)}
                         aria-label={`Add ${topping.name}`}
                         className="w-9 h-9 flex items-center justify-center bg-ochre text-parchment-light text-lg hover:bg-ochre-light transition-colors"
                       >
@@ -1217,7 +1223,7 @@ function OrderPage() {
               <div>
                 <h2 className="font-serif font-light text-forest-deep text-xl">Add a mixer?</h2>
                 <p className="font-sans text-ink/50 text-xs mt-0.5">
-                  You&apos;ve added {mixerPromptFor.name}
+                  You&apos;ve added {mixerPromptFor.item.name}
                 </p>
               </div>
               <button
@@ -1248,11 +1254,7 @@ function OrderPage() {
                           </p>
                           <button
                             onClick={() => {
-                              addToCart(mixer);
-                              setPairings((prev) => [
-                                ...prev,
-                                { parentId: mixerPromptFor.id, childId: mixer.id },
-                              ]);
+                              addToCart(mixer, mixerKeyFor(mixerPromptFor.key, mixer.id));
                               setMixerPromptFor(null);
                             }}
                             aria-label={`Add ${mixer.name}`}
