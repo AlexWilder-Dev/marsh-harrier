@@ -102,6 +102,9 @@ export default function InstagramFeed() {
                   alt={alt}
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   loading="lazy"
+                  // Instagram's CDN 403s hotlinked images that carry an external
+                  // referer, so send none.
+                  referrerPolicy="no-referrer"
                 />
                 <div
                   className="absolute inset-0 bg-forest-deep/0 group-hover:bg-forest-deep/30 transition-colors duration-300 flex items-center justify-center"

@@ -12,7 +12,7 @@ const securityHeaders = [
       "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com data:",
-      "img-src 'self' data: blob: https://marshharriercowley.co.uk https://cdn.sanity.io",
+      "img-src 'self' data: blob: https://marshharriercowley.co.uk https://cdn.sanity.io https://*.cdninstagram.com https://*.fbcdn.net",
       "connect-src 'self' https://formspree.io https://api.sanity.io https://*.sanity.io wss://*.sanity.io",
       "frame-src https://www.google.com https://maps.google.com",
       "frame-ancestors 'none'",
