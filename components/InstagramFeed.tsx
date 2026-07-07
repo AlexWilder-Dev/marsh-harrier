@@ -28,17 +28,15 @@ export default function InstagramFeed() {
   const [posts, setPosts] = useState<IgPost[]>(PLACEHOLDER_POSTS);
 
   useEffect(() => {
-    const token = process.env.NEXT_PUBLIC_INSTAGRAM_ACCESS_TOKEN;
-    if (!token) return;
-
     const controller = new AbortController();
-    const url = `https://graph.instagram.com/me/media?fields=id,media_url,permalink,caption,media_type,thumbnail_url&limit=6&access_token=${encodeURIComponent(token)}`;
 
-    fetch(url, { signal: controller.signal })
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("Instagram API error"))))
-      .then((data: { data?: IgPost[] }) => {
-        if (Array.isArray(data.data) && data.data.length > 0) {
-          setPosts(data.data.slice(0, 6));
+    // The token is read server-side by /api/instagram, so nothing token-related
+    // is needed (or exposed) here. Any failure keeps the placeholder photos.
+    fetch("/api/instagram", { signal: controller.signal })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("Instagram unavailable"))))
+      .then((data: { posts?: IgPost[] }) => {
+        if (Array.isArray(data.posts) && data.posts.length > 0) {
+          setPosts(data.posts.slice(0, 6));
         }
       })
       .catch(() => {
