@@ -16,30 +16,40 @@ function ContactForm() {
 
     const form = e.currentTarget;
     const data = new FormData(form);
-    const formspreeId = process.env.NEXT_PUBLIC_FORMSPREE_CONTACT_ID;
 
-    if (!formspreeId) {
-      if (process.env.NODE_ENV !== "production") {
-        console.log("Contact form (Formspree not configured):", Object.fromEntries(data));
-      }
-      setState("success");
-      return;
-    }
-
+    // Post to our own server route, which forwards to Formspree. This avoids
+    // depending on a build-time NEXT_PUBLIC_ env var being present in the
+    // browser bundle \u2014 the server reads the Formspree ID at runtime. It also
+    // means a misconfiguration surfaces as a real error here instead of a
+    // silent fake "message received" that never reaches the pub.
+    const payload = Object.fromEntries(data.entries());
     try {
-      const res = await fetch(`https://formspree.io/f/${formspreeId}`, {
+      const res = await fetch("/api/contact", {
         method: "POST",
-        body: data,
-        headers: { Accept: "application/json" },
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       });
+
       if (res.ok) {
         setState("success");
         form.reset();
-      } else {
-        throw new Error();
+        return;
       }
+
+      if (res.status === 503) {
+        setErrorMsg(
+          "Sorry \u2014 our contact form isn\u2019t available right now. Please call us on 01865 718225.",
+        );
+      } else {
+        setErrorMsg(
+          "Sorry, we couldn\u2019t send your message. Please try again, or call us on 01865 718225.",
+        );
+      }
+      setState("error");
     } catch {
-      setErrorMsg("Sorry, we couldn\u2019t send your message. Please try again or call us directly.");
+      setErrorMsg(
+        "Could not connect. Please check your connection and try again, or call us on 01865 718225.",
+      );
       setState("error");
     }
   };

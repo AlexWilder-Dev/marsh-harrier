@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { printReceipt } from "@/lib/receipt";
 
 type OrderItem = {
   id: number;
@@ -665,15 +666,24 @@ export default function AdminDashboard() {
                                 </button>
                               )}
                             </div>
-                            <button
-                              onClick={() => markDelivered(order.id)}
-                              disabled={deliveringOrder === order.id}
-                              className="w-full font-sans text-xs tracking-widest uppercase px-4 py-3 bg-ochre text-parchment-light hover:bg-ochre-light disabled:opacity-50 transition-colors"
-                            >
-                              {deliveringOrder === order.id
-                                ? "Marking…"
-                                : "Mark Delivered"}
-                            </button>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => printReceipt(order)}
+                                title="Print a receipt for this order on the till printer"
+                                className="font-sans text-xs tracking-widest uppercase px-4 py-3 border border-forest-deep/25 text-forest-deep hover:bg-forest-deep/5 transition-colors flex-shrink-0"
+                              >
+                                Print receipt
+                              </button>
+                              <button
+                                onClick={() => markDelivered(order.id)}
+                                disabled={deliveringOrder === order.id}
+                                className="flex-1 font-sans text-xs tracking-widest uppercase px-4 py-3 bg-ochre text-parchment-light hover:bg-ochre-light disabled:opacity-50 transition-colors"
+                              >
+                                {deliveringOrder === order.id
+                                  ? "Marking…"
+                                  : "Mark Delivered"}
+                              </button>
+                            </div>
                           </div>
                         );
                       })}
