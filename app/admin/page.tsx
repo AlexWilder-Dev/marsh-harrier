@@ -666,22 +666,22 @@ export default function AdminDashboard() {
                                 </button>
                               )}
                             </div>
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() => printReceipt(order)}
-                                title="Print a receipt for this order on the till printer"
-                                className="font-sans text-xs tracking-widest uppercase px-4 py-3 border border-forest-deep/25 text-forest-deep hover:bg-forest-deep/5 transition-colors flex-shrink-0"
-                              >
-                                Print receipt
-                              </button>
+                            <div className="flex flex-col gap-2">
                               <button
                                 onClick={() => markDelivered(order.id)}
                                 disabled={deliveringOrder === order.id}
-                                className="flex-1 font-sans text-xs tracking-widest uppercase px-4 py-3 bg-ochre text-parchment-light hover:bg-ochre-light disabled:opacity-50 transition-colors"
+                                className="w-full font-sans text-xs tracking-widest uppercase px-4 py-3 bg-ochre text-parchment-light hover:bg-ochre-light disabled:opacity-50 transition-colors"
                               >
                                 {deliveringOrder === order.id
                                   ? "Marking…"
                                   : "Mark Delivered"}
+                              </button>
+                              <button
+                                onClick={() => printReceipt(order)}
+                                title="Print a receipt for this order on the till printer"
+                                className="w-full font-sans text-xs tracking-widest uppercase px-4 py-3 border border-forest-deep/25 text-forest-deep hover:bg-forest-deep/5 transition-colors"
+                              >
+                                Print receipt
                               </button>
                             </div>
                           </div>
