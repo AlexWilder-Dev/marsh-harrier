@@ -82,6 +82,24 @@ function getOptionPrompt(item: MenuItem): OptionPromptDef | null {
   if (item.name === "Stuffed Aubergine") {
     return { legend: "Style", choices: ["Vegetarian", "Vegan"] };
   }
+  // Kids' roast is one menu line, so the meat is a choice rather than its own
+  // item the way the adult roasts are. Keep this list in step with the meats in
+  // the "Sunday Roast" category of data/menu.json. The kids' price is flat —
+  // confirmOption doesn't alter price, so every choice stays at £16.95.
+  if (item.name === "Kids Sunday Roast") {
+    return {
+      legend: "Roast",
+      choices: [
+        "Three Meat",
+        "Beef",
+        "Pork",
+        "Lamb",
+        "Turkey",
+        "Chicken",
+        "Nut Roast (ve)",
+      ],
+    };
+  }
   return null;
 }
 
