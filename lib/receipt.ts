@@ -41,6 +41,18 @@ const PUB = {
 
 const SERVICE_CHARGE_RATE = 0.1; // 10% — matches app/admin/page.tsx
 
+// Paper geometry. An 80mm thermal roll only prints across the middle ~72mm
+// (576 dots at 203dpi) — the outer few mm are dead zone the head can't reach.
+// Laying the receipt out at the full 80mm is what forced staff to print at 90%
+// scale (80 × 0.9 = 72) to stop the price column being clipped, and that shrank
+// the type to roughly 8pt. Sizing the content to the *printable* width instead
+// means it fits at 100% scale, so the type can be bigger and crisper.
+//
+// If the till printer ever changes, these two numbers are the only knobs:
+// 58mm rolls are typically PAPER 58 / PRINTABLE 48.
+const PAPER_WIDTH_MM = 80;
+const PRINTABLE_WIDTH_MM = 72;
+
 function itemLineTotal(item: ReceiptItem): number {
   if (item.dealOf2Price && item.quantity >= 2) {
     const pairs = Math.floor(item.quantity / 2);
@@ -137,34 +149,43 @@ export function buildReceiptHTML(order: ReceiptOrder): string {
 <meta charset="utf-8" />
 <title>Receipt — Order #${order.id}</title>
 <style>
-  @page { size: 80mm auto; margin: 0; }
+  @page { size: ${PAPER_WIDTH_MM}mm auto; margin: 0; }
   * { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; }
+  html { margin: 0; padding: 0; background: #fff; }
   body {
-    width: 80mm;
-    padding: 4mm 3mm 6mm;
-    font-family: "Courier New", ui-monospace, Menlo, Consolas, monospace;
-    font-size: 12px;
-    line-height: 1.35;
+    /* Sized to the printable width and centred in the page box, so the whole
+       receipt sits within the print head's reach at 100% scale. Staff should
+       print at 100% / "Actual size" — no need for the old 90% workaround. */
+    width: ${PRINTABLE_WIDTH_MM}mm;
+    margin: 0 auto;
+    padding: 4mm 2mm 8mm;
+    /* Courier New's hairline strokes break up on a 203dpi thermal head, so use
+       a grotesque with solid stems. Sizes are in pt rather than px so they come
+       out at a true physical size whatever the browser's px mapping is. */
+    font-family: Arial, "Helvetica Neue", "Segoe UI", Helvetica, sans-serif;
+    font-size: 11pt;
+    line-height: 1.4;
+    font-variant-numeric: tabular-nums;
     color: #000;
     background: #fff;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
   .center { text-align: center; }
-  .pub-name { font-size: 16px; font-weight: 700; letter-spacing: 0.5px; }
-  .pub-addr { font-size: 11px; }
-  .heading { font-size: 15px; font-weight: 700; margin-top: 2mm; }
-  .meta { font-size: 11px; }
+  .pub-name { font-size: 15pt; font-weight: 700; letter-spacing: 0.3px; }
+  .pub-addr { font-size: 9.5pt; }
+  .heading { font-size: 13pt; font-weight: 700; margin-top: 2mm; }
+  .meta { font-size: 9.5pt; }
   .rule { border-top: 1px dashed #000; margin: 2mm 0; }
-  .row { display: flex; justify-content: space-between; gap: 6px; }
-  .row .name { flex: 1; word-break: break-word; }
-  .row .amt { white-space: nowrap; text-align: right; }
-  .row.child .name { padding-left: 3mm; font-size: 11px; }
-  .row.child .amt { font-size: 11px; }
-  .total { font-size: 15px; font-weight: 700; }
-  .muted { font-size: 11px; }
-  .footer { margin-top: 3mm; font-size: 11px; }
+  .row { display: flex; justify-content: space-between; gap: 4px; }
+  .row .name { flex: 1 1 auto; overflow-wrap: anywhere; }
+  .row .amt { flex: 0 0 auto; white-space: nowrap; text-align: right; font-weight: 600; }
+  .row.child .name { padding-left: 3mm; font-size: 10pt; }
+  .row.child .amt { font-size: 10pt; }
+  .total { font-size: 15pt; font-weight: 700; }
+  .total .amt { font-weight: 700; }
+  .muted { font-size: 10pt; }
+  .footer { margin-top: 3mm; font-size: 9.5pt; }
 </style>
 </head>
 <body>
